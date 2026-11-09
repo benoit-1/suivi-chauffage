@@ -386,6 +386,7 @@ function render(){
   if(mode==='chargement'){h+='<section class="card"><p class="empty">Chargement de vos données depuis GitHub…</p></section></div>';app.innerHTML=h;return}
   if(!data.profil){h+=setupHTML(true)+'</div>';app.innerHTML=h;restore(keep);return}
   if(ui.setup)h+=setupHTML(false);
+  if(ui.viaInvitation&&!estInstallee()&&/iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent)&&'ontouchend' in document)h+='<section class="card entry" aria-label="Installer l’application"><h2>Installez-la maintenant</h2><p class="hint">Touchez <b>Partager</b> (le carré avec une flèche) puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>, <b>avant</b> de quitter cette page. L’icône gardera la connexion : rien à retaper.</p></section>';
 
   var A=analyse();
   var ed=ui.editId?data.rem.filter(function(r){return r.id===ui.editId})[0]:null;
@@ -580,14 +581,17 @@ function connecter(c){
     render();
   });
 }
+function estInstallee(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function lireInvitation(){
   var h=location.hash||'';if(h.indexOf('#connexion=')!==0)return null;
-  try{history.replaceState(null,'',location.pathname+location.search)}catch(e){location.hash=''}
+  // Dans le navigateur, on garde le lien dans l'adresse : ajoutée à l'écran d'accueil, l'icône l'emportera avec elle.
+  if(estInstallee()){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}else ui.viaInvitation=true;
   try{var o=JSON.parse(b64dec(decodeURIComponent(h.slice(11))));if(o&&o.o&&o.r&&o.t)return {owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t}}catch(e){}
   ui.err='Ce lien d’invitation est incomplet. Demandez-en un nouveau.';return null;
 }
 function demarrer(){
-  var inv=lireInvitation();if(inv){lsDel(CACHEKEY);connecter(inv);return}
+  var inv=lireInvitation(),c0=lsGet(CFGKEY);
+  if(inv&&!(c0&&c0.owner===inv.owner&&c0.repo===inv.repo&&c0.token===inv.token&&c0.path===inv.path)){lsDel(CACHEKEY);connecter(inv);return}
   var c=lsGet(CFGKEY);
   if(!c||!c.token){mode='connexion';render();return}
   cfg=c;

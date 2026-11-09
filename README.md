@@ -79,7 +79,7 @@ Dans ce mode, les appareils d'une même famille ne se synchronisent pas tout seu
 
 ## Installer l'application (pour tout le monde)
 
-Envoyez simplement l'adresse **https://benoit-1.github.io/suivi-chauffage/** à la personne. Elle n'a besoin d'aucun compte.
+Dans **Réglages**, carte **Faire connaître l'application** : faites scanner le QR code ou envoyez le lien. Ou envoyez simplement l'adresse **https://benoit-1.github.io/suivi-chauffage/** à la personne. Elle n'a besoin d'aucun compte.
 
 - **iPhone / iPad** : ouvrir le lien dans Safari, bouton Partager, puis « Sur l'écran d'accueil ».
 - **Android** : ouvrir le lien dans Chrome, puis « Installer l'application » (bouton dans l'application ou menu ⋮).
@@ -97,8 +97,9 @@ L'application peut envoyer un signal anonyme à GoatCounter (gratuit, sans cooki
 | mode-sans-compte / mode-github | le mode choisi à l'installation |
 | appareil-actif-du-jour | un appareil utilisé ce jour-là (une fois par jour) |
 | chargement | un chargement de pellets noté |
+| partage | quelqu'un a envoyé ou copié le lien de l'application |
 
-Pour l'activer : créer un compte sur goatcounter.com, puis mettre le code du site dans `COMPTEUR` (fichier app.js) et reconstruire index.html. Les chiffres se lisent sur le tableau de bord GoatCounter. Chaque utilisateur peut couper l'envoi dans **Réglages**, **Statistiques anonymes : Non**.
+Le compteur est actif depuis la version 3.7. Les chiffres se lisent sur **https://suivi-pellets.goatcounter.com** (connexion avec votre e-mail et votre mot de passe GoatCounter). Chaque utilisateur peut couper l'envoi dans **Réglages**, **Statistiques anonymes : Non**.
 
 ## Partager l'application avec d'autres foyers
 
@@ -152,6 +153,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 3.7 | 9 novembre 2026 | Compteur d'utilisateurs activé : tableau de bord sur https://suivi-pellets.goatcounter.com |
+| 3.6 | 9 novembre 2026 | Réglages : « Faire connaître l’application », avec QR code et lien sans aucune donnée, pour les autres foyers. |
 | 3.5 | 9 novembre 2026 | Correctif iPhone : l'icône ajoutée à l'écran d'accueil après une invitation garde de nouveau la connexion (elle s'ouvrait sur l'écran de départ depuis la 3.2). |
 | 3.4 | 9 novembre 2026 | Les animations des fêtes s'affichent 15 jours avant et 15 jours après chaque fête. Entre Noël et le Nouvel An, la fête la plus proche l'emporte. |
 | 3.3 | 9 novembre 2026 | L'animation démarre toujours au départ, même sur un appareil réglé sur « Réduire les animations ». Chacun peut la couper dans les Réglages. |

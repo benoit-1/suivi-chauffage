@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 3.5 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 3.7 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -237,7 +237,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='3.5', VERSION_DATE='9 novembre 2026';
+var VERSION='3.7', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -330,7 +330,7 @@ function fusion(remote,local){
 function appliquer(d){var act=S&&S.actuelle;S=d;S.actuelle=act}
 var LOCALKEY='suivi-pellets-local';
 /* Statistiques anonymes : nombre d'appareils et utilisation par jour. Aucune donnée personnelle, aucun relevé. */
-var COMPTEUR=''; // code GoatCounter, ex. 'suivi-pellets' → https://suivi-pellets.goatcounter.com
+var COMPTEUR='suivi-pellets'; // code GoatCounter, ex. 'suivi-pellets' → https://suivi-pellets.goatcounter.com
 function statistique(evt){try{if(!COMPTEUR||(cfg&&cfg.stats==='off'))return;var img=new Image();img.referrerPolicy='no-referrer';
   img.src='https://'+COMPTEUR+'.goatcounter.com/count?p=%2F'+encodeURIComponent(evt)+'&t='+encodeURIComponent(evt)+'&e=true&rnd='+Math.random().toString(36).slice(2)}catch(e){}}
 function statsDuJour(){try{if(!localStorage.getItem('suivi-stat-appareil')){localStorage.setItem('suivi-stat-appareil','1');statistique('nouvel-appareil');statistique(estLocal()?'mode-sans-compte':'mode-github')}
@@ -686,6 +686,13 @@ function vueReglages(){
     (COMPTEUR?'<div class="f"><span>Statistiques anonymes (nombre d’appareils, sans aucune donnée personnelle ni relevé)</span><div class="seg" role="radiogroup" aria-label="Statistiques anonymes">'+
       [['on','Oui'],['off','Non']].map(function(o){var on=((cfg&&cfg.stats)||'on')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="stats" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>':'')+
     '</section>';
+  // v3.6 : faire connaître l'application (lien public, sans aucune donnée ni clé)
+  var lp=lienPublic(),svgp=qrSVG(lp);
+  h+='<section class="card"><h2>📣 Faire connaître l’application</h2><p class="hint">Pour un proche qui veut suivre <b>ses</b> pellets chez lui. Ce lien ne donne accès à aucune de vos données : il démarre avec un carnet vide, rangé sur son téléphone.</p>'+
+    '<div class="invite">'+(svgp?'<div class="qr">'+svgp+'</div>':'')+'<div class="invtxt"><p class="hint"><b>À côté de vous :</b> il vise ce QR code avec l’appareil photo.</p><p class="hint"><b>À distance :</b> envoyez-lui le lien.</p>'+
+    '<div class="row">'+(navigator.share?'<button data-a="sharepublic" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copypublic">Copier le lien</button></div></div></div>'+
+    '<textarea id="lienpublic" readonly class="small" aria-label="Lien de l’application">'+esc(lp)+'</textarea>'+
+    (estLocal()?'':'<p class="hint">⚠️ Pour un autre foyer, utilisez toujours ce lien-ci, jamais « Inviter un appareil » : l’invitation donne accès à vos relevés.</p>')+'</section>';
   h+='<section class="card"><h2>Température extérieure</h2><div class="radios">';
   EXT_SOURCES.forEach(function(o){h+='<label class="radio'+(o.bientot?' off':'')+'"><input type="radio" name="extSource" value="'+o.id+'"'+(src===o.id?' checked':'')+(o.bientot?' disabled':'')+'><span><b>'+o.lab+(o.bientot?' <span class="soon">bientôt</span>':'')+'</b><span class="s">'+o.desc+'</span></span></label>'});
   h+='</div></section>';
@@ -910,6 +917,7 @@ function compter(){
 }
 var toastT=null;
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},2600)}
+function lienPublic(){return location.origin+location.pathname}
 function copier(id){var t=document.getElementById(id);try{navigator.clipboard.writeText(t.value).then(function(){toast('Copié')},function(){t.select();toast('Sélectionné : faites Copier')})}catch(e){t.select();toast('Sélectionné : faites Copier')}}
 
 app.addEventListener('click',function(ev){
@@ -939,6 +947,8 @@ app.addEventListener('click',function(ev){
   else if(a==='csv'){ui.csv=!ui.csv;render()}
   else if(a==='copycsv')copier('csv');
   else if(a==='copylien')copier('lien');
+  else if(a==='sharepublic'){statistique('partage');try{navigator.share({title:'Suivi pellets',text:'Une petite application gratuite pour suivre sa consommation de pellets selon le froid :',url:lienPublic()}).catch(function(){})}catch(e){copier('lienpublic')}}
+  else if(a==='copypublic'){statistique('partage');copier('lienpublic')}
   else if(a==='share'){try{navigator.share({title:'Suivi pellets',text:'Rejoins notre suivi des pellets :',url:document.getElementById('lien').value}).catch(function(){})}catch(e){copier('lien')}}
   else if(a==='invite'){ui.invite=!ui.invite;render()}
   else if(a==='pdel'){var pid=b.getAttribute('data-id');if(pieces().length<2)return;F().pieces=pieces().filter(function(p){return p.id!==pid});F().maj=Date.now();sauver('Pièce retirée');render();toast('Pièce retirée')}

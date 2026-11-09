@@ -115,6 +115,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 2.9 | 9 novembre 2026 | Réglage des animations simplifié : Oui / Non. L'intensité est fixée par nous pour tout le monde. |
 | 2.8 | 9 novembre 2026 | Écran de veille fixé à 15 secondes pour tout le monde (plus de réglage). Il s'arrête si l'animation est sur « Arrêt ». |
 | 2.7 | 9 novembre 2026 | Écran de veille : sur l'accueil, l'animation passe devant l'écran après un moment sans toucher (15 s à 3 min, ou jamais) et repasse derrière au premier toucher. |
 | 2.6 | 9 novembre 2026 | Halloween : toiles d'araignée dans les coins et araignées qui descendent au bout de leur fil. |

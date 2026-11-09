@@ -152,6 +152,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 3.5 | 9 novembre 2026 | Correctif iPhone : l'icône ajoutée à l'écran d'accueil après une invitation garde de nouveau la connexion (elle s'ouvrait sur l'écran de départ depuis la 3.2). |
 | 3.4 | 9 novembre 2026 | Les animations des fêtes s'affichent 15 jours avant et 15 jours après chaque fête. Entre Noël et le Nouvel An, la fête la plus proche l'emporte. |
 | 3.3 | 9 novembre 2026 | L'animation démarre toujours au départ, même sur un appareil réglé sur « Réduire les animations ». Chacun peut la couper dans les Réglages. |
 | 3.2 | 9 novembre 2026 | Application installable sur le téléphone (icône, fonctionne hors ligne). Accueil simplifié : un gros bouton « Commencer » sans compte. Compteur anonyme d'utilisateurs (GoatCounter), désactivable. |

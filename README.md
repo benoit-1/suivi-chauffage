@@ -101,6 +101,21 @@ L'application peut envoyer un signal anonyme à GoatCounter (gratuit, sans cooki
 
 Le compteur est actif depuis la version 3.7. Les chiffres se lisent sur **https://suivi-pellets.goatcounter.com** (connexion avec votre e-mail et votre mot de passe GoatCounter). Chaque utilisateur peut couper l'envoi dans **Réglages**, **Statistiques anonymes : Non**.
 
+## Connecter un poêle Jolly Mec (facultatif)
+
+L'application peut lire votre poêle Jolly Mec : état (en marche, éteint, veille…), température de la pièce mesurée par le poêle, consigne, puissance, température des fumées et alarme. **Lecture seule** : elle ne peut ni allumer ni éteindre le poêle.
+
+Elle passe par le même serveur que l'application **Jolly Mec Wi Fi** (plateforme Agua IOT de Micronova). Ce serveur refuse les demandes venant directement d'un navigateur : il faut donc un petit **relais** gratuit chez Cloudflare. Le relais transmet seulement et ne garde rien.
+
+1. Créez un compte gratuit sur **https://dash.cloudflare.com/sign-up**.
+2. Dans le menu, ouvrez **Compute (Workers)** puis **Workers & Pages**, et cliquez **Create** puis **Create Worker** (modèle « Hello World »).
+3. Nommez-le `jollymec-relais`, puis **Deploy**.
+4. Cliquez **Edit code**, effacez tout, collez le contenu du fichier **relais-jollymec.js**, puis **Deploy**.
+5. Copiez l'adresse du relais, du type `https://jollymec-relais.VOTRE-NOM.workers.dev`.
+6. Dans l'application : **Réglages**, carte **Poêle connecté (Jolly Mec)**. Collez l'adresse du relais, l'e-mail et le mot de passe de l'application Jolly Mec Wi Fi, puis **Connecter et tester**.
+
+L'e-mail et le mot de passe restent sur l'appareil (ils ne sont pas dans le lien d'invitation). Ce n'est pas un accès officiel de Micronova : s'il change, la lecture du poêle peut s'arrêter, le reste de l'application continue de marcher.
+
 ## Partager l'application avec d'autres foyers
 
 Tout le monde utilise la même adresse (votre site). Les autres foyers n'ont **rien à créer** : ni compte, ni GitHub.
@@ -153,6 +168,20 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.5 | 9 novembre 2026 | La flamme de l'accueil est plus grande et suit la température dehors : petite quand il fait doux, haute quand il fait froid. La palette ne montre plus que les sacs consommés (sans les places vides en pointillés). |
+| 5.4 | 9 novembre 2026 | Poêle connecté Jolly Mec (lecture seule) : état, température de la pièce, puissance, fumées, alarme, via un relais Cloudflare gratuit. Ligne d'état sur l'accueil. |
+| 5.3 | 9 novembre 2026 | Prévision : « La semaine à venir » affiche en grand le nombre de sacs à prévoir pour les 7 prochains jours (et la semaine suivante) ; plus de date de fin de palette. |
+| 5.2 | 9 novembre 2026 | Accueil : « Les jours à venir », la consommation prévue sur 7 et 14 jours (sacs et €) d'après la météo prévue et votre consommation selon le froid, et la date où la palette en cours sera finie. |
+| 5.1 | 9 novembre 2026 | Accueil : « Ma palette » se remplit d'un sac à chaque sac consommé (72 sacs par défaut, réglable dans Réglages > Pellets), avec le nombre de palettes complètes consommées. |
+| 5.0 | 9 novembre 2026 | Le tas de pellets du bouton Chargement est maintenant une vraie photo de vos granulés, détourée. |
+| 4.9 | 9 novembre 2026 | Le bouton Chargement montre un tas de granulés blonds dessiné. |
+| 4.8 | 9 novembre 2026 | Plus de sac dessiné : le bouton Chargement reprend la bûche 🪵, et après un chargement seuls les granulés tombent dans les flammes. |
+| 4.7 | 9 novembre 2026 | Accueil : seulement les flammes (plus de poêle dessiné), inspirées de la vidéo : cœur blanc-jaune, bords orange, langues qui dansent, braises et petites étincelles. |
+| 4.6 | 9 novembre 2026 | Le sac est redessiné d'après le vrai sac : plastique transparent, granulés blonds, impression vert d'eau, étiquette PREMIUM. |
+| 4.5 | 9 novembre 2026 | Le poêle de l'accueil est redessiné d'après le vrai poêle : corps noir, haute vitre verticale, fond strié, grosse flamme claire et lueur sur le mur. |
+| 4.4 | 9 novembre 2026 | Poêle et sac plus réalistes : acier ombré, porte en fonte, vitre avec reflet, briques réfractaires, creuset et braises, écran de commande ; sac plastique soudé avec poignée, bande imprimée et granulés visibles. |
+| 4.3 | 9 novembre 2026 | Animations : un poêle à pellets dessiné (flammes, braises, fumée, voyant) remplace la flamme de l'accueil ; un sac de pellets sur le bouton Chargement ; après un chargement, le sac se vide dans le poêle et les flammes grandissent. |
+| 4.2 | 9 novembre 2026 | Règles Apple (HIG) : marges de l'encoche, boutons d'au moins 44 points, plus de zoom en tapant. Nouveau réglage « Style » : Ludique ou Sobre (iOS), police et couleurs d'Apple, clair et sombre. |
 | 4.1 | 9 novembre 2026 | Correctif iPhone : le code de connexion passe avant le « # » de l'adresse (?connexion=…), seule partie que l'iPhone garde pour l'icône de l'écran d'accueil. Les anciens liens restent valables. |
 | 4.0 | 9 novembre 2026 | Correctif iPhone : dans Safari, l'adresse garde le code de connexion sur tous les écrans. Une icône ajoutée à l'écran d'accueil depuis n'importe quelle page reste connectée à vos relevés. |
 | 3.9 | 9 novembre 2026 | Corrections après relecture du code : nouvel essai d'envoi toutes les minutes en cas d'échec ; refus d'un chargement daté dans le futur ; alerte si la commune trouvée ne correspond pas au code postal ; export CSV protégé (point-virgule, guillemets, formules) ; message correct quand seule la température dehors est notée ; « Ajouter un foyer » masqué (remplacé par « Faire connaître ») ; éclairs d'orage plus doux. |

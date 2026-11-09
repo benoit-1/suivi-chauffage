@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 4.1 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.5 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>try{var c0=JSON.parse(localStorage.getItem('suivi-pellets-github')||'{}');if(c0&&c0.style==='ios')document.documentElement.setAttribute('data-style','ios')}catch(e){}</script>
 <meta name="theme-color" content="#d9611a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -218,6 +220,141 @@ html.veille #app{filter:saturate(.85) brightness(.97);transition:filter .6s}
 
 .avance{text-align:center;margin-top:6px}.avance .lnk{font-size:14px;opacity:.75}
 
+/* ===== v4.2 : règles Apple (Human Interface Guidelines), pour les deux styles ===== */
+/* marges de sécurité (encoche, barre d'accueil de l'iPhone) */
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);-webkit-text-size-adjust:100%}
+/* zones de toucher d'au moins 44 × 44 points */
+button,.seg button,.chip,.radio,select{min-height:44px}
+.x{width:44px;height:44px}
+.lnk{min-height:44px;display:inline-flex;align-items:center}
+/* champs en 16 px minimum : l'iPhone ne zoome plus quand on tape */
+input,select,textarea{font-size:max(16px,1rem)}
+textarea{font-size:max(16px,.78rem)}
+
+/* ===== Style « Sobre (iOS) » : apparence des applications Apple ===== */
+:root[data-style="ios"]{
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  --bg:#f2f2f7;--surface:#ffffff;--ink:#000000;--muted:#6c6c70;--line:#d1d1d6;
+  --accent:#c9520e;--accent-soft:#fff1e6;--accent-ink:#ffffff;--warm:#b8420c;
+  --cold:#0066d6;--cold-soft:#e8f1fd;--good:#248a3d;--bad:#d70015;
+}
+@media (prefers-color-scheme: dark){:root[data-style="ios"]:not([data-theme="light"]){
+  --bg:#000000;--surface:#1c1c1e;--ink:#ffffff;--muted:#98989f;--line:#38383a;
+  --accent:#ff9f0a;--accent-soft:#2c1d0b;--accent-ink:#000000;--warm:#ffb340;
+  --cold:#409cff;--cold-soft:#0d1d33;--good:#30d158;--bad:#ff453a}}
+:root[data-style="ios"] body{background:var(--bg);font-size:17px;letter-spacing:-.01em}
+:root[data-style="ios"] h1{font-size:34px;font-weight:700;letter-spacing:.01em}
+:root[data-style="ios"] .big-title{font-size:34px}
+:root[data-style="ios"] h2{font-size:20px;font-weight:600}
+:root[data-style="ios"] .card,:root[data-style="ios"] .room,:root[data-style="ios"] .tile{border:none;border-radius:10px}
+:root[data-style="ios"] .t,:root[data-style="ios"] .act{border-radius:12px}
+:root[data-style="ios"] .act{box-shadow:none}
+:root[data-style="ios"] .t .v{font-weight:700}
+:root[data-style="ios"] .primary{border-radius:12px;font-weight:600}
+:root[data-style="ios"] .gear,:root[data-style="ios"] .back{border:none;background:transparent;color:var(--accent)}
+:root[data-style="ios"] .det,:root[data-style="ios"] .filebtn2{border:none;background:var(--surface);color:var(--accent);border-radius:10px}
+:root[data-style="ios"] .seg{background:rgba(118,118,128,.12);border-radius:9px;padding:2px;gap:0}
+:root[data-style="ios"] .seg button{border-radius:7px;min-height:32px;padding:6px;font-weight:500;color:var(--ink)}
+:root[data-style="ios"] .seg button.on{box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04)}
+:root[data-style="ios"] input,:root[data-style="ios"] select,:root[data-style="ios"] textarea{background:var(--surface);border-color:var(--line)}
+:root[data-style="ios"] .x{border:none;background:transparent}
+:root[data-style="ios"] .chip{border:none;background:rgba(118,118,128,.12)}
+/* correctif : dans une carte, les choix (Oui / Non…) gardent l'aspect « segmenté », seul le choix actif est en relief */
+.card .seg button:not(.x):not(.lnk):not(.primary){border:none;background:transparent;padding:8px;border-radius:9px}
+.card .seg button.on:not(.x):not(.lnk):not(.primary){background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+:root[data-style="ios"] .card .seg button:not(.x):not(.lnk):not(.primary){border-radius:7px;padding:6px}
+:root[data-style="ios"] .card .seg{background:rgba(118,118,128,.12)}
+@media (prefers-color-scheme: dark){:root[data-style="ios"] .card .seg button.on:not(.x):not(.lnk):not(.primary){background:#636366}}
+
+/* ===== v4.3 : poêle à pellets et sac animés ===== */
+.flame{font-size:inherit;line-height:0}
+.poele{width:calc(58px * var(--fl,1));height:auto;display:block;overflow:visible;transition:width .6s ease}
+.poele .f{transform-box:fill-box;transform-origin:50% 100%;animation:danse 1.1s ease-in-out infinite alternate}
+.poele .f2{animation-duration:.9s;animation-delay:-.3s}.poele .f3{animation-duration:1.3s;animation-delay:-.6s}.poele .f4{animation-duration:.7s}
+@keyframes danse{0%{transform:scale(1,1) skewX(0)}50%{transform:scale(.92,1.12) skewX(-4deg)}100%{transform:scale(1.05,.9) skewX(3deg)}}
+.poele .braise{animation:braise 1.8s ease-in-out infinite alternate}
+@keyframes braise{from{opacity:.65}to{opacity:1}}
+.poele .lueur{animation:lueur 1.3s ease-in-out infinite alternate}@keyframes lueur{from{opacity:.6}to{opacity:1}}
+.poele .fumee circle{fill:rgba(200,205,215,.55);transform-box:fill-box;transform-origin:center;animation:fumee 3.2s ease-out infinite}
+.poele .fumee circle:nth-child(2){animation-delay:-1.1s}.poele .fumee circle:nth-child(3){animation-delay:-2.2s}
+@keyframes fumee{0%{opacity:0;transform:translateY(8px) scale(.5)}30%{opacity:.8}100%{opacity:0;transform:translateY(-14px) scale(1.4)}}
+.poele .led{animation:led 2s steps(2) infinite}@keyframes led{50%{opacity:.25}}
+.poele.boost .flammes{transform-box:fill-box;transform-origin:50% 100%;animation:boost 2.3s ease-out}
+@keyframes boost{0%{transform:scale(1)}25%{transform:scale(1.18,1.32)}100%{transform:scale(1)}}
+.act .ic .sac{width:40px;height:auto;display:block}
+.act.a2:hover .ic .sac,.act.a2:focus-visible .ic .sac{animation:bouge .6s ease-in-out}
+@keyframes bouge{25%{transform:rotate(-8deg)}75%{transform:rotate(6deg)}}
+/* le versement */
+.verse{position:fixed;width:0;height:0;z-index:30;pointer-events:none}
+.verse .sac.vole{position:absolute;width:58px;left:-72px;top:-92px;transform-origin:80% 20%;animation:sacvole 2.4s ease-in-out forwards}
+@keyframes sacvole{0%{opacity:0;transform:translate(-20px,-10px) rotate(0)}15%{opacity:1;transform:translate(0,0) rotate(0)}35%{transform:translate(18px,4px) rotate(-120deg)}75%{opacity:1;transform:translate(18px,4px) rotate(-130deg)}100%{opacity:0;transform:translate(10px,-10px) rotate(-100deg)}}
+.verse i{position:absolute;left:8px;top:-44px;width:3.5px;height:8px;border-radius:2px;background:linear-gradient(90deg,#e9c999,#c79b63);opacity:0;transform:rotate(var(--r));animation:granule .7s ease-in var(--d) forwards}
+@keyframes granule{0%{opacity:1;transform:translate(var(--x),-10px) rotate(var(--r))}90%{opacity:1}100%{opacity:0;transform:translate(calc(var(--x) * .3),46px) rotate(calc(var(--r) + 120deg))}}
+html.anim-off .poele *,html.anim-off .poele{animation:none!important}
+
+/* v4.5 : flamme du poêle plus douce, comme sur la vidéo */
+.poele .f0{animation:souffle 2.2s ease-in-out infinite alternate}@keyframes souffle{from{opacity:.4;transform:scale(.95)}to{opacity:.7;transform:scale(1.06)}}
+.poele .f4{animation:coeur 1.4s ease-in-out infinite alternate}@keyframes coeur{from{transform:translate(-1px,1px) scale(.92)}to{transform:translate(1.5px,-2px) scale(1.08,1.15)}}
+
+/* v4.7 : seulement les flammes */
+.poele.feu{width:calc(66px * var(--fl,1))}
+.poele.feu .f{transform-box:fill-box;transform-origin:50% 100%}
+.poele.feu .f2{animation:langue 1.6s ease-in-out infinite alternate}
+.poele.feu .f5{animation:langue 1.2s ease-in-out infinite alternate-reverse}
+.poele.feu .f1{animation:langue .9s ease-in-out infinite alternate}
+.poele.feu .f3{animation:langue 1.1s ease-in-out infinite alternate-reverse}
+.poele.feu .f4{animation:coeur 1.3s ease-in-out infinite alternate}
+.poele.feu .f0{animation:souffle 1.8s ease-in-out infinite alternate}
+@keyframes langue{0%{transform:scale(1,1) skewX(0)}35%{transform:scale(.94,1.1) skewX(-5deg)}70%{transform:scale(1.04,.94) skewX(4deg)}100%{transform:scale(.97,1.06) skewX(-2deg)}}
+.poele.feu .etincelles circle{animation:monte 2.4s linear infinite;opacity:0}
+.poele.feu .etincelles circle:nth-child(2){animation-delay:-.8s}.poele.feu .etincelles circle:nth-child(3){animation-delay:-1.6s}
+@keyframes monte{0%{opacity:0;transform:translateY(30px)}20%{opacity:1}100%{opacity:0;transform:translateY(-8px)}}
+.poele.feu.boost .flammes{animation:boost 2.3s ease-out}
+
+/* v4.8 : sans le sac, les granulés tombent du haut dans les flammes */
+.verse i{left:-2px;top:-60px;animation-duration:.8s}
+
+/* v4.9 : tas de granulés sur le bouton Chargement */
+.act .ic .tas{width:50px;height:auto;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.15))}
+.act.a2:hover .ic .tas,.act.a2:focus-visible .ic .tas{animation:bouge .6s ease-in-out}
+
+/* v5.1 : la palette qui se remplit */
+.palette-card{flex-direction:row;align-items:center;gap:10px;padding:14px 14px 10px}
+.pal-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.pal-n{margin:0;font-size:1.05rem}.pal-n b{font-family:var(--display);font-size:1.9rem;font-weight:800;font-variant-numeric:tabular-nums}
+.pal-pleines{margin:0;font-size:.85rem;font-weight:600;color:var(--warm)}
+.palette{width:min(52%,210px);height:auto;flex:none;color:var(--ink)}
+.palette .neuf{animation:sacTombe .7s cubic-bezier(.3,1.4,.5,1) both}
+@keyframes sacTombe{0%{transform:translateY(-70px);opacity:0}60%{opacity:1}100%{transform:translateY(0)}}
+html.anim-off .palette .neuf{animation:none}
+
+/* v5.2 : prévision des jours à venir */
+.pv-tot{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pv-tot>div{background:var(--bg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}
+.pv-tot b{font-family:var(--display);font-size:1.6rem;font-weight:800;line-height:1.1;display:inline}
+.pv-tot span{font-size:.8rem;color:var(--muted)}
+.pv-graph{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;align-items:end;padding-top:4px}
+.pv-j{display:flex;flex-direction:column;align-items:center;gap:3px;font-variant-numeric:tabular-nums}
+.pv-s{font-size:.72rem;font-weight:600;color:var(--muted)}
+.pv-b{width:70%;max-width:30px;border-radius:6px 6px 3px 3px;background:color-mix(in srgb,var(--cold) calc(var(--t) * 100%),var(--accent))}
+.pv-t{font-size:.78rem;font-weight:700;color:var(--cold)}
+.pv-d{font-size:.72rem;color:var(--muted)}
+
+/* v5.3 : le nombre de sacs à prévoir pour la semaine, en grand */
+.pv-main{background:var(--accent-soft);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;align-items:flex-start}
+.pv-main span{font-size:.85rem;color:var(--warm);font-weight:600}
+.pv-main b{font-family:var(--display);font-size:2.6rem;font-weight:800;line-height:1.05;color:var(--warm);font-variant-numeric:tabular-nums}
+
+/* v5.4 : ligne d'état du poêle connecté */
+.poele-ligne{margin:-4px 4px 0;font-size:.88rem;font-weight:600;color:var(--muted)}
+.poele-ligne.alarme{color:var(--bad)}
+.poele-ligne .vieux{font-weight:400;opacity:.8}
+
+/* v5.5 : flamme plus grande, sa taille suit la température dehors ; elle danse plus fort quand il fait froid */
+.poele.feu{width:calc(76px * var(--fl,1))}
+.t.sacs .flame{display:flex;align-items:flex-end;min-height:100px}
+
 </style>
 </head>
 <body>
@@ -238,7 +375,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='4.1', VERSION_DATE='9 novembre 2026';
+var VERSION='5.5', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -294,7 +431,7 @@ function migrer(d){
   var o2=vide(),p=d.profil;
   if(p){o2.foyer={nom:p.commune,commune:p.commune,cp:p.cp,lat:p.lat,lon:p.lon,extSource:'auto',
     pieces:(p.pieces&&p.pieces.length?p.pieces:[{id:'p1',nom:'Salon'}]).map(function(x){return {id:x.id,nom:x.nom,source:'saisie'}}),
-    poidsSac:p.poidsSac||15,prixSac:p.prixSac||6.9,saison:p.saison||'Hiver 2026-2027',historique:p.historique||[],maj:p.maj||0}}
+    poidsSac:p.poidsSac||15,prixSac:p.prixSac||6.9,sacsPalette:p.sacsPalette||72,saison:p.saison||'Hiver 2026-2027',historique:p.historique||[],maj:p.maj||0}}
   (d.rem||[]).forEach(function(r){
     o2.chargements.push({id:r.id,t:r.t,sacs:r.sacs,par:r.par||'',saison:r.saison,maj:r.maj||0});
     var temps=r.temps?r.temps:(r.int!=null?{p1:r.int}:{});
@@ -399,10 +536,11 @@ var OpenMeteo={actualiser:function(){
   var R=S&&S.foyer;if(!R||R.lat==null)return Promise.resolve(false);
   var base='latitude='+R.lat+'&longitude='+R.lon+'&hourly=temperature_2m&timezone=Europe%2FParis',today=ymd(new Date());
   var cur=fetch('https://api.open-meteo.com/v1/forecast?latitude='+R.lat+'&longitude='+R.lon+'&current=weather_code,wind_speed_10m,is_day&timezone=Europe%2FParis').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.current){S.ciel={code:j.current.weather_code,vent:j.current.wind_speed_10m,jour:j.current.is_day===1};renderFond()}}).catch(function(){});
-  return fetch('https://api.open-meteo.com/v1/forecast?'+base+'&past_days=92&forecast_days=1').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
+  return fetch('https://api.open-meteo.com/v1/forecast?'+base+'&past_days=92&forecast_days=16').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
     var h=new Date(),cle=today+'T'+p2(h.getHours())+':00',ix=(j.hourly.time||[]).indexOf(cle);
     if(ix>=0&&typeof j.hourly.temperature_2m[ix]==='number')S.actuelle=Math.round(j.hourly.temperature_2m[ix]*10)/10;
     var res=agreger(j),chg=false;
+    PREV={};Object.keys(res).forEach(function(d){if(d>=today)PREV[d]=res[d]});
     Object.keys(res).forEach(function(d){if(d>today)return;var a=S.meteo[d],b=res[d];if(!a||a.min!==b.min||a.max!==b.max||a.moy!==b.moy){if(d<today)chg=true;S.meteo[d]=b}});
     var prem=S.chargements.concat(S.releves).map(function(r){return r.t.slice(0,10)}).sort()[0],lim=ymd(new Date(Date.now()-88*864e5));
     if(prem&&prem<lim){var manque=false;for(var d=new Date(parseDT(prem));ymd(d)<lim;d.setDate(d.getDate()+1)){if(!S.meteo[ymd(d)]){manque=true;break}}
@@ -517,6 +655,8 @@ function cielType(){var c=S&&S.ciel;if(!c||c.code==null)return null;var k=c.code
   if(k>=95)return 'orage';if((k>=51&&k<=67)||(k>=80&&k<=82))return 'pluie';if((k>=71&&k<=77)||k===85||k===86)return 'neige';if(k===45||k===48)return 'brouillard';if(k<=1)return c.jour?'soleil':'nuit';if(k<=3)return 'nuages';return null}
 function cielIcone(){var t=cielType(),v=S&&S.ciel&&S.ciel.vent>=35;var i={orage:'⛈️',pluie:'🌧️',neige:'🌨️',brouillard:'🌫️',soleil:'☀️',nuit:'🌙',nuages:'⛅'}[t]||'';return i+(v?' 💨':'')}
 function cielTexte(){var t=cielType(),c=S&&S.ciel;var m={orage:'orage',pluie:'pluie',neige:'neige',brouillard:'brouillard',soleil:'ensoleillé',nuit:'ciel dégagé',nuages:'nuageux'}[t]||'';if(c&&c.vent>=35)m+=(m?', ':'')+'vent '+Math.round(c.vent)+' km/h';return m}
+// v5.5 : la flamme suit le temps dehors (idée de Benoît) : petite quand il fait doux, haute quand il fait froid
+function tailleFlamme(T){if(T==null||isNaN(T))return 1.1;var k=1.1+(8-T)*0.06;return Math.max(0.6,Math.min(1.6,k))}
 function flamme(A){
   // compare les 7 derniers jours à la moyenne de la saison
   var ch=A.ch,now=Date.now(),d7=ch.filter(function(c){return now-parseDT(c.t)<7*864e5}),s7=sum(d7.map(function(c){return c.sacs}));
@@ -612,16 +752,17 @@ function vueFoyer(){
   (estLocal()?'<section class="card"><h2>J’ai déjà une sauvegarde</h2><p class="hint">Nouveau téléphone, ou relevés venant d’un autre appareil : choisissez le fichier de sauvegarde.</p><label class="filebtn2">📂 Restaurer un fichier de relevés<input type="file" id="f-import" accept=".json,application/json"></label></section>':'<p class="hint">Ces réglages sont communs à tout le foyer. Vous pourrez inviter la famille ensuite, depuis les Réglages.</p>')+'</div>';
 }
 function vueAccueil(){
-  var A=analyse(),fl=flamme(A),d=dehorsMaintenant(),dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
+  var A=analyse(),fl=flamme(A),d=dehorsMaintenant();fl.k=tailleFlamme(d&&d.v);var dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
   var h='<div class="wrap">'+
   '<header class="top"><div><h1>Suivi pellets'+(feteDuJour()?' <span class="fete" title="'+FETES[feteDuJour()].nom+'">'+FETES[feteDuJour()].ico+'</span>':'')+'</h1><p class="sub">'+esc(F().commune)+' · '+esc(F().saison)+'</p><p class="sync" id="status">'+statusHTML()+'</p></div><button class="gear" data-go="reglages" aria-label="Réglages">⚙︎</button></header>'+
   (ui.viaInvitation&&!estInstallee()&&(/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document))?'<section class="card install"><h2>📲 Installez-la maintenant</h2><p class="hint">Touchez <b>Partager</b> puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>, <b>avant</b> de quitter cette page : l’icône gardera la connexion.</p></section>':'')+
   '<section class="big2" aria-label="Températures">'+
   '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
   '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'">🔥</span></div></section>'+
+  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'">'+svgPoele()+'</span></div></section>'+
+  lignePoele()+vuePalette(A)+vuePrevision(A)+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
-  '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">🪵</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
+  '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
   if(A.rate!=null)h+='<p class="last">En moyenne <b>'+nf(A.rate,2)+' sac par jour</b> cette saison</p>';
   if(estLocal()){var ds=cfg.sauvegarde,nb=S.chargements.length+S.releves.length;if(nb>=10&&(!ds||Date.now()-parseDT(ds)>30*864e5))h+='<button class="det rappel" data-go="reglages">💾 Pensez à sauvegarder vos relevés</button>'}
@@ -692,6 +833,8 @@ function vueReglages(){
   h+='<section class="card"><h2>Cet appareil</h2><label class="f" for="r-moi">Mon prénom (apparaît dans le journal) <span id="moi-ok" class="ok">'+(moi()?'✓ enregistré':'')+'</span></label><div class="row nowrap"><input id="r-moi" data-moi="1" value="'+esc(moi())+'" placeholder="ex. Marie" autocomplete="given-name" autocapitalize="words" enterkeyhint="done"><button type="button" class="primary" data-a="moiok">OK</button></div>'+
     '<div class="f"><span>Animations (neige, braises, écran de veille)</span><div class="seg" role="radiogroup" aria-label="Animation de l’accueil">'+
     [['on','Oui'],['off','Non']].map(function(o){return '<button type="button" role="radio" aria-checked="'+(an===o[0])+'" data-a="anim" data-n="'+o[0]+'" class="'+(an===o[0]?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
+    '<div class="f"><span>Style</span><div class="seg" role="radiogroup" aria-label="Style de l’application">'+
+    [['ludique','Ludique'],['ios','Sobre (iOS)']].map(function(o){var on=((cfg&&cfg.style)||'ludique')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="style" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
     blocInstall()+
     '<div class="f"><span>Animations des fêtes (Noël, Nouvel An, Chandeleur, Saint-Valentin, Pâques, Halloween)</span><div class="seg" role="radiogroup" aria-label="Animations des fêtes">'+
     [['auto','Automatiques'],['off','Désactivées']].map(function(o){var on=((cfg&&cfg.fetes)||'auto')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="fetes" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
@@ -713,10 +856,8 @@ function vueReglages(){
     '<select data-psrc="'+esc(pc.id)+'" aria-label="Source de la température de '+esc(pc.nom)+'"><option value="saisie"'+(pc.source!=='capteur'?' selected':'')+'>Saisie à la main</option><option value="capteur" disabled>Thermomètre connecté (bientôt)</option><option value="poele" disabled>Sonde du poêle (bientôt)</option></select>'+
     '<button class="x" data-a="pdel" data-id="'+esc(pc.id)+'"'+(pieces().length<2?' disabled':'')+' aria-label="Retirer '+esc(pc.nom)+'">×</button></div>'});
   h+='<form id="fPiece" class="row"><input id="r-pnew" name="nom" placeholder="Ajouter une pièce" required><button type="submit">Ajouter</button></form></section>';
-  h+='<section class="card"><h2>Poêle connecté <span class="soon">bientôt</span></h2><p class="hint">Si votre poêle est piloté par une application wifi, sa sonde pourra donner automatiquement la température de sa pièce, et l’application saura s’il est allumé et à quelle puissance.</p>'+
-    '<div class="radio off"><span class="ic-p" aria-hidden="true">🔥</span><span><b>Jolly Mec et compatibles Agua IOT</b><span class="s">Jolly Mec Wi Fi, Ravelli, Laminox, Nordic Fire, Bronpi, Lorflam, Alfaplam, Thermoflux…</span></span></div>'+
-    '<p class="hint">Vous vous connecterez avec l’identifiant de l’application de votre poêle.</p></section>';
-  h+='<section class="card"><h2>Pellets</h2><div class="row"><label class="f">Poids d’un sac (kg)<input type="number" data-r="poidsSac" id="r-poids" value="'+R.poidsSac+'" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" step="0.01" data-r="prixSac" id="r-prix" value="'+R.prixSac+'" min="0"></label></div>'+
+  h+=vuePoeleReglages();
+  h+='<section class="card"><h2>Pellets</h2><div class="row"><label class="f">Poids d’un sac (kg)<input type="number" data-r="poidsSac" id="r-poids" value="'+R.poidsSac+'" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" step="0.01" data-r="prixSac" id="r-prix" value="'+R.prixSac+'" min="0"></label><label class="f">Sacs par palette<input type="number" data-r="sacsPalette" id="r-palette" value="'+(R.sacsPalette||72)+'" min="1" step="1"></label></div>'+
     '<label class="f">Saison en cours<input type="text" data-r="saison" id="r-saison" value="'+esc(R.saison)+'"></label>'+
     (ui.confirmClose?'<div class="confirm"><span>Archiver « '+esc(R.saison)+' » et commencer une nouvelle saison ?</span><button class="primary" data-a="close2">Oui</button><button data-a="close0">Non</button></div>':'<div class="row"><button data-a="close1">Clore la saison…</button></div>')+'</section>';
   h+='<section class="card"><h2>Foyer</h2><div class="row"><span class="hint" style="flex:1">'+esc(R.commune)+' ('+esc(R.cp)+')</span><button data-a="commune">Changer de commune</button></div>'+(ui.commune?'<form id="fCommune" class="stack"><label class="f">Commune<input id="rc-commune" name="commune" value="'+esc(R.commune)+'" required></label><label class="f">Code postal<input id="rc-cp" name="cp" value="'+esc(R.cp)+'" required inputmode="numeric"></label><button class="primary" type="submit">Enregistrer la commune</button></form>':'')+'<h2>Qui note</h2><ul class="list">';
@@ -901,7 +1042,170 @@ var renduEnAttente=false;
 function enSaisie(){var a=document.activeElement;return !!(a&&app.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='radio'&&a.type!=='submit')}
 function renderFond(){if(enSaisie()){renduEnAttente=true;return}render()}
 app.addEventListener('focusout',function(){setTimeout(function(){if(renduEnAttente&&!enSaisie()){renduEnAttente=false;render()}},250)});
-function render(){garderConnexionDansAdresse();
+
+// v4.3 : dessins animés du poêle à pellets et du sac (SVG, sans image extérieure)
+function svgPoele(){ // v4.7 : seulement les flammes (demande de Benoît), inspirées de la vidéo : cœur blanc-jaune, bords orange
+  return '<svg class="poele feu" viewBox="0 0 90 110" aria-hidden="true">'+
+  '<defs><radialGradient id="fHalo" cx=".5" cy=".7" r=".55"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".55"/><stop offset=".6" stop-color="#ff7a1a" stop-opacity=".15"/><stop offset="1" stop-color="#ff7a1a" stop-opacity="0"/></radialGradient>'+
+  '<linearGradient id="fExt" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffb347"/><stop offset=".35" stop-color="#ff7a1a"/><stop offset=".75" stop-color="#e2450f"/><stop offset="1" stop-color="#b91c1c" stop-opacity="0"/></linearGradient>'+
+  '<linearGradient id="fMil" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff1b8"/><stop offset=".4" stop-color="#ffc35a"/><stop offset=".85" stop-color="#ff8a2a"/><stop offset="1" stop-color="#ff6a00" stop-opacity="0"/></linearGradient>'+
+  '<linearGradient id="fCoeur" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#fff8d6"/><stop offset="1" stop-color="#ffe08a" stop-opacity="0"/></linearGradient>'+
+  '<filter id="fDoux" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.3"/></filter>'+
+  '<filter id="fTresDoux" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.2"/></filter></defs>'+
+  '<ellipse class="lueur" cx="45" cy="74" rx="44" ry="40" fill="url(#fHalo)"/>'+
+  '<g class="flammes">'+
+    '<path class="f f1" d="M14 98 C8 82 16 72 20 60 C22 70 27 76 28 98 Z" fill="url(#fExt)" filter="url(#fDoux)"/>'+
+    '<path class="f f3" d="M62 98 C62 84 68 76 72 64 C78 76 80 88 76 98 Z" fill="url(#fExt)" filter="url(#fDoux)"/>'+
+    '<path class="f f2" d="M18 98 C10 76 26 58 34 40 C36 30 40 22 44 8 C50 26 56 34 60 46 C68 62 78 78 70 98 Z" fill="url(#fExt)" filter="url(#fDoux)"/>'+
+    '<path class="f f5" d="M24 98 C18 80 32 66 38 50 C41 42 43 34 46 24 C50 38 56 46 59 56 C65 70 70 84 64 98 Z" fill="url(#fMil)" filter="url(#fDoux)"/>'+
+    '<path class="f f4" d="M32 98 C28 84 37 74 42 62 C44 56 45 50 47 44 C50 54 54 62 56 70 C59 80 60 90 56 98 Z" fill="url(#fCoeur)" filter="url(#fTresDoux)"/>'+
+    '<ellipse class="f f0" cx="45" cy="88" rx="16" ry="10" fill="#fffdf2" filter="url(#fTresDoux)"/>'+
+  '</g>'+
+  '<g class="braise"><ellipse cx="45" cy="99" rx="26" ry="4" fill="#c2410c" filter="url(#fDoux)"/><g fill="#fde68a"><circle cx="32" cy="99" r="1"/><circle cx="40" cy="100" r="1"/><circle cx="50" cy="99" r="1"/><circle cx="58" cy="100" r="1"/></g></g>'+
+  '<g class="etincelles" fill="#ffd27a"><circle cx="38" cy="30" r="1"/><circle cx="54" cy="22" r=".8"/><circle cx="46" cy="14" r=".9"/></g>'+
+  '</svg>'}
+function svgTas(){return '<img class="tas" alt="" src="data:image/webp;base64,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">'} // v5.0 : vraie photo des pellets de Benoît, détourée en tas
+function svgSac(cls){ // v4.6 : d'après la vidéo du sac de Benoît (plastique transparent, granulés blonds, impression vert d'eau, étiquette PREMIUM)
+  return '<svg class="sac '+(cls||'')+'" viewBox="0 0 64 80" aria-hidden="true">'+
+  '<defs><pattern id="sGran" width="14" height="14" patternUnits="userSpaceOnUse"><rect width="14" height="14" fill="#d2aa74"/><rect x="4.2" y="2.0" width="2.7" height="1.5" rx=".75" fill="#b98b56" transform="rotate(166 5.5 2.7)"/><rect x="1.2" y="7.6" width="2.9" height="1.5" rx=".75" fill="#e9c999" transform="rotate(129 2.7 8.3)"/><rect x="5.6" y="0.9" width="3.5" height="1.5" rx=".75" fill="#e9c999" transform="rotate(23 7.4 1.7)"/><rect x="10.7" y="1.6" width="3.6" height="1.5" rx=".75" fill="#b98b56" transform="rotate(57 12.6 2.4)"/><rect x="12.3" y="7.5" width="2.7" height="1.5" rx=".75" fill="#dcb57f" transform="rotate(101 13.7 8.3)"/><rect x="0.6" y="11.2" width="3.3" height="1.5" rx=".75" fill="#b98b56" transform="rotate(74 2.2 11.9)"/><rect x="1.5" y="4.0" width="2.9" height="1.5" rx=".75" fill="#b98b56" transform="rotate(174 3.0 4.8)"/><rect x="7.4" y="2.4" width="3.5" height="1.5" rx=".75" fill="#e9c999" transform="rotate(24 9.2 3.2)"/><rect x="7.3" y="8.0" width="3.7" height="1.5" rx=".75" fill="#efd3a6" transform="rotate(127 9.2 8.8)"/><rect x="10.1" y="6.1" width="3.2" height="1.5" rx=".75" fill="#dcb57f" transform="rotate(116 11.7 6.8)"/><rect x="10.3" y="9.1" width="2.7" height="1.5" rx=".75" fill="#c79b63" transform="rotate(62 11.7 9.8)"/><rect x="6.8" y="11.4" width="3.1" height="1.5" rx=".75" fill="#e9c999" transform="rotate(114 8.4 12.1)"/><rect x="1.5" y="5.4" width="2.8" height="1.5" rx=".75" fill="#efd3a6" transform="rotate(87 3.0 6.2)"/><rect x="5.5" y="12.5" width="3.8" height="1.5" rx=".75" fill="#b98b56" transform="rotate(19 7.4 13.3)"/><rect x="10.3" y="10.6" width="3.7" height="1.5" rx=".75" fill="#b98b56" transform="rotate(87 12.1 11.4)"/><rect x="6.5" y="10.4" width="3.9" height="1.5" rx=".75" fill="#c79b63" transform="rotate(17 8.4 11.1)"/></pattern>'+
+  '<linearGradient id="sOmbre" x1="0" x2="1"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".25" stop-color="#000" stop-opacity="0"/><stop offset=".75" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".25"/></linearGradient>'+
+  '<linearGradient id="sVert" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3fb489"/><stop offset="1" stop-color="#2a8f6a"/></linearGradient></defs>'+
+  /* sac rempli de granulés, vus à travers le plastique */
+  '<path d="M9 10 Q32 7 55 10 L58 70 Q57 76 50 76 L14 76 Q7 76 6 70 Z" fill="url(#sGran)"/>'+
+  '<path d="M9 10 Q32 7 55 10 L58 70 Q57 76 50 76 L14 76 Q7 76 6 70 Z" fill="url(#sOmbre)"/>'+
+  /* soudure du haut, plastique transparent froissé */
+  '<path d="M8 3.5 Q32 1 56 3.5 L56 11 Q32 8 8 11 Z" fill="#f4f6f8" opacity=".75" stroke="#c7ccd2" stroke-width=".5"/>'+
+  '<g stroke="#ffffff" stroke-width=".5" opacity=".9"><path d="M10 5.8 Q32 3.5 54 5.8"/><path d="M10 8.2 Q32 6 54 8.2"/></g>'+
+  /* étiquette blanche en haut */
+  '<rect x="34" y="13" width="17" height="11" rx="1" fill="#f7f7f2" transform="rotate(4 42 18)"/>'+
+  '<g stroke="#9aa0a6" stroke-width=".7" transform="rotate(4 42 18)"><path d="M36.5 16 H48"/><path d="M36.5 18.5 H46"/><path d="M36.5 21 H47"/></g>'+
+  /* impression vert d'eau en bas */
+  '<path d="M6.6 50 Q32 46 57.4 50 L58 70 Q57 76 50 76 L14 76 Q7 76 6 70 Z" fill="url(#sVert)"/>'+
+  '<text x="32" y="60.5" text-anchor="middle" font-size="7.4" font-weight="800" letter-spacing=".3" fill="#fff" font-family="system-ui,sans-serif">PELLETS</text>'+
+  '<text x="32" y="67" text-anchor="middle" font-size="3.8" font-weight="600" fill="#e6fff4" font-family="system-ui,sans-serif">Qualité certifiée · 15 kg</text>'+
+  '<rect x="10" y="68.5" width="6" height="6" rx="1" fill="#fff"/><g fill="#1f2937"><rect x="11" y="69.5" width="1.6" height="1.6"/><rect x="13.6" y="69.5" width="1.4" height="1.4"/><rect x="11" y="72" width="1.4" height="1.6"/><rect x="13.4" y="71.8" width="1.6" height="1.8"/></g>'+
+  /* étiquette PREMIUM bleu foncé */
+  '<rect x="40" y="35" width="15" height="6" rx="1.2" fill="#1e3a5f" stroke="#cbd5e1" stroke-width=".5"/><text x="47.5" y="39.4" text-anchor="middle" font-size="3.6" font-weight="800" fill="#fff" font-family="system-ui,sans-serif">PREMIUM</text>'+
+  /* reflets du plastique */
+  '<path d="M14 13 Q12 30 14.5 46" stroke="#fff" stroke-width="1.8" opacity=".55" fill="none"/><path d="M50 26 Q52 34 50.5 44" stroke="#fff" stroke-width="1" opacity=".45" fill="none"/>'+
+  '<path d="M9 10 Q32 7 55 10 L58 70 Q57 76 50 76 L14 76 Q7 76 6 70 Z" fill="none" stroke="#e5e7eb" stroke-width=".6" opacity=".8"/></svg>'}
+// sac qui se vide dans le poêle, puis flammes plus fortes (après un chargement)
+function versement(){try{
+  if(document.documentElement.classList.contains('anim-off'))return false;
+  var po=document.querySelector('.t.sacs .poele');if(!po)return false;var r=po.getBoundingClientRect();if(!r.width)return false;
+  var box=document.createElement('div');box.className='verse';box.style.left=(r.left+r.width*0.5)+'px';box.style.top=(r.top+r.height*0.15)+'px';
+  var h=''; // v4.8 : plus de sac, seulement les granulés qui tombent dans les flammesfor(var i=0;i<16;i++){h+='<i style="--d:'+(0.05+i*0.045).toFixed(2)+'s;--x:'+(Math.random()*16-8).toFixed(1)+'px;--r:'+Math.round(Math.random()*180)+'deg"></i>'}
+  box.innerHTML=h;document.body.appendChild(box);
+  setTimeout(function(){po.classList.add('boost')},900);
+  setTimeout(function(){po.classList.remove('boost')},3600);
+  setTimeout(function(){box.remove()},2600);return true}catch(e){return false}}
+
+// v5.1 : la palette se remplit d'un sac à chaque sac consommé (idée de Benoît)
+function svgPalette(n,N,neufs){
+  var par=6,couches=Math.ceil(N/par),bw=27,bh=Math.min(11,118/couches),x0=12,y0=136,nn=Math.ceil(n);
+  var h='<svg class="palette" viewBox="0 0 190 158" aria-hidden="true"><defs>'+
+   '<linearGradient id="pBois" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ddb67f"/><stop offset="1" stop-color="#a97b45"/></linearGradient>'+
+   '<linearGradient id="pSac" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1dcb8"/><stop offset=".45" stop-color="#d9b483"/><stop offset="1" stop-color="#a98050"/></linearGradient>'+
+   '<linearGradient id="pVert" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fcaa0"/><stop offset=".5" stop-color="#36a37e"/><stop offset="1" stop-color="#227a5a"/></linearGradient></defs>';
+  function pos(k){var c=Math.floor(k/par),i=k%par;return {x:x0+i*bw+(c%2?2.5:-1.5),y:y0-(c+1)*bh}}
+  // v5.5 : plus de pointillés pour les sacs pas encore utilisés (demande de Benoît)
+  for(var k2=0;k2<nn;k2++){var q2=pos(k2),x=q2.x,y=q2.y,r=(bh/2.2).toFixed(1),demi=(k2===nn-1&&n%1);
+    var st=[];if(neufs&&k2>=nn-neufs)st.push('animation-delay:'+(0.15*(k2-(nn-neufs))).toFixed(2)+'s');if(demi)st.push('opacity:.55');
+    h+='<g'+((neufs&&k2>=nn-neufs)?' class="neuf"':'')+(st.length?' style="'+st.join(';')+'"':'')+'>'+
+      '<rect x="'+(x+.3)+'" y="'+(y+.3)+'" width="'+(bw-.6)+'" height="'+(bh-.6)+'" rx="2.6" fill="url(#pSac)" stroke="#8f6a3e" stroke-width=".45"/>'+
+      '<path d="M'+(x+.5)+' '+(y+bh*.56)+' Q'+(x+bw/2)+' '+(y+bh*.5)+' '+(x+bw-.5)+' '+(y+bh*.56)+' V'+(y+bh-2.6)+' Q'+(x+bw-.5)+' '+(y+bh-.4)+' '+(x+bw-3)+' '+(y+bh-.4)+' H'+(x+3)+' Q'+(x+.5)+' '+(y+bh-.4)+' '+(x+.5)+' '+(y+bh-2.6)+' Z" fill="url(#pVert)"/>'+
+      '<rect x="'+(x+bw*.36)+'" y="'+(y+bh*.64)+'" width="'+(bw*.28)+'" height="'+Math.max(.7,bh*.12).toFixed(1)+'" rx=".4" fill="#fff" opacity=".8"/>'+
+      '<path d="M'+(x+3)+' '+(y+1.6)+' Q'+(x+bw/2)+' '+(y+.9)+' '+(x+bw-3)+' '+(y+1.6)+'" stroke="#fff" stroke-width=".8" opacity=".6" fill="none"/></g>'}
+  h+='<rect x="6" y="136" width="178" height="6" rx="1" fill="url(#pBois)" stroke="#8a6232" stroke-width=".5"/>'+
+     '<g fill="#b78a52" stroke="#7c5529" stroke-width=".5"><rect x="10" y="142" width="22" height="9"/><rect x="84" y="142" width="22" height="9"/><rect x="158" y="142" width="22" height="9"/></g>'+
+     '<rect x="6" y="151" width="178" height="5" rx="1" fill="url(#pBois)" stroke="#8a6232" stroke-width=".5"/>'+
+     '<g stroke="#8a6232" stroke-width=".4" opacity=".6"><path d="M40 137 V141 M80 137 V141 M120 137 V141 M150 137 V141"/></g></svg>';
+  return h}
+function vuePalette(A){
+  var N=F().sacsPalette||72,tot=A.total||0,pleines=Math.floor(tot/N+1e-9),enCours=tot-pleines*N;
+  if(pleines>0&&enCours<1e-9&&tot>0){enCours=N;pleines--}
+  var neufs=ui.paletteAnim||0;ui.paletteAnim=0;
+  var reste=N-enCours;
+  return '<section class="card palette-card" aria-label="Palette de pellets"><div class="pal-txt"><h2>Ma palette</h2>'+
+    '<p class="pal-n"><b>'+nf(enCours,enCours%1?1:0)+'</b> / '+N+' sacs</p>'+
+    '<p class="hint">'+(reste>0?'encore '+nf(reste,reste%1?1:0)+' sac'+(reste>1?'s':'')+' avant une palette complète':'palette complète !')+'</p>'+
+    (pleines>0?'<p class="pal-pleines">'+'🪵'.repeat(Math.min(pleines,6))+' '+pleines+' palette'+(pleines>1?'s':'')+' consommée'+(pleines>1?'s':'')+'</p>':'')+
+    '</div>'+svgPalette(enCours,N,neufs)+'</section>'}
+
+// v5.2 : prévision de consommation (météo des 16 prochains jours × votre consommation selon le froid)
+var PREV={};
+function tauxPour(A,T){ // sacs par jour prévus pour une température moyenne T
+  var r=null;
+  if(A.reg&&A.reg.b<0)r=A.reg.a+A.reg.b*T;
+  else if(A.rate!=null&&A.extMoy!=null&&A.extMoy<17)r=A.rate*Math.max(0,18-T)/Math.max(1,18-A.extMoy);
+  else if(A.rate!=null)r=A.rate;
+  return r==null?null:Math.max(0,Math.min(4,r))}
+function prevision(A){
+  var jours=Object.keys(PREV).sort();if(!jours.length||A.rate==null)return null;
+  var liste=jours.slice(0,14).map(function(d){var m=PREV[d];return {d:d,t:m.moy,min:m.min,max:m.max,s:tauxPour(A,m.moy)}}).filter(function(x){return x.s!=null});
+  if(!liste.length)return null;
+  var s7=sum(liste.slice(0,7).map(function(x){return x.s})),s14=sum(liste.map(function(x){return x.s}));
+  // fin de la palette en cours
+  var N=F().sacsPalette||72,tot=A.total||0,reste=N-(tot-Math.floor(tot/N+1e-9)*N),acc=0,fin=null;
+  for(var i=0;i<liste.length;i++){acc+=liste[i].s;if(acc>=reste){fin=liste[i].d;break}}
+  if(!fin&&s14>0){var parJour=s14/liste.length,j=Math.ceil((reste-acc)/parJour),dt=new Date(parseDT(liste[liste.length-1].d+'T12:00'));dt.setDate(dt.getDate()+j);fin=ymd(dt);var approx=true}
+  return {jours:liste,s7:s7,s14:s14,fin:fin,approx:!!approx,n14:liste.length}}
+function vuePrevision(A){
+  var P=prevision(A);if(!P)return '';
+  var R=F(),sept=P.jours.slice(0,7),mx=Math.max.apply(null,sept.map(function(x){return x.s}).concat([1]));
+  var noms=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  var barres=sept.map(function(x,i){var h=Math.max(4,Math.round(x.s/mx*64)),dd=new Date(parseDT(x.d+'T12:00'));
+    return '<div class="pv-j"><span class="pv-s">'+nf(x.s,1)+'</span><span class="pv-b" style="height:'+h+'px;--t:'+Math.max(0,Math.min(1,(12-x.t)/14)).toFixed(2)+'"></span><span class="pv-t">'+(Math.round(x.t)||0)+'°</span><span class="pv-d">'+(i===0?'auj.':noms[dd.getDay()])+'</span></div>'}).join('');
+  var aPrevoir=Math.ceil(P.s7-0.15);
+  return '<section class="card prev-card" aria-label="Prévision de consommation"><h2>La semaine à venir</h2>'+
+    '<div class="pv-main"><span>À prévoir</span><b>'+aPrevoir+'</b><span>sac'+(aPrevoir>1?'s':'')+' pour les 7 prochains jours · ≈ '+nf(aPrevoir*R.prixSac,0)+' €</span></div>'+
+    '<div class="pv-graph">'+barres+'</div>'+
+    (P.n14>7?'<p class="hint">Et la semaine suivante : ≈ '+Math.ceil(P.s14-P.s7-0.15)+' sacs.</p>':'')+
+    '<p class="hint small">Calcul : météo prévue à '+esc(R.commune||'')+' × votre consommation selon le froid'+(A.reg&&A.reg.b<0?'':' (encore approximative : elle s’affine à chaque chargement)')+'.</p></section>'}
+
+// v5.4 : poêle connecté Jolly Mec (lecture seule, via le relais Cloudflare du foyer)
+var POELE_CLE='suivi-poele-dernier',poeleEnCours=false,poeleMinuteur=null;
+function poeleCfg(){return cfg&&cfg.poele&&cfg.poele.relais&&cfg.poele.email&&cfg.poele.mdp?cfg.poele:null}
+function poeleDernier(){return lsGet(POELE_CLE)}
+function lirePoele(manuel){
+  var P=poeleCfg();if(!P||poeleEnCours)return Promise.resolve(null);poeleEnCours=true;if(manuel){ui.poeleMsg='Lecture du poêle… (jusqu’à 15 secondes)';render()}
+  return fetch(P.relais,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:P.email,password:P.mdp})})
+   .then(function(r){return r.json().catch(function(){return {ok:false,message:'Réponse illisible du relais.'}})})
+   .then(function(j){poeleEnCours=false;
+     if(j&&j.ok){lsSet(POELE_CLE,j);ui.poeleMsg=manuel?'✓ Poêle lu : '+(j.etat||'état inconnu'):'';ui.poeleErr=''}
+     else{ui.poeleErr=(j&&j.message)||'Le poêle n’a pas pu être lu.';ui.poeleMsg=''}
+     render();return j})
+   .catch(function(){poeleEnCours=false;ui.poeleErr='Relais injoignable : vérifiez son adresse et le réseau.';ui.poeleMsg='';render();return null})}
+function suivrePoele(){if(poeleMinuteur)clearInterval(poeleMinuteur);poeleMinuteur=null;if(!poeleCfg())return;
+  var d=poeleDernier();if(!d||Date.now()-Date.parse(d.lu_le)>4*6e4)lirePoele(false);
+  poeleMinuteur=setInterval(function(){if(!document.hidden)lirePoele(false)},5*6e4)}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&poeleCfg()){var d=poeleDernier();if(!d||Date.now()-Date.parse(d.lu_le)>4*6e4)lirePoele(false)}});
+function lignePoele(){if(!poeleCfg())return '';var d=poeleDernier();
+  if(!d)return '<p class="poele-ligne">🔌 Poêle connecté · lecture en cours…</p>';
+  var bits=[d.etat||'état inconnu'];if(d.temp_piece!=null)bits.push(nf(d.temp_piece,1)+' °C');if(d.puissance!=null)bits.push('puissance '+nf(d.puissance,0));
+  var vieux=Date.now()-Date.parse(d.lu_le)>20*6e4;
+  return '<p class="poele-ligne'+(d.alarme?' alarme':'')+'">'+(d.etat_code===4?'🟢':(d.etat_code===0?'⚪':'🟠'))+' Poêle : '+esc(bits.join(' · '))+(d.alarme?' · ⚠️ '+esc(d.alarme):'')+(vieux?' <span class="vieux">(lu '+quand(d.lu_le.slice(0,16))+')</span>':'')+'</p>'}
+function vuePoeleReglages(){
+  var P=(cfg&&cfg.poele)||{},ok=poeleCfg(),d=poeleDernier(),h='<section class="card"><h2>Poêle connecté (Jolly Mec)</h2>';
+  if(ok&&!ui.poeleEdit){
+    h+='<p class="hint">Connecté avec le compte <b>'+esc(P.email)+'</b>. L’application lit le poêle à l’ouverture puis toutes les 5 minutes. Lecture seule : elle ne peut ni l’allumer ni l’éteindre.</p>';
+    if(d)h+='<div class="kv"><div><span>Poêle</span><b>'+esc(d.poele)+(d.modele&&d.modele!==d.poele?' · '+esc(d.modele):'')+'</b></div><div><span>État</span><b>'+esc(d.etat||'—')+'</b></div>'+
+      '<div><span>Température de la pièce</span><b>'+(d.temp_piece!=null?nf(d.temp_piece,1)+' °C':'—')+'</b></div><div><span>Consigne</span><b>'+(d.consigne!=null?nf(d.consigne,1)+' °C':'—')+'</b></div>'+
+      '<div><span>Puissance</span><b>'+(d.puissance!=null?nf(d.puissance,0):'—')+'</b></div><div><span>Fumées</span><b>'+(d.temp_fumees!=null?nf(d.temp_fumees,0)+' °C':'—')+'</b></div>'+
+      (d.alarme?'<div><span>Alarme</span><b>⚠️ '+esc(d.alarme)+'</b></div>':'')+'<div><span>Dernière lecture</span><b>'+quand(d.lu_le.slice(0,16))+'</b></div></div>';
+    h+='<div class="row"><button class="primary" data-a="poeleLire">Lire maintenant</button><button data-a="poeleEdit">Modifier</button><button data-a="poeleOff">Déconnecter</button></div>';
+  } else {
+    h+='<p class="hint">Pour lire votre poêle Jolly Mec (état, température de la pièce, puissance), il faut d’abord installer votre <b>relais</b> gratuit sur Cloudflare (voir la notice), puis entrer ici son adresse et vos identifiants de l’application <b>Jolly Mec Wi Fi</b>. Ils restent sur cet appareil.</p>'+
+      '<form id="fPoele" class="stack"><label class="f">Adresse du relais<input name="relais" type="url" required placeholder="https://jollymec-relais.….workers.dev" value="'+esc(P.relais||'')+'" autocapitalize="none" spellcheck="false"></label>'+
+      '<label class="f">E-mail de l’application Jolly Mec Wi Fi<input name="email" type="email" required value="'+esc(P.email||'')+'" autocapitalize="none" autocomplete="username"></label>'+
+      '<label class="f">Mot de passe Jolly Mec<input name="mdp" type="password" required autocomplete="current-password"></label>'+
+      '<button class="primary" type="submit">Connecter et tester</button>'+(ok?'<button type="button" data-a="poeleAnnule">Annuler</button>':'')+'</form>';
+  }
+  if(ui.poeleMsg)h+='<p class="hint">'+esc(ui.poeleMsg)+'</p>';
+  if(ui.poeleErr)h+='<p class="errbox">'+esc(ui.poeleErr)+'</p>';
+  return h+'</section>'}
+function appliquerStyle(){try{var st=(cfg&&cfg.style)||'ludique';if(st==='ios')document.documentElement.setAttribute('data-style','ios');else document.documentElement.removeAttribute('data-style')}catch(e){}}
+function render(){appliquerStyle();garderConnexionDansAdresse();
   renduEnAttente=false;
   var e=ecran();
   var garde={},foc=document.activeElement&&app.contains(document.activeElement)?document.activeElement.id:null;
@@ -918,7 +1222,7 @@ function render(){garderConnexionDansAdresse();
   if(S&&S.ciel)Fond.ciel(cielType(),S.ciel.vent);
   Fond.montrer(e==='accueil'||e==='bienvenue',dh);
   if(e==='accueil')compter();
-  if(e==='accueil'&&ui.fete){ui.fete=false;setTimeout(function(){var c=document.getElementById('compteur');if(!c)return;var r=c.getBoundingClientRect();Fond.feu(r.left+r.width/2,r.top+r.height/2)},120)}
+  if(e==='accueil'&&ui.fete){ui.fete=false;setTimeout(function(){var v=versement();setTimeout(function(){var c=document.getElementById('compteur');if(!c)return;var r=c.getBoundingClientRect();Fond.feu(r.left+r.width/2,r.top+r.height/2)},v?1350:0)},150)}
 }
 var dejaCompte=false;
 function compter(){
@@ -945,6 +1249,11 @@ app.addEventListener('click',function(ev){
   if(a==='moiok'){var im=document.getElementById('r-moi');if(im){garderPrenom(im.value,true);delete im.dataset.tape;im.blur()}return}
   if(a==='stats'){cfg.stats=b.getAttribute('data-n');lsSet(CFGKEY,cfg);render();toast(cfg.stats==='off'?'Statistiques désactivées':'Merci !');return}
   if(a==='fetes'){cfg.fetes=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Fêtes : '+b.textContent);return}
+  if(a==='poeleLire'){lirePoele(true);return}
+  if(a==='poeleEdit'){ui.poeleEdit=true;render();return}
+  if(a==='poeleAnnule'){ui.poeleEdit=false;render();return}
+  if(a==='poeleOff'){delete cfg.poele;lsSet(CFGKEY,cfg);lsDel(POELE_CLE);ui.poeleMsg='Poêle déconnecté de cet appareil.';ui.poeleErr='';suivrePoele();render();return}
+  if(a==='style'){cfg.style=b.getAttribute('data-n');lsSet(CFGKEY,cfg);appliquerStyle();render();toast('Style : '+b.textContent);return}
   if(a==='anim'){cfg.anim=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Animation : '+b.textContent);return}
   if(a==='installer'){if(invitInstall){invitInstall.prompt();invitInstall.userChoice.finally(function(){invitInstall=null;renderFond()})}return}
   if(a==='local'){commencerLocal();return}
@@ -985,10 +1294,12 @@ app.addEventListener('change',function(ev){
 });
 app.addEventListener('submit',function(ev){
   ev.preventDefault();var f=ev.target;
+  if(f.id==='fPoele'){var rel=f.relais.value.trim().replace(/\/+$/,''),em=f.email.value.trim(),md=f.mdp.value;if(!/^https:\/\//.test(rel)){ui.poeleErr='L’adresse du relais doit commencer par https://';render();return}
+    cfg.poele={relais:rel,email:em,mdp:md};lsSet(CFGKEY,cfg);ui.poeleEdit=false;ui.poeleErr='';lirePoele(true).then(function(){suivrePoele()});return}
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
     if(parseDT(t)>Date.now()+15*6e4){toast('Cette heure est dans le futur : vérifiez la date');return}
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
-    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;statistique('chargement');aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
+    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;ui.paletteAnim=Math.ceil(n);statistique('chargement');aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
     var c=document.getElementById('compteur');if(c){c.classList.add('pop')}return}
   if(f.id==='fTemp'){var temps={},nb=0;Array.prototype.forEach.call(f.querySelectorAll('[data-piece]'),function(el){var v=num(el.value);if(v!=null&&v>-30&&v<45){temps[el.getAttribute('data-piece')]=Math.round(v*10)/10;nb++}});
     var ext=f.ext?num(f.ext.value):null;
@@ -1046,6 +1357,7 @@ window.addEventListener('hashchange',reveil);
 window.__majCiel=function(c){if(S){S.ciel=c;renderFond()}};
 window.__majFete=function(f){window.__fete=f;Fond.regler();render()};
 demarrer();
+setTimeout(suivrePoele,1500); // v5.4 : lecture du poêle connecté
 setTimeout(reveil,500);
 })();
 

@@ -65,6 +65,17 @@ Vous travaillez ensuite tous les deux sur les mêmes données. Si vous enregistr
 
 ---
 
+## Partager l'application avec un autre foyer
+
+Tout le monde utilise la même adresse (votre site). Chaque foyer a **son propre dépôt privé**, pour que les relevés restent séparés.
+
+1. Sur GitHub, créez un dépôt **privé** pour eux, par exemple `chauffage-dupont`, en cochant **Add a README file**.
+2. Créez une **clé** limitée à ce seul dépôt (étape 4 de la mise en route) : **Only select repositories**, puis ce dépôt, et **Contents : Read and write**. Donnez-lui un nom clair, par exemple « Chauffage Dupont ».
+3. Dans l'application : **Réglages**, puis **Préparer l'accès d'un autre foyer**. Collez le nom du dépôt et la clé, puis **Vérifier et créer le lien**.
+4. Envoyez-leur le lien par message privé, ou faites-leur scanner le QR code. En l'ouvrant, ils indiquent leur commune et leurs pièces. Ils pourront ensuite inviter leurs propres appareils.
+
+Pour arrêter l'accès d'un foyer, supprimez sa clé sur GitHub.
+
 ## Utilisation
 
 - **Accueil** : la température dehors, la moyenne de la maison et les sacs consommés depuis le début de la saison.
@@ -104,6 +115,10 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 2.8 | 9 novembre 2026 | Écran de veille fixé à 15 secondes pour tout le monde (plus de réglage). Il s'arrête si l'animation est sur « Arrêt ». |
+| 2.7 | 9 novembre 2026 | Écran de veille : sur l'accueil, l'animation passe devant l'écran après un moment sans toucher (15 s à 3 min, ou jamais) et repasse derrière au premier toucher. |
+| 2.6 | 9 novembre 2026 | Halloween : toiles d'araignée dans les coins et araignées qui descendent au bout de leur fil. |
+| 2.5 | 9 novembre 2026 | Réglages : « Préparer l’accès d’un autre foyer » crée le lien et le QR code d’un proche, sans déconnecter votre appareil. |
 | 2.4 | 9 novembre 2026 | Correctif : le prénom s'enregistre pendant la saisie (bouton OK) et n'est plus effacé par une mise à jour en arrière-plan ; les autres cases ne sont plus effacées non plus. |
 | 2.3 | 9 novembre 2026 | Animations des fêtes automatiques : Noël, Nouvel An (feux d'artifice), Chandeleur, Saint-Valentin, Pâques, Halloween. Désactivables dans les Réglages. |
 | 2.2 | 9 novembre 2026 | Animations : chiffres qui défilent à l'ouverture, étincelles à chaque chargement, flamme qui grossit quand on consomme plus que d'habitude, ciel du moment (soleil, pluie, neige, orage, vent). |

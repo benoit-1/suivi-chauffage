@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 2.4 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 2.8 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -199,6 +199,11 @@ html[data-fete="nouvelan"] .t.sacs{background:linear-gradient(135deg,#1e1b4b,#00
 .ok{color:var(--good);font-weight:600;margin-left:6px}
 .row.nowrap{flex-wrap:nowrap}.row.nowrap input{flex:1;min-width:0}
 
+/* 2.7 : écran de veille */
+#fond.devant{z-index:30}
+html.veille #app{filter:saturate(.85) brightness(.97);transition:filter .6s}
+#app{transition:filter .3s}
+
 </style>
 </head>
 <body>
@@ -219,7 +224,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='2.4', VERSION_DATE='9 novembre 2026';
+var VERSION='2.8', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -332,7 +337,8 @@ window.addEventListener('online',function(){if(dirty&&mode==='pret'){dirty=false
 function sauver(msg){return enregistrer(msg||'Mise à jour')}
 
 /* invitation d'un appareil */
-function codeConnexion(){return b64enc(JSON.stringify({o:cfg.owner,r:cfg.repo,p:cfg.path,t:cfg.token}))}
+function codeConnexion(c){c=c||cfg;return b64enc(JSON.stringify({o:c.owner,r:c.repo,p:c.path||'donnees.json',t:c.token}))}
+function lienPour(c){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion(c))}
 function lienInvitation(){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion())}
 function estInstallee(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function lireInvitation(){
@@ -661,6 +667,16 @@ function vueReglages(){
     '<div class="row">'+(navigator.share?'<button data-a="share" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copylien">Copier le lien</button></div>'+
     '<p class="hint">Sur iPhone, ouvrez le lien dans Safari puis ajoutez-le à l’écran d’accueil. Ce lien ouvre vos relevés : gardez-le pour la famille.</p></div></div><textarea id="lien" readonly class="small" aria-label="Lien d’invitation">'+esc(lien)+'</textarea>'}
   h+='</section>';
+  h+='<section class="card"><h2>Préparer l’accès d’un autre foyer</h2><p class="hint">Pour des proches qui veulent leur propre suivi, chez eux. Créez d’abord sur GitHub un <b>dépôt privé</b> pour eux (avec un README) et une <b>clé</b> limitée à ce dépôt (Contents : Read and write), comme pour le vôtre. Puis :</p>'+
+    '<form id="fAutre" class="stack"><label class="f">Compte GitHub<input id="af-owner" name="owner" value="'+esc(cfg.owner)+'" autocapitalize="none" spellcheck="false" required></label>'+
+    '<label class="f">Dépôt privé du foyer<input id="af-repo" name="repo" placeholder="ex. chauffage-dupont" autocapitalize="none" spellcheck="false" required></label>'+
+    '<label class="f">Clé de ce dépôt<input id="af-token" name="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" required></label>'+
+    '<button class="primary" type="submit">Vérifier et créer le lien</button></form>';
+  if(ui.autre){var la=lienPour(ui.autre),sv=qrSVG(la);
+    h+='<div class="invite">'+(sv?'<div class="qr">'+sv+'</div>':'')+'<div class="invtxt"><p class="hint"><b>Accès prêt pour « '+esc(ui.autre.repo)+' »</b>'+(ui.autre.vide?' (dépôt vide : ils créeront leur foyer en ouvrant le lien)':'')+'.</p><p class="hint">Envoyez-leur ce lien par message privé. En l’ouvrant, ils indiquent leur commune et leurs pièces ; ils pourront ensuite inviter leurs propres appareils.</p>'+
+    '<div class="row">'+(navigator.share?'<button data-a="shareautre" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copyautre">Copier le lien</button></div></div></div><textarea id="lienautre" readonly class="small" aria-label="Lien du nouveau foyer">'+esc(la)+'</textarea>'}
+  if(ui.autreErr)h+='<p class="errbox">'+esc(ui.autreErr)+'</p>';
+  h+='</section>';
   h+='<section class="card"><h2>Connexion</h2><p class="hint">Données : dépôt privé <b>'+esc(cfg.owner+'/'+cfg.repo)+'</b>, fichier '+esc(cfg.path)+'.<br>État : <span id="status">'+statusHTML()+'</span></p><div class="row"><button data-a="logout">Déconnecter ce téléphone</button></div></section>';
   return h+'</div>';
 }
@@ -702,7 +718,7 @@ var Fond=(function(){
     flocons=[];braises=[];for(var i=0;i<nf;i++)flocons.push(flocon(Math.random()*H));for(var j=0;j<nb;j++)braises.push(braise(H*0.45+Math.random()*H*0.55))}
   var ciel=null,ancien=null,vent=0,soleilA=0,etincelles=[],theme=null,deco=[],sprites={},prochainFeu=0;
   function sprite(ch,px){var k=ch+px;if(sprites[k])return sprites[k];var c=document.createElement('canvas'),s=Math.ceil(px*1.4);c.width=s*dpr;c.height=s*dpr;var x=c.getContext('2d');x.scale(dpr,dpr);x.font=px+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ch,s/2,s/2+px*0.05);sprites[k]={c:c,s:s};return sprites[k]}
-  var JEUX={noel:{ch:['❄️','⭐','❄️','🎁'],mode:'tombe'},halloween:{ch:['🦇','🦇','🎃','👻'],mode:'vole'},paques:{ch:['🥚','🐣','🌷','🥚'],mode:'tombe'},valentin:{ch:['❤️','💕','❤️'],mode:'monte'},chandeleur:{ch:['🥞'],mode:'tombe'},nouvelan:{ch:['✨','⭐'],mode:'tombe'}};
+  var JEUX={noel:{ch:['❄️','⭐','❄️','🎁'],mode:'tombe'},halloween:{ch:['🦇','🦇','🎃','👻','🦇'],mode:'vole'},paques:{ch:['🥚','🐣','🌷','🥚'],mode:'tombe'},valentin:{ch:['❤️','💕','❤️'],mode:'monte'},chandeleur:{ch:['🥞'],mode:'tombe'},nouvelan:{ch:['✨','⭐'],mode:'tombe'}};
   function unDeco(init){var J=JEUX[theme];if(!J)return null;var px=22+Math.random()*18,o={ch:J.ch[Math.floor(Math.random()*J.ch.length)],px:px,o:Math.random()*6.28,rot:(Math.random()-.5)*0.6,vr:(Math.random()-.5)*0.02,a:0.9};
     if(J.mode==='tombe'){o.x=Math.random()*W;o.y=init?Math.random()*H:-40;o.vy=0.4+Math.random()*0.7;o.vx=0}
     else if(J.mode==='monte'){o.x=Math.random()*W;o.y=init?H*0.3+Math.random()*H*0.7:H+40;o.vy=-(0.4+Math.random()*0.7);o.vx=0}
@@ -741,8 +757,18 @@ var Fond=(function(){
       if(o.vx){o.x+=o.vx*dt;o.y+=Math.sin(o.o*2)*1.2*dt}else{o.y+=o.vy*dt;o.x+=Math.sin(o.o)*0.5*dt}
       if(o.y>H+50||o.y<-60||o.x<-60||o.x>W+60){deco[k]=unDeco(false);continue}
       var sp=sprite(o.ch,Math.round(o.px));ctx.save();ctx.globalAlpha=o.a;ctx.translate(o.x,o.y);ctx.rotate(o.vx?Math.sin(o.o*2)*0.15:o.rot);ctx.drawImage(sp.c,-sp.s/2,-sp.s/2,sp.s,sp.s);ctx.restore()}
+    if(theme==='halloween'){var R=Math.min(170,Math.max(110,W*0.22));toile(0,0,R,0,Math.PI/2,t);toile(W,0,R,Math.PI/2,Math.PI,t);
+      araignee(W*0.18,t,Math.min(H*0.32,240));if(W>700)araignee(W*0.82,t+1300,Math.min(H*0.25,200))}
     if(theme==='nouvelan'&&t>prochainFeu){prochainFeu=t+900+Math.random()*1400;bouquet(W*0.15+Math.random()*W*0.7,H*0.12+Math.random()*H*0.35)}
     ctx.globalAlpha=1}
+  function toile(cx,cy,R,a0,a1,t){ctx.save();ctx.globalAlpha=0.4;ctx.strokeStyle=document.documentElement.matches('[data-theme="dark"]')||matchMedia('(prefers-color-scheme: dark)').matches?'#d4d4d8':'#52525b';ctx.lineWidth=1.1;
+    var n=7,bal=Math.sin(t/900)*0.02;
+    for(var i=0;i<=n;i++){var a=a0+(a1-a0)*i/n+bal;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);ctx.stroke()}
+    for(var r=R*0.18;r<=R;r+=R*0.16){ctx.beginPath();for(var j=0;j<=n;j++){var a2=a0+(a1-a0)*j/n+bal,rr=r*(j%2?0.93:1),x=cx+Math.cos(a2)*rr,y=cy+Math.sin(a2)*rr;
+      if(!j)ctx.moveTo(x,y);else{var am=a0+(a1-a0)*(j-0.5)/n+bal,rm=r*0.86;ctx.quadraticCurveTo(cx+Math.cos(am)*rm,cy+Math.sin(am)*rm,x,y)}}ctx.stroke()}
+    ctx.restore()}
+  function araignee(x,t,H0){var y=H0*(0.5+0.5*Math.sin(t/2600));ctx.save();ctx.globalAlpha=0.6;ctx.strokeStyle='#52525b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,y);ctx.stroke();
+    ctx.globalAlpha=1;var sp=sprite('🕷️',30);ctx.translate(x,y+12);ctx.rotate(Math.sin(t/700)*0.12);ctx.drawImage(sp.c,-sp.s/2,-sp.s/2,sp.s,sp.s);ctx.restore()}
   function bouquet(x,y){var pal=[['#ff5d8f','#ffd166','#ffffff'],['#4cc9f0','#b5e48c','#ffffff'],['#f72585','#7209b7','#ffd166'],['#ffd166','#ef5d1a','#ffffff']][Math.floor(Math.random()*4)];
     for(var i=0;i<70;i++){var a=i/70*6.283,sp=2+Math.random()*3.5;etincelles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:1.6+Math.random()*1.8,vie:1,c:pal[i%3]})}}
   function demarrer(){if(!ctx||!facteur()||actif)return;var th=feteDuJour();if(th!==theme){theme=th;peuplerDeco()}actif=true;der=0;raf=requestAnimationFrame(dessiner)}
@@ -759,7 +785,10 @@ var Fond=(function(){
     feu:function(x,y){if(!ctx||!facteur())return;var cols=['#ff9a3c','#ffd166','#ef5d1a','#ffb703','#ffffff'];
       for(var i=0;i<120;i++){var a=Math.random()*Math.PI*2,sp=2.5+Math.random()*8;etincelles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-5,r:2+Math.random()*3.5,vie:1,c:cols[i%cols.length]})}
       if(!actif){visible=true;cv.style.opacity='1';demarrer()}},
-    systemeCalme:function(){return calme}
+    systemeCalme:function(){return calme},
+    actif:function(){return visible},
+    devant:function(oui){if(!cv)return;if(oui===(cv.classList.contains('devant')))return;cv.style.opacity='0';
+      setTimeout(function(){cv.classList.toggle('devant',oui);document.documentElement.classList.toggle('veille',oui);if(visible)cv.style.opacity='1'},oui?350:120)}
   };
 })();
 
@@ -803,6 +832,8 @@ function copier(id){var t=document.getElementById(id);try{navigator.clipboard.wr
 app.addEventListener('click',function(ev){
   var go=ev.target.closest('[data-go]');if(go){ev.preventDefault();aller(go.getAttribute('data-go'));return}
   var b=ev.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
+  if(a==='copyautre'){copier('lienautre');return}
+  if(a==='shareautre'){try{navigator.share({title:'Suivi pellets',text:'Ton accès à l’application Suivi pellets :',url:document.getElementById('lienautre').value}).catch(function(){})}catch(e){copier('lienautre')}return}
   if(a==='moiok'){var im=document.getElementById('r-moi');if(im){garderPrenom(im.value,true);delete im.dataset.tape;im.blur()}return}
   if(a==='fetes'){cfg.fetes=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Fêtes : '+b.textContent);return}
   if(a==='anim'){cfg.anim=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Animation : '+b.textContent);return}
@@ -859,6 +890,17 @@ app.addEventListener('submit',function(ev){
       Meteo.actualiser().then(function(c){if(c)sauver('Météo : '+com);renderFond()});
     }).catch(function(){ui.err='Impossible de chercher la commune (réseau ?).';btn.disabled=false;render()});
     return}
+  if(f.id==='fAutre'){var c2={owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()};ui.autre=null;ui.autreErr='';
+    if(c2.owner===cfg.owner&&c2.repo===cfg.repo){ui.autreErr='C’est votre propre dépôt : créez un dépôt différent pour l’autre foyer.';render();return}
+    var bt=f.querySelector('button[type=submit]');bt.disabled=true;bt.textContent='Vérification…';
+    var H={'Authorization':'Bearer '+c2.token,'Accept':'application/vnd.github+json'},base='https://api.github.com/repos/'+encodeURIComponent(c2.owner)+'/'+encodeURIComponent(c2.repo);
+    fetch(base+'/contents/donnees.json?t='+Date.now(),{headers:H,cache:'no-store'}).then(function(r){
+      if(r.status===401){throw 'Clé refusée par GitHub : vérifiez-la.'}
+      if(r.ok)return false;
+      if(r.status===404)return fetch(base,{headers:H,cache:'no-store'}).then(function(r2){if(!r2.ok)throw 'Dépôt introuvable avec cette clé : vérifiez le nom du dépôt et que la clé y donne accès.';return true});
+      throw 'GitHub répond '+r.status+' : vérifiez la clé (Contents : Read and write).';
+    }).then(function(vide){c2.vide=vide;ui.autre=c2;render();toast('Lien prêt')}).catch(function(e){ui.autreErr=typeof e==='string'?e:'Pas de réponse de GitHub. Vérifiez internet.';render()});
+    return}
   if(f.id==='fConn'){connecter({owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()});return}
   if(f.id==='fCode'){var v=f.code.value.trim();if(v.indexOf('#connexion=')>=0)v=decodeURIComponent(v.split('#connexion=')[1].split('&')[0]);
     try{var o=JSON.parse(b64dec(v));connecter({owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t})}catch(err){ui.err='Ce lien ou ce code n’est pas valide. Recopiez-le en entier.';render()}return}
@@ -869,9 +911,19 @@ app.addEventListener('keydown',function(ev){var el=ev.target;if(ev.key==='Enter'
 app.addEventListener('input',function(ev){var el=ev.target;if(el.id&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'))el.dataset.tape='1';
   if(el.getAttribute&&el.getAttribute('data-moi')){clearTimeout(window.__tMoi);window.__tMoi=setTimeout(function(){garderPrenom(el.value,false)},500)}});
 function garderPrenom(v,msg){v=String(v||'').trim();if(!cfg)return;var avant=cfg.moi||'';cfg.moi=v;lsSet(CFGKEY,cfg);var ok=document.getElementById('moi-ok');if(ok)ok.textContent=v?'✓ enregistré':'';if(msg&&v!==avant)toast(v?'Prénom enregistré : '+v:'Prénom effacé')}
+/* ---------- écran de veille : l'animation passe devant après un moment sans toucher ---------- */
+var veilleT=null;
+var DELAI_VEILLE=15; // secondes, fixé pour tous les utilisateurs
+function delaiVeille(){return DELAI_VEILLE}
+function reveil(){if(veilleT)clearTimeout(veilleT);Fond.devant(false);var d=delaiVeille();
+  if(d)veilleT=setTimeout(function(){if(ecran()==='accueil'&&Fond.actif()&&!enSaisie()&&!document.hidden)Fond.devant(true)},d*1000)}
+['pointerdown','touchstart','keydown','wheel','scroll'].forEach(function(t){window.addEventListener(t,reveil,{passive:true,capture:true})});
+document.addEventListener('visibilitychange',function(){if(!document.hidden)reveil()});
+window.addEventListener('hashchange',reveil);
 window.__majCiel=function(c){if(S){S.ciel=c;renderFond()}};
 window.__majFete=function(f){window.__fete=f;Fond.regler();render()};
 demarrer();
+setTimeout(reveil,500);
 })();
 
 </script>

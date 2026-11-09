@@ -153,6 +153,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 4.1 | 9 novembre 2026 | Correctif iPhone : le code de connexion passe avant le « # » de l'adresse (?connexion=…), seule partie que l'iPhone garde pour l'icône de l'écran d'accueil. Les anciens liens restent valables. |
 | 4.0 | 9 novembre 2026 | Correctif iPhone : dans Safari, l'adresse garde le code de connexion sur tous les écrans. Une icône ajoutée à l'écran d'accueil depuis n'importe quelle page reste connectée à vos relevés. |
 | 3.9 | 9 novembre 2026 | Corrections après relecture du code : nouvel essai d'envoi toutes les minutes en cas d'échec ; refus d'un chargement daté dans le futur ; alerte si la commune trouvée ne correspond pas au code postal ; export CSV protégé (point-virgule, guillemets, formules) ; message correct quand seule la température dehors est notée ; « Ajouter un foyer » masqué (remplacé par « Faire connaître ») ; éclairs d'orage plus doux. |
 | 3.8 | 9 novembre 2026 | Écran de départ épuré : seul « Commencer » est visible ; les connexions GitHub sont rangées sous « Options avancées ». |

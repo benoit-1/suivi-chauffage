@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 4.0 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 4.1 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -238,7 +238,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='4.0', VERSION_DATE='9 novembre 2026';
+var VERSION='4.1', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -362,8 +362,8 @@ function sauver(msg){return enregistrer(msg||'Mise à jour')}
 
 /* invitation d'un appareil */
 function codeConnexion(c){c=c||cfg;return b64enc(JSON.stringify({o:c.owner,r:c.repo,p:c.path||'donnees.json',t:c.token}))}
-function lienPour(c){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion(c))}
-function lienInvitation(){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion())}
+function lienPour(c){return location.origin+location.pathname+'?connexion='+encodeURIComponent(codeConnexion(c))} // v4.1 : code avant le #, gardé par l'iPhone
+function lienInvitation(){return location.origin+location.pathname+'?connexion='+encodeURIComponent(codeConnexion())}
 var invitInstall=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();invitInstall=e;renderFond()});
 window.addEventListener('appinstalled',function(){invitInstall=null;statistique('installation-ecran-accueil');toast('Application installée');renderFond()});
 function estIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document)}
@@ -374,17 +374,18 @@ function blocInstall(){if(estInstallee())return '';
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 function estInstallee(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function lireInvitation(){
-  var mm=/(?:^#|&)connexion=([^&]+)/.exec(location.hash||'');if(!mm)return null; // v4.0 : le code peut suivre le nom de l'écran
+  var mm=/[?&]connexion=([^&#]+)/.exec(location.search||'')||/(?:^#|&)connexion=([^&]+)/.exec(location.hash||'');if(!mm)return null; // v4.1 : ?connexion= (nouveau) ou #connexion= (anciens liens)
   var code=mm[1];
-  if(estInstallee()){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}else ui.viaInvitation=true;
+  if(estInstallee()){try{history.replaceState(null,'',location.pathname+'#'+ecranHash())}catch(e){}}else ui.viaInvitation=true;
   try{var o=JSON.parse(b64dec(decodeURIComponent(code)));if(o&&o.o&&o.r&&o.t)return {owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t}}catch(e){}
   ui.err='Ce lien d’invitation est incomplet. Demandez-en un nouveau.';return null;
 }
 function ecranHash(){var h=(location.hash||'').replace('#','').split('&')[0];return h.indexOf('connexion=')===0?'accueil':(h||'accueil')}
-// v4.0 : dans Safari (pas l'icône), l'adresse garde toujours le code de connexion, quel que soit l'écran,
-// pour que « Sur l'écran d'accueil » crée une icône déjà connectée, même ajoutée depuis un autre écran.
-function suffixeConnexion(){try{return (!estInstallee()&&cfg&&cfg.token&&!cfg.local)?'&connexion='+encodeURIComponent(codeConnexion()):''}catch(e){return ''}}
-function garderConnexionDansAdresse(){var suf=suffixeConnexion();if(!suf)return;var cible='#'+ecranHash()+suf;if(location.hash!==cible){try{history.replaceState(null,'',location.pathname+location.search+cible)}catch(e){}}}
+// v4.1 : dans Safari (pas l'icône), l'adresse garde toujours ?connexion=… avant le #, quel que soit l'écran.
+// L'iPhone conserve cette partie quand on fait « Sur l'écran d'accueil » : l'icône s'ouvre déjà connectée.
+function garderConnexionDansAdresse(){try{if(estInstallee()||!cfg||!cfg.token||cfg.local)return;
+  var cible=location.pathname+'?connexion='+encodeURIComponent(codeConnexion())+'#'+ecranHash();
+  if(location.pathname+location.search+location.hash!==cible)history.replaceState(null,'',cible)}catch(e){}}
 
 /* météo Open-Meteo */
 function agreger(j){
@@ -577,7 +578,7 @@ var statut={cls:'',txt:''};
 function statusHTML(){return statut.txt?'<span class="dot '+statut.cls+'"></span>'+esc(statut.txt):''}
 function setStatus(c,t){statut={cls:c,txt:t};var el=document.getElementById('status');if(el)el.innerHTML=statusHTML()}
 function ecran(){return ecranHash()}
-function aller(n){var cible='#'+n+suffixeConnexion();if(location.hash===cible)render();else location.hash=cible;window.scrollTo(0,0)}
+function aller(n){if(location.hash==='#'+n)render();else location.hash=n;window.scrollTo(0,0)}
 window.addEventListener('hashchange',function(){render();window.scrollTo(0,0)});
 function entete(titre,retour){return '<header class="hbar">'+(retour?'<button class="back" data-go="accueil" aria-label="Retour à l’accueil">←</button>':'')+'<h1>'+titre+'</h1></header>'}
 function bandeauDemo(){return DEMO?'<div class="demo">Aperçu avec des données de démonstration · <button data-a="reset" class="lnk">recommencer</button></div>':''}
@@ -1024,7 +1025,7 @@ app.addEventListener('submit',function(ev){
     PT.foyers=(PT.foyers||[]).concat([{nom:nom,path:path,cree:nowDT()}]);lsSet(CFGKEY,cfg);
     ui.autre={owner:PT.owner,repo:PT.repo,path:path,token:PT.token,nom:nom};ui.autreErr='';delete document.getElementById('nf-nom').dataset.tape;render();toast('Foyer « '+nom+' » créé');return}
   if(f.id==='fConn'){connecter({owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()});return}
-  if(f.id==='fCode'){var v=f.code.value.trim();if(v.indexOf('#connexion=')>=0)v=decodeURIComponent(v.split('#connexion=')[1].split('&')[0]);
+  if(f.id==='fCode'){var v=f.code.value.trim();var mv=/connexion=([^&#\s]+)/.exec(v);if(mv)v=decodeURIComponent(mv[1]);
     try{var o=JSON.parse(b64dec(v));connecter({owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t})}catch(err){ui.err='Ce lien ou ce code n’est pas valide. Recopiez-le en entier.';render()}return}
 });
 

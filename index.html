@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 3.8 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 4.0 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -62,7 +62,6 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .row-b{display:flex;align-items:baseline;gap:10px}
 .flame{font-size:2.6rem}
 @media (prefers-reduced-motion:no-preference){.flame{animation:flicker 2.6s ease-in-out infinite;display:inline-block;transform-origin:50% 90%}
-  @keyframes flicker{0%,100%{transform:scale(1) rotate(0)}40%{transform:scale(1.06) rotate(-3deg)}70%{transform:scale(.97) rotate(2deg)}}
   .pop{animation:pop .45s ease}@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.25)}100%{transform:scale(1)}}}
 /* boutons d'action */
 .acts{display:flex;flex-direction:column;gap:12px}
@@ -239,7 +238,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='3.8', VERSION_DATE='9 novembre 2026';
+var VERSION='4.0', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -357,7 +356,8 @@ function enregistrer(msg){
       else setStatus('err','Échec de l’envoi');}
   });
 }
-window.addEventListener('online',function(){if(dirty&&mode==='pret'){dirty=false;enregistrer('Synchronisation après coupure')}});
+function relancer(){if(dirty&&!enCours&&mode==='pret'&&navigator.onLine!==false){dirty=false;enregistrer('Synchronisation après coupure')}}
+window.addEventListener('online',relancer);document.addEventListener('visibilitychange',function(){if(!document.hidden)relancer()});setInterval(relancer,60000); // v3.9 : nouvel essai régulier
 function sauver(msg){return enregistrer(msg||'Mise à jour')}
 
 /* invitation d'un appareil */
@@ -374,13 +374,17 @@ function blocInstall(){if(estInstallee())return '';
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 function estInstallee(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function lireInvitation(){
-  var h=location.hash||'';if(h.indexOf('#connexion=')!==0)return null;
-  var code=h.slice(11).split('&')[0];
+  var mm=/(?:^#|&)connexion=([^&]+)/.exec(location.hash||'');if(!mm)return null; // v4.0 : le code peut suivre le nom de l'écran
+  var code=mm[1];
   if(estInstallee()){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}else ui.viaInvitation=true;
   try{var o=JSON.parse(b64dec(decodeURIComponent(code)));if(o&&o.o&&o.r&&o.t)return {owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t}}catch(e){}
   ui.err='Ce lien d’invitation est incomplet. Demandez-en un nouveau.';return null;
 }
-function ecranHash(){var h=(location.hash||'').replace('#','');return h.indexOf('connexion=')===0?'accueil':(h||'accueil')}
+function ecranHash(){var h=(location.hash||'').replace('#','').split('&')[0];return h.indexOf('connexion=')===0?'accueil':(h||'accueil')}
+// v4.0 : dans Safari (pas l'icône), l'adresse garde toujours le code de connexion, quel que soit l'écran,
+// pour que « Sur l'écran d'accueil » crée une icône déjà connectée, même ajoutée depuis un autre écran.
+function suffixeConnexion(){try{return (!estInstallee()&&cfg&&cfg.token&&!cfg.local)?'&connexion='+encodeURIComponent(codeConnexion()):''}catch(e){return ''}}
+function garderConnexionDansAdresse(){var suf=suffixeConnexion();if(!suf)return;var cible='#'+ecranHash()+suf;if(location.hash!==cible){try{history.replaceState(null,'',location.pathname+location.search+cible)}catch(e){}}}
 
 /* météo Open-Meteo */
 function agreger(j){
@@ -409,7 +413,8 @@ function geocoder(commune,cp){
   return fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(commune)+'&count=20&language=fr&format=json').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
     var L=(j&&j.results)||[];if(!L.length)return null;var fr=L.filter(function(x){return x.country_code==='FR'}),pool=fr.length?fr:L;
     var m=pool.filter(function(x){return (x.postcodes||[]).indexOf(cp)>=0})[0]||pool.filter(function(x){return (x.postcodes||[]).some(function(p){return p.slice(0,2)===String(cp).slice(0,2)})})[0]||pool[0];
-    return {lat:Math.round(m.latitude*1000)/1000,lon:Math.round(m.longitude*1000)/1000,nom:m.name};
+    var exact=(m.postcodes||[]).indexOf(cp)>=0;
+    return {lat:Math.round(m.latitude*1000)/1000,lon:Math.round(m.longitude*1000)/1000,nom:m.name,approx:!exact,lieu:[m.name,m.admin2||m.admin1].filter(Boolean).join(', ')};
   });
 }
 var Meteo=OpenMeteo;
@@ -572,7 +577,7 @@ var statut={cls:'',txt:''};
 function statusHTML(){return statut.txt?'<span class="dot '+statut.cls+'"></span>'+esc(statut.txt):''}
 function setStatus(c,t){statut={cls:c,txt:t};var el=document.getElementById('status');if(el)el.innerHTML=statusHTML()}
 function ecran(){return ecranHash()}
-function aller(n){if(location.hash==='#'+n)render();else location.hash=n;window.scrollTo(0,0)}
+function aller(n){var cible='#'+n+suffixeConnexion();if(location.hash===cible)render();else location.hash=cible;window.scrollTo(0,0)}
 window.addEventListener('hashchange',function(){render();window.scrollTo(0,0)});
 function entete(titre,retour){return '<header class="hbar">'+(retour?'<button class="back" data-go="accueil" aria-label="Retour à l’accueil">←</button>':'')+'<h1>'+titre+'</h1></header>'}
 function bandeauDemo(){return DEMO?'<div class="demo">Aperçu avec des données de démonstration · <button data-a="reset" class="lnk">recommencer</button></div>':''}
@@ -726,7 +731,8 @@ function vueReglages(){
   h+='</section>';
   if(estLocal())return h+vueSauvegarde()+'</div>';
   var PT=cfg.partage;
-  h+='<section class="card"><h2>Ajouter un foyer</h2>';
+  if(PT){ // v3.9 : ancienne fonction, affichée seulement si elle a déjà servi (les autres foyers passent par « Faire connaître »)
+  h+='<section class="card"><h2>Ajouter un foyer</h2><p class="hint">⚠️ Ancienne méthode : chaque foyer invité ici reçoit la clé du dépôt commun. Préférez « Faire connaître l’application ».</p>';
   if(!PT||ui.partageEdit){
     h+='<p class="hint">À faire <b>une seule fois</b> : créez sur GitHub un dépôt privé pour les autres foyers (par exemple <b>suivi-chauffage-foyers</b>, avec un README) et une clé limitée à ce dépôt (Contents : Read and write). Ensuite, chaque nouveau foyer se crée ici en un clic.</p>'+
       '<form id="fPartage" class="stack"><label class="f">Compte GitHub<input id="pt-owner" name="owner" value="'+esc(PT?PT.owner:cfg.owner)+'" autocapitalize="none" spellcheck="false" required></label>'+
@@ -743,7 +749,7 @@ function vueReglages(){
     h+='<p class="hint">Les foyers sont rangés dans le dépôt privé <b>'+esc(PT.owner+'/'+PT.repo)+'</b>, un fichier par foyer, séparés de vos propres relevés. <button type="button" class="lnk" data-a="ptedit">Modifier</button></p>';
   }
   if(ui.autreErr)h+='<p class="errbox">'+esc(ui.autreErr)+'</p>';
-  h+='</section>';
+  h+='</section>';}
   h+='<section class="card"><h2>Connexion</h2><p class="hint">Données : dépôt privé <b>'+esc(cfg.owner+'/'+cfg.repo)+'</b>, fichier '+esc(cfg.path)+'.<br>État : <span id="status">'+statusHTML()+'</span></p><div class="row"><button data-a="logout">Déconnecter ce téléphone</button></div></section>';
   return h+'</div>';
 }
@@ -775,11 +781,12 @@ function importer(file){
     }catch(e){ui.importMsg='';toast('Ce fichier n’est pas une sauvegarde de Suivi pellets')}};
   r.readAsText(file);
 }
-function csv(A){
+function csv(A){ // v3.9 : cellules protégées (point-virgule, guillemets, formules Excel)
   var ps=pieces(),c=function(v){return v==null?'':String(Math.round(v*100)/100).replace('.',',')};
-  var l=['type;date;sacs;'+ps.map(function(pc){return '"'+pc.nom.replace(/"/g,'')+'"'}).join(';')+';dehors_note;dehors_meteo;par'];
-  A.ch.forEach(function(x){l.push(['chargement',x.t.replace('T',' '),c(x.sacs)].concat(ps.map(function(){return ''})).concat(['','','"'+(x.par||'')+'"']).join(';'))});
-  A.rel.forEach(function(r){var m=jourMeteo(r.t);l.push(['temperatures',r.t.replace('T',' '),''].concat(ps.map(function(pc){return c(tempPiece(r,pc))})).concat([c(r.ext),m?c(m.moy):'','"'+(r.par||'')+'"']).join(';'))});
+  var q=function(v){v=v==null?'':String(v);if(/^[=+\-@\t\r]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"'};
+  var l=['type;date;sacs;'+ps.map(function(pc){return q(pc.nom)}).join(';')+';dehors_note;dehors_meteo;par'];
+  A.ch.forEach(function(x){l.push(['chargement',x.t.replace('T',' '),c(x.sacs)].concat(ps.map(function(){return ''})).concat(['','',q(x.par)]).join(';'))});
+  A.rel.forEach(function(r){var m=jourMeteo(r.t);l.push(['temperatures',r.t.replace('T',' '),''].concat(ps.map(function(pc){return c(tempPiece(r,pc))})).concat([c(r.ext),m?c(m.moy):'',q(r.par)]).join(';'))});
   return l.join('\n');
 }
 
@@ -840,7 +847,7 @@ var Fond=(function(){
       ctx.globalAlpha=Math.max(0,f.a)*(pluie?0.6:1);
       if(pluie){ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x-(dx+0.6)*3,f.y-14);ctx.stroke()}
       else{ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}}
-    if(ciel==='orage'&&Math.random()<0.004*dt){ctx.globalAlpha=0.35;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H)}
+    if(ciel==='orage'&&Math.random()<0.004*dt){ctx.globalAlpha=0.16;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H)}
     ctx.fillStyle=c.braise;
     for(var j=0;j<braises.length;j++){var b=braises[j];b.y-=b.v*dt;b.o+=0.05*dt;b.x+=Math.sin(b.o)*0.4*dt;b.vie-=0.0011*dt*(1+b.v);
       if(b.vie<=0||b.y<H*0.2){braises[j]=braise()}
@@ -893,7 +900,7 @@ var renduEnAttente=false;
 function enSaisie(){var a=document.activeElement;return !!(a&&app.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='radio'&&a.type!=='submit')}
 function renderFond(){if(enSaisie()){renduEnAttente=true;return}render()}
 app.addEventListener('focusout',function(){setTimeout(function(){if(renduEnAttente&&!enSaisie()){renduEnAttente=false;render()}},250)});
-function render(){
+function render(){garderConnexionDansAdresse();
   renduEnAttente=false;
   var e=ecran();
   var garde={},foc=document.activeElement&&app.contains(document.activeElement)?document.activeElement.id:null;
@@ -978,6 +985,7 @@ app.addEventListener('change',function(ev){
 app.addEventListener('submit',function(ev){
   ev.preventDefault();var f=ev.target;
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
+    if(parseDT(t)>Date.now()+15*6e4){toast('Cette heure est dans le futur : vérifiez la date');return}
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
     var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;statistique('chargement');aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
     var c=document.getElementById('compteur');if(c){c.classList.add('pop')}return}
@@ -985,7 +993,7 @@ app.addEventListener('submit',function(ev){
     var ext=f.ext?num(f.ext.value):null;
     if(!nb&&ext==null){toast('Notez au moins une température');return}
     S.releves.push({id:newId(),t:nowDT(),temps:temps,ext:ext,par:moi(),saison:F().saison,maj:Date.now()});sauver('Températures'+(moi()?' par '+moi():''));
-    aller('accueil');toast('🌡️ '+nb+' pièce'+(nb>1?'s':'')+' enregistrée'+(nb>1?'s':''));return}
+    aller('accueil');toast(nb?'🌡️ '+nb+' pièce'+(nb>1?'s':'')+' enregistrée'+(nb>1?'s':''):'🌡️ Température dehors enregistrée');return}
   if(f.id==='fPiece'){var nom=f.nom.value.trim();if(!nom)return;var mx=0;pieces().forEach(function(p){var k=parseInt(String(p.id).slice(1),10);if(k>mx)mx=k});
     F().pieces.push({id:'p'+(mx+1)+'x'+Date.now().toString(36).slice(-3),nom:nom,source:'saisie'});F().maj=Date.now();sauver('Pièce ajoutée : '+nom);render();toast('Pièce ajoutée');return}
   if(f.id==='fFoyer'||f.id==='fCommune'){
@@ -997,7 +1005,7 @@ app.addEventListener('submit',function(ev){
       if(nouveau){var noms=(f.pieces?f.pieces.value:'Salon').split(',').map(function(x){return x.trim()}).filter(Boolean);
         S.foyer={nom:com,commune:com,cp:cp,lat:g.lat,lon:g.lon,extSource:'auto',pieces:(noms.length?noms:['Salon']).map(function(n,i){return {id:'p'+(i+1),nom:n,source:'saisie'}}),poidsSac:15,prixSac:6.9,saison:'Hiver 2026-2027',historique:[],maj:Date.now()}}
       else{var chg=S.foyer.lat!==g.lat||S.foyer.lon!==g.lon;S.foyer.commune=com;S.foyer.cp=cp;S.foyer.lat=g.lat;S.foyer.lon=g.lon;S.foyer.maj=Date.now();if(chg)S.meteo={};ui.commune=false}
-      ui.err='';sauver('Foyer : '+com);aller('accueil');toast(nouveau?'Foyer créé !':'Commune enregistrée');
+      ui.err='';sauver('Foyer : '+com);aller('accueil');toast(g.approx?'⚠️ Météo prise pour '+g.lieu+' : vérifiez dans Réglages':(nouveau?'Foyer créé !':'Commune enregistrée'));
       Meteo.actualiser().then(function(c){if(c)sauver('Météo : '+com);renderFond()});
     }).catch(function(){ui.err='Impossible de chercher la commune (réseau ?).';btn.disabled=false;render()});
     return}
@@ -1007,7 +1015,7 @@ app.addEventListener('submit',function(ev){
     fetch('https://api.github.com/repos/'+encodeURIComponent(c3.owner)+'/'+encodeURIComponent(c3.repo),{headers:{'Authorization':'Bearer '+c3.token,'Accept':'application/vnd.github+json'},cache:'no-store'}).then(function(r){
       if(r.status===401)throw 'Clé refusée par GitHub : vérifiez-la.';if(!r.ok)throw 'Dépôt introuvable avec cette clé : vérifiez le nom et que la clé y donne accès.';return r.json()
     }).then(function(j){if(j&&j.private===false)throw 'Ce dépôt est public : passez-le en privé sur GitHub (Settings, Danger Zone).';
-      c3.foyers=(cfg.partage&&cfg.partage.repo===c3.repo&&cfg.partage.foyers)||[];cfg.partage=c3;lsSet(CFGKEY,cfg);ui.partageEdit=false;render();toast('Dépôt des foyers enregistré')
+      c3.foyers=(cfg.partage&&cfg.partage.repo===c3.repo&&cfg.partage.owner===c3.owner&&cfg.partage.foyers)||[];cfg.partage=c3;lsSet(CFGKEY,cfg);ui.partageEdit=false;render();toast('Dépôt des foyers enregistré')
     }).catch(function(e){ui.autreErr=typeof e==='string'?e:'Pas de réponse de GitHub. Vérifiez internet.';render()});
     return}
   if(f.id==='fFoyerNouveau'){var nom=f.nom.value.trim();if(!nom)return;var PT=cfg.partage;

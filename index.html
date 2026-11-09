@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 2.9 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 3.4 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -9,6 +9,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pellets">
 <title>Suivi pellets</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -204,6 +207,15 @@ html[data-fete="nouvelan"] .t.sacs{background:linear-gradient(135deg,#1e1b4b,#00
 html.veille #app{filter:saturate(.85) brightness(.97);transition:filter .6s}
 #app{transition:filter .3s}
 
+/* 3.1 : mode local */
+.filebtn2{position:relative;display:flex;align-items:center;justify-content:center;border:1.5px dashed var(--muted);border-radius:14px;padding:12px;font-weight:600;cursor:pointer;text-align:center}
+.filebtn2 input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.filebtn2:focus-within{outline:3px solid var(--accent);outline-offset:2px}
+.det.rappel{border-color:var(--accent);color:var(--warm)}
+
+.install-ios{background:var(--accent-soft);border-radius:12px;padding:10px 12px;color:var(--ink)}
+.hero .card.left .primary.big{width:100%}
+
 </style>
 </head>
 <body>
@@ -224,7 +236,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='2.9', VERSION_DATE='9 novembre 2026';
+var VERSION='3.4', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -315,8 +327,17 @@ function fusion(remote,local){
   return o;
 }
 function appliquer(d){var act=S&&S.actuelle;S=d;S.actuelle=act}
-function cacher(pending){lsSet(CACHEKEY,{cfgId:cfgId(),data:donnees(),sha:sha,pending:!!pending})}
+var LOCALKEY='suivi-pellets-local';
+/* Statistiques anonymes : nombre d'appareils et utilisation par jour. Aucune donnée personnelle, aucun relevé. */
+var COMPTEUR=''; // code GoatCounter, ex. 'suivi-pellets' → https://suivi-pellets.goatcounter.com
+function statistique(evt){try{if(!COMPTEUR||(cfg&&cfg.stats==='off'))return;var img=new Image();img.referrerPolicy='no-referrer';
+  img.src='https://'+COMPTEUR+'.goatcounter.com/count?p=%2F'+encodeURIComponent(evt)+'&t='+encodeURIComponent(evt)+'&e=true&rnd='+Math.random().toString(36).slice(2)}catch(e){}}
+function statsDuJour(){try{if(!localStorage.getItem('suivi-stat-appareil')){localStorage.setItem('suivi-stat-appareil','1');statistique('nouvel-appareil');statistique(estLocal()?'mode-sans-compte':'mode-github')}
+  var j=ymd(new Date());if(localStorage.getItem('suivi-stat-jour')!==j){localStorage.setItem('suivi-stat-jour',j);statistique('appareil-actif-du-jour')}}catch(e){}}
+function estLocal(){return !!(cfg&&cfg.local)}
+function cacher(pending){if(estLocal())return;lsSet(CACHEKEY,{cfgId:cfgId(),data:donnees(),sha:sha,pending:!!pending})}
 function enregistrer(msg){
+  if(estLocal()){try{localStorage.setItem(LOCALKEY,JSON.stringify(donnees()));setStatus('ok','Enregistré sur cet appareil')}catch(e){setStatus('err','Mémoire pleine : faites une sauvegarde')}return Promise.resolve()}
   cacher(true);
   if(enCours){attente=msg;return Promise.resolve()}
   enCours=true;essais=0;setStatus('busy','Enregistrement…');
@@ -340,6 +361,14 @@ function sauver(msg){return enregistrer(msg||'Mise à jour')}
 function codeConnexion(c){c=c||cfg;return b64enc(JSON.stringify({o:c.owner,r:c.repo,p:c.path||'donnees.json',t:c.token}))}
 function lienPour(c){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion(c))}
 function lienInvitation(){return location.origin+location.pathname+'#connexion='+encodeURIComponent(codeConnexion())}
+var invitInstall=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();invitInstall=e;renderFond()});
+window.addEventListener('appinstalled',function(){invitInstall=null;statistique('installation-ecran-accueil');toast('Application installée');renderFond()});
+function estIOS(){return /iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document)}
+function blocInstall(){if(estInstallee())return '';
+  if(invitInstall)return '<button class="primary big" data-a="installer">📲 Installer l’application</button>';
+  if(estIOS())return '<p class="hint install-ios">📲 <b>Pour l’installer sur l’iPhone :</b> touchez <b>Partager</b> (le carré avec une flèche) en bas de Safari, puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>.</p>';
+  return '<p class="hint">📲 Pour l’installer : menu du navigateur, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>'}
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})})}
 function estInstallee(){try{return window.navigator.standalone===true||window.matchMedia('(display-mode: standalone)').matches}catch(e){return false}}
 function lireInvitation(){
   var h=location.hash||'';if(h.indexOf('#connexion=')!==0)return null;
@@ -388,7 +417,7 @@ function connecter(c){
   var old=lsGet(CFGKEY)||{};c.moi=old.moi||'';c.path=c.path||'donnees.json';
   cfg=c;ui.err='';mode='chargement';render();
   ghLire().then(function(r){
-    lsSet(CFGKEY,cfg);appliquer(r.data);sha=r.sha;mode='pret';cacher(false);
+    lsSet(CFGKEY,cfg);appliquer(r.data);sha=r.sha;mode='pret';cacher(false);statsDuJour();
     if(r.v1&&r.sha)enregistrer('Passage au format 2.0');
     render();Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));renderFond()});
   }).catch(function(e){
@@ -397,9 +426,17 @@ function connecter(c){
     render();
   });
 }
+function demarrerLocal(){
+  mode='pret';var d=null;try{d=JSON.parse(localStorage.getItem(LOCALKEY)||'null')}catch(e){}
+  appliquer(d?migrer(d):vide());setStatus('ok','Enregistré sur cet appareil');statsDuJour();
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  render();if(S.foyer)Meteo.actualiser().then(function(chg){if(chg)sauver();renderFond()});
+}
+function commencerLocal(){var old=lsGet(CFGKEY)||{};cfg={local:true,moi:old.moi||'',anim:old.anim,fetes:old.fetes};lsSet(CFGKEY,cfg);demarrerLocal()}
 function demarrer(){
   var inv=lireInvitation(),c0=lsGet(CFGKEY);
   if(inv&&!(c0&&c0.owner===inv.owner&&c0.repo===inv.repo&&c0.token===inv.token&&c0.path===inv.path)){lsDel(CACHEKEY);connecter(inv);return}
+  if(c0&&c0.local&&!inv){cfg=c0;demarrerLocal();return}
   if(!c0||!c0.token){mode='connexion';render();return}
   cfg=c0;var cache=lsGet(CACHEKEY);
   if(cache&&cache.cfgId===cfgId()&&cache.data){appliquer(migrer(cache.data));sha=cache.sha;mode='pret';setStatus('busy','Synchronisation…');render()}
@@ -410,7 +447,7 @@ function demarrer(){
     var reparer=!!(r.v1&&r.sha&&cache&&cache.cfgId===cfgId()&&cache.data&&cache.data.version===2);
     appliquer(enAttente||reparer?(cache.sha===r.sha?donnees():fusion(r.data,donnees())):r.data);
     if(reparer&&!enAttente){enAttente=true}
-    sha=r.sha;mode='pret';setStatus('ok','À jour');renderFond();
+    sha=r.sha;mode='pret';setStatus('ok','À jour');renderFond();statsDuJour();
     if(enAttente)enregistrer('Envoi des saisies faites hors ligne');else{cacher(false);if(r.v1&&r.sha)enregistrer('Passage au format 2.0')}
     Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));renderFond()});
   }).catch(function(e){
@@ -540,9 +577,10 @@ function bandeauDemo(){return DEMO?'<div class="demo">Aperçu avec des données 
 function vueBienvenue(){
   var c=cfg||{owner:'',repo:'suivi-chauffage-donnees',token:''},h='<div class="wrap hero">';
   h+='<div class="logo" aria-hidden="true">🔥</div><h1 class="big-title">Suivi pellets</h1><p class="lead">Notez vos chargements et vos températures, et découvrez combien vous consommez selon le froid.</p>';
-  h+='<section class="card left"><h2>Vous avez reçu un lien ou un QR code ?</h2><p class="hint">Ouvrez-le simplement : l’application se connecte toute seule. Vous pouvez aussi coller ici le lien ou le code reçu.</p>';
   if(ui.err)h+='<p class="errbox">'+esc(ui.err)+'</p>';
-  h+='<form id="fCode" class="stack"><input id="c-code" name="code" autocomplete="off" spellcheck="false" placeholder="Lien ou code de connexion"><button class="primary" type="submit">Me connecter</button></form></section>';
+  h+='<section class="card left"><button class="primary big" data-a="local">🔥 Commencer</button><p class="hint">Gratuit, sans compte : vos relevés restent sur cet appareil.</p>'+blocInstall()+'</section>';
+  h+='<details class="card left"><summary>J’ai reçu un lien ou un code de connexion</summary><p class="hint">Ouvrez-le simplement : l’application se connecte toute seule. Vous pouvez aussi coller ici le lien ou le code reçu.</p>';
+  h+='<form id="fCode" class="stack"><input id="c-code" name="code" autocomplete="off" spellcheck="false" placeholder="Lien ou code de connexion"><button class="primary" type="submit">Me connecter</button></form></details>';
   h+='<details class="card left"><summary>Première installation (avec une clé GitHub)</summary><form id="fConn" class="stack">'+
     '<label class="f">Compte GitHub<input id="c-owner" name="owner" required autocapitalize="none" spellcheck="false" value="'+esc(c.owner)+'" placeholder="votre identifiant GitHub"></label>'+
     '<label class="f">Dépôt privé des données<input id="c-repo" name="repo" required autocapitalize="none" spellcheck="false" value="'+esc(c.repo||'suivi-chauffage-donnees')+'"></label>'+
@@ -558,7 +596,7 @@ function vueFoyer(){
   '<label class="f">Code postal<input id="ff-cp" name="cp" required inputmode="numeric" placeholder="ex. 62630" autocomplete="postal-code"></label>'+
   '<label class="f">Pièces (séparées par des virgules, celle du poêle en premier)<input id="ff-pieces" name="pieces" value="Salon"></label>'+
   '<button class="primary big" type="submit">Créer le foyer</button></form></section>'+
-  '<p class="hint">Ces réglages sont communs à tout le foyer. Vous pourrez inviter la famille ensuite, depuis les Réglages.</p></div>';
+  (estLocal()?'<section class="card"><h2>J’ai déjà une sauvegarde</h2><p class="hint">Nouveau téléphone, ou relevés venant d’un autre appareil : choisissez le fichier de sauvegarde.</p><label class="filebtn2">📂 Restaurer un fichier de relevés<input type="file" id="f-import" accept=".json,application/json"></label></section>':'<p class="hint">Ces réglages sont communs à tout le foyer. Vous pourrez inviter la famille ensuite, depuis les Réglages.</p>')+'</div>';
 }
 function vueAccueil(){
   var A=analyse(),fl=flamme(A),d=dehorsMaintenant(),dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
@@ -573,6 +611,7 @@ function vueAccueil(){
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">🪵</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
   if(A.rate!=null)h+='<p class="last">En moyenne <b>'+nf(A.rate,2)+' sac par jour</b> cette saison</p>';
+  if(estLocal()){var ds=cfg.sauvegarde,nb=S.chargements.length+S.releves.length;if(nb>=10&&(!ds||Date.now()-parseDT(ds)>30*864e5))h+='<button class="det rappel" data-go="reglages">💾 Pensez à sauvegarder vos relevés</button>'}
   if(feteDuJour())h+='<p class="last fete-msg">'+FETES[feteDuJour()].ico+' '+FETES[feteDuJour()].msg+'</p>';
   h+='<button class="det" data-go="details">📊 Voir tous les détails →</button></div>';
   return h;
@@ -640,9 +679,12 @@ function vueReglages(){
   h+='<section class="card"><h2>Cet appareil</h2><label class="f" for="r-moi">Mon prénom (apparaît dans le journal) <span id="moi-ok" class="ok">'+(moi()?'✓ enregistré':'')+'</span></label><div class="row nowrap"><input id="r-moi" data-moi="1" value="'+esc(moi())+'" placeholder="ex. Marie" autocomplete="given-name" autocapitalize="words" enterkeyhint="done"><button type="button" class="primary" data-a="moiok">OK</button></div>'+
     '<div class="f"><span>Animations (neige, braises, écran de veille)</span><div class="seg" role="radiogroup" aria-label="Animation de l’accueil">'+
     [['on','Oui'],['off','Non']].map(function(o){return '<button type="button" role="radio" aria-checked="'+(an===o[0])+'" data-a="anim" data-n="'+o[0]+'" class="'+(an===o[0]?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
+    blocInstall()+
     '<div class="f"><span>Animations des fêtes (Noël, Nouvel An, Chandeleur, Saint-Valentin, Pâques, Halloween)</span><div class="seg" role="radiogroup" aria-label="Animations des fêtes">'+
     [['auto','Automatiques'],['off','Désactivées']].map(function(o){var on=((cfg&&cfg.fetes)||'auto')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="fetes" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
-    (Fond.systemeCalme()&&!(cfg&&cfg.anim)?'<p class="hint">Animation coupée car cet appareil demande de « réduire les animations » (Accessibilité). Touchez « Oui » pour la rallumer.</p>':'')+'</section>';
+    (COMPTEUR?'<div class="f"><span>Statistiques anonymes (nombre d’appareils, sans aucune donnée personnelle ni relevé)</span><div class="seg" role="radiogroup" aria-label="Statistiques anonymes">'+
+      [['on','Oui'],['off','Non']].map(function(o){var on=((cfg&&cfg.stats)||'on')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="stats" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>':'')+
+    '</section>';
   h+='<section class="card"><h2>Température extérieure</h2><div class="radios">';
   EXT_SOURCES.forEach(function(o){h+='<label class="radio'+(o.bientot?' off':'')+'"><input type="radio" name="extSource" value="'+o.id+'"'+(src===o.id?' checked':'')+(o.bientot?' disabled':'')+'><span><b>'+o.lab+(o.bientot?' <span class="soon">bientôt</span>':'')+'</b><span class="s">'+o.desc+'</span></span></label>'});
   h+='</div></section>';
@@ -661,24 +703,63 @@ function vueReglages(){
   var noms={};S.chargements.concat(S.releves).forEach(function(r){if(r.par)noms[r.par]=(noms[r.par]||0)+1});
   Object.keys(noms).sort(function(a,b){return noms[b]-noms[a]}).forEach(function(n){h+='<li><span><b>'+esc(n)+'</b>'+(n===moi()?' (ce téléphone)':'')+' · '+noms[n]+' saisie'+(noms[n]>1?'s':'')+'</span></li>'});
   if(!Object.keys(noms).length)h+='<li><span class="hint">Les prénoms apparaîtront ici au fil des saisies.</span></li>';
-  h+='</ul><div class="row"><button class="primary" data-a="invite">'+(ui.invite?'Masquer l’invitation':'👨‍👩‍👦 Inviter un appareil')+'</button></div>';
+  h+='</ul>';
+  if(!estLocal()){h+='<div class="row"><button class="primary" data-a="invite">'+(ui.invite?'Masquer l’invitation':'👨‍👩‍👦 Inviter un appareil')+'</button></div>';
   if(ui.invite){var lien=lienInvitation();var svg=qrSVG(lien);
     h+='<div class="invite">'+(svg?'<div class="qr">'+svg+'</div>':'')+'<div class="invtxt"><p class="hint"><b>À côté de vous :</b> il vise ce QR code avec l’appareil photo.</p><p class="hint"><b>À distance :</b> envoyez-lui le lien.</p>'+
     '<div class="row">'+(navigator.share?'<button data-a="share" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copylien">Copier le lien</button></div>'+
-    '<p class="hint">Sur iPhone, ouvrez le lien dans Safari puis ajoutez-le à l’écran d’accueil. Ce lien ouvre vos relevés : gardez-le pour la famille.</p></div></div><textarea id="lien" readonly class="small" aria-label="Lien d’invitation">'+esc(lien)+'</textarea>'}
+    '<p class="hint">Sur iPhone, ouvrez le lien dans Safari puis ajoutez-le à l’écran d’accueil. Ce lien ouvre vos relevés : gardez-le pour la famille.</p></div></div><textarea id="lien" readonly class="small" aria-label="Lien d’invitation">'+esc(lien)+'</textarea>'}}
   h+='</section>';
-  h+='<section class="card"><h2>Préparer l’accès d’un autre foyer</h2><p class="hint">Pour des proches qui veulent leur propre suivi, chez eux. Créez d’abord sur GitHub un <b>dépôt privé</b> pour eux (avec un README) et une <b>clé</b> limitée à ce dépôt (Contents : Read and write), comme pour le vôtre. Puis :</p>'+
-    '<form id="fAutre" class="stack"><label class="f">Compte GitHub<input id="af-owner" name="owner" value="'+esc(cfg.owner)+'" autocapitalize="none" spellcheck="false" required></label>'+
-    '<label class="f">Dépôt privé du foyer<input id="af-repo" name="repo" placeholder="ex. chauffage-dupont" autocapitalize="none" spellcheck="false" required></label>'+
-    '<label class="f">Clé de ce dépôt<input id="af-token" name="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" required></label>'+
-    '<button class="primary" type="submit">Vérifier et créer le lien</button></form>';
-  if(ui.autre){var la=lienPour(ui.autre),sv=qrSVG(la);
-    h+='<div class="invite">'+(sv?'<div class="qr">'+sv+'</div>':'')+'<div class="invtxt"><p class="hint"><b>Accès prêt pour « '+esc(ui.autre.repo)+' »</b>'+(ui.autre.vide?' (dépôt vide : ils créeront leur foyer en ouvrant le lien)':'')+'.</p><p class="hint">Envoyez-leur ce lien par message privé. En l’ouvrant, ils indiquent leur commune et leurs pièces ; ils pourront ensuite inviter leurs propres appareils.</p>'+
-    '<div class="row">'+(navigator.share?'<button data-a="shareautre" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copyautre">Copier le lien</button></div></div></div><textarea id="lienautre" readonly class="small" aria-label="Lien du nouveau foyer">'+esc(la)+'</textarea>'}
+  if(estLocal())return h+vueSauvegarde()+'</div>';
+  var PT=cfg.partage;
+  h+='<section class="card"><h2>Ajouter un foyer</h2>';
+  if(!PT||ui.partageEdit){
+    h+='<p class="hint">À faire <b>une seule fois</b> : créez sur GitHub un dépôt privé pour les autres foyers (par exemple <b>suivi-chauffage-foyers</b>, avec un README) et une clé limitée à ce dépôt (Contents : Read and write). Ensuite, chaque nouveau foyer se crée ici en un clic.</p>'+
+      '<form id="fPartage" class="stack"><label class="f">Compte GitHub<input id="pt-owner" name="owner" value="'+esc(PT?PT.owner:cfg.owner)+'" autocapitalize="none" spellcheck="false" required></label>'+
+      '<label class="f">Dépôt des autres foyers<input id="pt-repo" name="repo" value="'+esc(PT?PT.repo:'suivi-chauffage-foyers')+'" autocapitalize="none" spellcheck="false" required></label>'+
+      '<label class="f">Clé de ce dépôt<input id="pt-token" name="token" type="password" placeholder="github_pat_…" autocomplete="off" spellcheck="false" required></label>'+
+      '<button class="primary" type="submit">Vérifier et enregistrer</button>'+(PT?'<button type="button" data-a="ptannule">Annuler</button>':'')+'</form>';
+  } else {
+    h+='<form id="fFoyerNouveau" class="row nowrap"><input id="nf-nom" name="nom" placeholder="Nom du foyer (ex. Dupont)" required autocomplete="off"><button class="primary" type="submit">Créer</button></form>';
+    if(ui.autre){var la=lienPour(ui.autre),sv=qrSVG(la);
+      h+='<div class="invite">'+(sv?'<div class="qr">'+sv+'</div>':'')+'<div class="invtxt"><p class="hint"><b>Foyer « '+esc(ui.autre.nom)+' » prêt.</b> Envoyez-lui ce lien par message privé, ou faites-lui scanner le QR code. En l’ouvrant, il indique sa commune et ses pièces.</p>'+
+      '<div class="row">'+(navigator.share?'<button data-a="shareautre" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copyautre">Copier le lien</button></div></div></div><textarea id="lienautre" readonly class="small" aria-label="Lien du foyer">'+esc(la)+'</textarea>'}
+    var L=PT.foyers||[];
+    if(L.length){h+='<h2>Foyers créés</h2><ul class="list">';L.slice().reverse().forEach(function(x){h+='<li><span><b>'+esc(x.nom)+'</b> · '+esc(fds(x.cree))+'</span><button class="small" data-a="relien" data-p="'+esc(x.path)+'">Lien</button></li>'});h+='</ul>'}
+    h+='<p class="hint">Les foyers sont rangés dans le dépôt privé <b>'+esc(PT.owner+'/'+PT.repo)+'</b>, un fichier par foyer, séparés de vos propres relevés. <button type="button" class="lnk" data-a="ptedit">Modifier</button></p>';
+  }
   if(ui.autreErr)h+='<p class="errbox">'+esc(ui.autreErr)+'</p>';
   h+='</section>';
   h+='<section class="card"><h2>Connexion</h2><p class="hint">Données : dépôt privé <b>'+esc(cfg.owner+'/'+cfg.repo)+'</b>, fichier '+esc(cfg.path)+'.<br>État : <span id="status">'+statusHTML()+'</span></p><div class="row"><button data-a="logout">Déconnecter ce téléphone</button></div></section>';
   return h+'</div>';
+}
+function vueSauvegarde(){
+  var der=cfg.sauvegarde,h='<section class="card"><h2>Mes données</h2>';
+  h+='<p class="hint">Vos relevés sont gardés <b>sur cet appareil uniquement</b>. '+(der?'Dernière sauvegarde : '+esc(fdt(der))+'.':'<b>Aucune sauvegarde pour l’instant.</b>')+'</p>';
+  h+='<div class="stack"><button class="primary" data-a="exporter">💾 Sauvegarder mes relevés (fichier)</button>';
+  h+='<label class="filebtn2">📂 Restaurer ou ajouter un fichier de relevés<input type="file" id="f-import" accept=".json,application/json"></label></div>';
+  h+='<p class="hint"><b>Pour retrouver vos relevés sur un autre appareil</b> (nouveau téléphone, tablette, conjoint) : sauvegardez ici, envoyez-vous le fichier (iCloud Drive, e-mail, WhatsApp…), puis sur l’autre appareil, touchez « Restaurer ou ajouter ». Les relevés des deux appareils sont additionnés, sans doublon.</p>';
+  if(ui.importMsg)h+='<p class="hint ok">'+esc(ui.importMsg)+'</p>';
+  h+='</section>';
+  h+='<section class="card"><h2>Effacer</h2>'+(ui.confirmEff?'<div class="confirm"><span>Effacer tous les relevés de cet appareil ? Faites d’abord une sauvegarde.</span><button class="primary" data-a="eff2">Effacer</button><button data-a="eff0">Annuler</button></div>':'<div class="row"><button data-a="eff1">Effacer les données de cet appareil…</button></div>')+'</section>';
+  return h;
+}
+function exporter(){
+  var txt=JSON.stringify(donnees(),null,1),nom='suivi-pellets-'+ymd(new Date())+'.json',blob=new Blob([txt],{type:'application/json'});
+  var fin=function(){cfg.sauvegarde=nowDT();lsSet(CFGKEY,cfg);render();toast('Sauvegarde créée')};
+  function telecharger(){var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nom;document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove()},1000);fin()}
+  try{var f=new File([blob],nom,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:nom}).then(fin).catch(function(e){if(e&&e.name!=='AbortError')telecharger()});return}}catch(e){}
+  telecharger();
+}
+function importer(file){
+  if(!file)return;var r=new FileReader();
+  r.onload=function(){try{var d=migrer(JSON.parse(r.result));if(!d||(!d.foyer&&!d.chargements.length))throw 0;
+      var avant=S.chargements.length+S.releves.length;appliquer(fusion(d,donnees()));if(!S.foyer&&d.foyer)S.foyer=d.foyer;sauver();
+      var ajout=S.chargements.length+S.releves.length-avant;ui.importMsg='✓ Fichier ajouté : '+ajout+' relevé'+(ajout>1?'s':'')+' de plus.';if(ecran()==='foyer'||ecran()==='accueil')aller('accueil');else render();toast('Relevés ajoutés');
+      Meteo.actualiser().then(function(c){if(c)sauver();renderFond()});
+    }catch(e){ui.importMsg='';toast('Ce fichier n’est pas une sauvegarde de Suivi pellets')}};
+  r.readAsText(file);
 }
 function csv(A){
   var ps=pieces(),c=function(v){return v==null?'':String(Math.round(v*100)/100).replace('.',',')};
@@ -699,17 +780,17 @@ function feteDuJour(d){
   if(window.__fete!==undefined)return window.__fete;
   if(cfg&&cfg.fetes==='off')return null;
   d=d||new Date();var m=d.getMonth()+1,j=d.getDate(),t=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
-  if((m===12&&j===31)||(m===1&&j<=2))return 'nouvelan';
-  if(m===12&&j<=30)return 'noel';
-  if((m===10&&j>=24)||(m===11&&j===1))return 'halloween';
-  if(m===2&&j===2)return 'chandeleur';
-  if(m===2&&(j===13||j===14))return 'valentin';
-  var p=paques(d.getFullYear()).getTime();if(t>=p-7*864e5&&t<=p+864e5)return 'paques';
-  return null}
+  // v3.4 : chaque fête s'affiche 15 jours avant et 15 jours après ; si deux fêtes se chevauchent, la plus proche gagne
+  var J=864e5,meilleur=null,ecart=1e9;
+  for(var y=d.getFullYear()-1;y<=d.getFullYear()+1;y++){
+    var dates=[['noel',new Date(y,11,25)],['nouvelan',new Date(y,0,1)],['halloween',new Date(y,9,31)],['chandeleur',new Date(y,1,2)],['valentin',new Date(y,1,14)],['paques',paques(y)]];
+    for(var i=0;i<dates.length;i++){var e=Math.abs(Math.round((dates[i][1].getTime()-t)/J));if(e<=FETE_JOURS&&e<ecart){ecart=e;meilleur=dates[i][0]}}}
+  return meilleur}
+var FETE_JOURS=15; // nombre de jours avant et après chaque fête
 var INTENSITE=1; // intensité de la neige et des braises, fixée pour tous (0,6 douce · 1 normale · 1,8 vive)
 var Fond=(function(){
   var cv=document.getElementById('fond'),ctx=cv&&cv.getContext&&cv.getContext('2d'),W=0,H=0,dpr=1,flocons=[],braises=[],actif=false,raf=null,der=0,froid=0.5,force=1,visible=false;
-  var calme=false;try{calme=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
+  var calme=false; // v3.3 : animation toujours active au départ, même si l'appareil demande moins d'animations
   function niveau(){var a=(typeof cfg!=='undefined'&&cfg)?cfg.anim:null;if(a==='off')return 'off';if(a)return 'on';return calme?'off':'on'}
   function facteur(){return niveau()==='on'?INTENSITE:0}
   function taille(){if(!cv)return;dpr=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
@@ -833,11 +914,21 @@ function copier(id){var t=document.getElementById(id);try{navigator.clipboard.wr
 app.addEventListener('click',function(ev){
   var go=ev.target.closest('[data-go]');if(go){ev.preventDefault();aller(go.getAttribute('data-go'));return}
   var b=ev.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
+  if(a==='ptedit'){ui.partageEdit=true;ui.autre=null;render();return}
+  if(a==='ptannule'){ui.partageEdit=false;render();return}
+  if(a==='relien'){var pp=b.getAttribute('data-p'),PT2=cfg.partage,fx=(PT2.foyers||[]).filter(function(x){return x.path===pp})[0];ui.autre={owner:PT2.owner,repo:PT2.repo,path:pp,token:PT2.token,nom:fx?fx.nom:''};render();return}
   if(a==='copyautre'){copier('lienautre');return}
   if(a==='shareautre'){try{navigator.share({title:'Suivi pellets',text:'Ton accès à l’application Suivi pellets :',url:document.getElementById('lienautre').value}).catch(function(){})}catch(e){copier('lienautre')}return}
   if(a==='moiok'){var im=document.getElementById('r-moi');if(im){garderPrenom(im.value,true);delete im.dataset.tape;im.blur()}return}
+  if(a==='stats'){cfg.stats=b.getAttribute('data-n');lsSet(CFGKEY,cfg);render();toast(cfg.stats==='off'?'Statistiques désactivées':'Merci !');return}
   if(a==='fetes'){cfg.fetes=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Fêtes : '+b.textContent);return}
   if(a==='anim'){cfg.anim=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Animation : '+b.textContent);return}
+  if(a==='installer'){if(invitInstall){invitInstall.prompt();invitInstall.userChoice.finally(function(){invitInstall=null;renderFond()})}return}
+  if(a==='local'){commencerLocal();return}
+  if(a==='exporter'){exporter();return}
+  if(a==='eff1'){ui.confirmEff=true;render();return}
+  if(a==='eff0'){ui.confirmEff=false;render();return}
+  if(a==='eff2'){ui.confirmEff=false;lsDel(LOCALKEY);appliquer(vide());aller('accueil');toast('Données effacées');return}
   if(a==='logout'){lsDel(CFGKEY);lsDel(CACHEKEY);cfg=null;S=null;sha=null;mode='connexion';ui.invite=false;aller('accueil')}
   else if(a==='commune'){ui.commune=!ui.commune;render()}
   else if(a==='plus'||a==='moins'||a==='set'){ui.charge=a==='set'?+b.getAttribute('data-n'):Math.max(0.5,Math.min(10,ui.charge+(a==='plus'?0.5:-0.5)));var cv=document.getElementById('cv');if(cv){cv.textContent=nf(ui.charge,ui.charge%1?1:0);cv.nextSibling.textContent=ui.charge>=2?'sacs':'sac';cv.classList.remove('pop');void cv.offsetWidth;cv.classList.add('pop')}}
@@ -858,6 +949,7 @@ app.addEventListener('click',function(ev){
 });
 app.addEventListener('change',function(ev){
   var el=ev.target;
+  if(el.id==='f-import'){importer(el.files&&el.files[0]);el.value='';return}
   if(el.name==='extSource'){F().extSource=el.value;F().maj=Date.now();sauver('Source de la température extérieure');toast('Température extérieure : '+EXT_SOURCES.filter(function(o){return o.id===el.value})[0].lab);return}
   if(el.getAttribute('data-moi')){garderPrenom(el.value,true);delete el.dataset.tape;return}
   var pr=el.getAttribute('data-pren');if(pr){var v=el.value.trim();if(!v)return;pieces().forEach(function(p){if(p.id===pr)p.nom=v});F().maj=Date.now();sauver('Pièce renommée');toast('Pièce renommée');return}
@@ -869,7 +961,7 @@ app.addEventListener('submit',function(ev){
   ev.preventDefault();var f=ev.target;
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
-    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
+    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;statistique('chargement');aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
     var c=document.getElementById('compteur');if(c){c.classList.add('pop')}return}
   if(f.id==='fTemp'){var temps={},nb=0;Array.prototype.forEach.call(f.querySelectorAll('[data-piece]'),function(el){var v=num(el.value);if(v!=null&&v>-30&&v<45){temps[el.getAttribute('data-piece')]=Math.round(v*10)/10;nb++}});
     var ext=f.ext?num(f.ext.value):null;
@@ -891,17 +983,20 @@ app.addEventListener('submit',function(ev){
       Meteo.actualiser().then(function(c){if(c)sauver('Météo : '+com);renderFond()});
     }).catch(function(){ui.err='Impossible de chercher la commune (réseau ?).';btn.disabled=false;render()});
     return}
-  if(f.id==='fAutre'){var c2={owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()};ui.autre=null;ui.autreErr='';
-    if(c2.owner===cfg.owner&&c2.repo===cfg.repo){ui.autreErr='C’est votre propre dépôt : créez un dépôt différent pour l’autre foyer.';render();return}
+  if(f.id==='fPartage'){var c3={owner:f.owner.value.trim(),repo:f.repo.value.trim(),token:f.token.value.trim()};ui.autreErr='';
+    if(c3.owner===cfg.owner&&c3.repo===cfg.repo){ui.autreErr='C’est le dépôt de vos propres relevés : créez un autre dépôt pour les autres foyers.';render();return}
     var bt=f.querySelector('button[type=submit]');bt.disabled=true;bt.textContent='Vérification…';
-    var H={'Authorization':'Bearer '+c2.token,'Accept':'application/vnd.github+json'},base='https://api.github.com/repos/'+encodeURIComponent(c2.owner)+'/'+encodeURIComponent(c2.repo);
-    fetch(base+'/contents/donnees.json?t='+Date.now(),{headers:H,cache:'no-store'}).then(function(r){
-      if(r.status===401){throw 'Clé refusée par GitHub : vérifiez-la.'}
-      if(r.ok)return false;
-      if(r.status===404)return fetch(base,{headers:H,cache:'no-store'}).then(function(r2){if(!r2.ok)throw 'Dépôt introuvable avec cette clé : vérifiez le nom du dépôt et que la clé y donne accès.';return true});
-      throw 'GitHub répond '+r.status+' : vérifiez la clé (Contents : Read and write).';
-    }).then(function(vide){c2.vide=vide;ui.autre=c2;render();toast('Lien prêt')}).catch(function(e){ui.autreErr=typeof e==='string'?e:'Pas de réponse de GitHub. Vérifiez internet.';render()});
+    fetch('https://api.github.com/repos/'+encodeURIComponent(c3.owner)+'/'+encodeURIComponent(c3.repo),{headers:{'Authorization':'Bearer '+c3.token,'Accept':'application/vnd.github+json'},cache:'no-store'}).then(function(r){
+      if(r.status===401)throw 'Clé refusée par GitHub : vérifiez-la.';if(!r.ok)throw 'Dépôt introuvable avec cette clé : vérifiez le nom et que la clé y donne accès.';return r.json()
+    }).then(function(j){if(j&&j.private===false)throw 'Ce dépôt est public : passez-le en privé sur GitHub (Settings, Danger Zone).';
+      c3.foyers=(cfg.partage&&cfg.partage.repo===c3.repo&&cfg.partage.foyers)||[];cfg.partage=c3;lsSet(CFGKEY,cfg);ui.partageEdit=false;render();toast('Dépôt des foyers enregistré')
+    }).catch(function(e){ui.autreErr=typeof e==='string'?e:'Pas de réponse de GitHub. Vérifiez internet.';render()});
     return}
+  if(f.id==='fFoyerNouveau'){var nom=f.nom.value.trim();if(!nom)return;var PT=cfg.partage;
+    var sl=nom.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'foyer';
+    var path='foyers/'+sl+'-'+Math.random().toString(36).slice(2,7)+'.json';
+    PT.foyers=(PT.foyers||[]).concat([{nom:nom,path:path,cree:nowDT()}]);lsSet(CFGKEY,cfg);
+    ui.autre={owner:PT.owner,repo:PT.repo,path:path,token:PT.token,nom:nom};ui.autreErr='';delete document.getElementById('nf-nom').dataset.tape;render();toast('Foyer « '+nom+' » créé');return}
   if(f.id==='fConn'){connecter({owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()});return}
   if(f.id==='fCode'){var v=f.code.value.trim();if(v.indexOf('#connexion=')>=0)v=decodeURIComponent(v.split('#connexion=')[1].split('&')[0]);
     try{var o=JSON.parse(b64dec(v));connecter({owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t})}catch(err){ui.err='Ce lien ou ce code n’est pas valide. Recopiez-le en entier.';render()}return}

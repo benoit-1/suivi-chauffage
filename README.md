@@ -65,16 +65,53 @@ Vous travaillez ensuite tous les deux sur les mêmes données. Si vous enregistr
 
 ---
 
-## Partager l'application avec un autre foyer
+## Utiliser l'application sans compte (stockage sur l'appareil)
 
-Tout le monde utilise la même adresse (votre site). Chaque foyer a **son propre dépôt privé**, pour que les relevés restent séparés.
+C'est le plus simple pour un particulier : envoyez-lui seulement l'adresse du site.
+1. Il ouvre l'adresse et touche **Commencer sur cet appareil**.
+2. Il indique sa commune et ses pièces : c'est prêt. Pas de compte, pas de clé.
 
-1. Sur GitHub, créez un dépôt **privé** pour eux, par exemple `chauffage-dupont`, en cochant **Add a README file**.
-2. Créez une **clé** limitée à ce seul dépôt (étape 4 de la mise en route) : **Only select repositories**, puis ce dépôt, et **Contents : Read and write**. Donnez-lui un nom clair, par exemple « Chauffage Dupont ».
-3. Dans l'application : **Réglages**, puis **Préparer l'accès d'un autre foyer**. Collez le nom du dépôt et la clé, puis **Vérifier et créer le lien**.
-4. Envoyez-leur le lien par message privé, ou faites-leur scanner le QR code. En l'ouvrant, ils indiquent leur commune et leurs pièces. Ils pourront ensuite inviter leurs propres appareils.
+Ses relevés restent **sur son appareil uniquement**. Dans **Réglages**, puis **Mes données** :
+- **Sauvegarder mes relevés** crée un fichier, à garder dans iCloud Drive, Google Drive ou par e-mail. L'accueil rappelle de le faire au bout d'un mois.
+- **Restaurer ou ajouter un fichier** récupère une sauvegarde, sur un nouveau téléphone par exemple, ou ajoute les relevés d'un autre appareil de la famille, sans doublon.
 
-Pour arrêter l'accès d'un foyer, supprimez sa clé sur GitHub.
+Dans ce mode, les appareils d'une même famille ne se synchronisent pas tout seuls. Pour un suivi partagé automatiquement, utilisez plutôt un dépôt GitHub (ci-dessous).
+
+## Installer l'application (pour tout le monde)
+
+Envoyez simplement l'adresse **https://benoit-1.github.io/suivi-chauffage/** à la personne. Elle n'a besoin d'aucun compte.
+
+- **iPhone / iPad** : ouvrir le lien dans Safari, bouton Partager, puis « Sur l'écran d'accueil ».
+- **Android** : ouvrir le lien dans Chrome, puis « Installer l'application » (bouton dans l'application ou menu ⋮).
+- **Ordinateur** : Chrome ou Edge proposent « Installer » dans la barre d'adresse.
+
+Ensuite elle touche **🔥 Commencer**. Ses relevés restent sur son appareil. Une fois installée, l'application s'ouvre même sans réseau (seule la météo attend le retour du réseau).
+
+## Compteur d'utilisateurs
+
+L'application peut envoyer un signal anonyme à GoatCounter (gratuit, sans cookie, sans bandeau de consentement). Aucun relevé, aucun nom, aucune commune n'est envoyé. Seuls ces événements sont comptés :
+
+| Événement | Signification |
+|---|---|
+| nouvel-appareil | une nouvelle installation |
+| mode-sans-compte / mode-github | le mode choisi à l'installation |
+| appareil-actif-du-jour | un appareil utilisé ce jour-là (une fois par jour) |
+| chargement | un chargement de pellets noté |
+
+Pour l'activer : créer un compte sur goatcounter.com, puis mettre le code du site dans `COMPTEUR` (fichier app.js) et reconstruire index.html. Les chiffres se lisent sur le tableau de bord GoatCounter. Chaque utilisateur peut couper l'envoi dans **Réglages**, **Statistiques anonymes : Non**.
+
+## Partager l'application avec d'autres foyers
+
+Tout le monde utilise la même adresse (votre site). Les autres foyers n'ont **rien à créer** : ni compte, ni GitHub.
+
+**Une seule fois** (5 minutes) :
+1. Sur GitHub, créez un dépôt **privé** `suivi-chauffage-foyers`, en mettant **Add README** sur **On**.
+2. Créez une clé limitée à ce seul dépôt : **No expiration**, **Only select repositories**, puis `suivi-chauffage-foyers`, et **Contents : Read and write**.
+3. Dans l'application : **Réglages**, puis **Ajouter un foyer**. Collez la clé, puis **Vérifier et enregistrer**.
+
+**Pour chaque nouveau foyer** : **Réglages**, puis **Ajouter un foyer**, tapez son nom (par exemple « Dupont »), puis **Créer**. Envoyez le lien ou faites scanner le QR code. En l'ouvrant, le foyer indique sa commune et ses pièces. Il pourra ensuite inviter ses propres appareils.
+
+Chaque foyer a son fichier à part dans le dépôt, et ne voit que ses relevés dans l'application. Les foyers partagent toutefois la même clé : une personne qui s'y connaît pourrait lire les autres fichiers. C'est réservé aux proches. Pour couper un accès, il faut changer la clé et renvoyer les liens.
 
 ## Utilisation
 
@@ -115,6 +152,11 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 3.4 | 9 novembre 2026 | Les animations des fêtes s'affichent 15 jours avant et 15 jours après chaque fête. Entre Noël et le Nouvel An, la fête la plus proche l'emporte. |
+| 3.3 | 9 novembre 2026 | L'animation démarre toujours au départ, même sur un appareil réglé sur « Réduire les animations ». Chacun peut la couper dans les Réglages. |
+| 3.2 | 9 novembre 2026 | Application installable sur le téléphone (icône, fonctionne hors ligne). Accueil simplifié : un gros bouton « Commencer » sans compte. Compteur anonyme d'utilisateurs (GoatCounter), désactivable. |
+| 3.1 | 9 novembre 2026 | Mode sans compte : « Commencer sur cet appareil ». Relevés gardés sur l'appareil, avec sauvegarde et restauration par fichier, et rappel de sauvegarde. |
+| 3.0 | 9 novembre 2026 | Ajout d'un foyer en un clic : un seul dépôt et une seule clé pour tous les autres foyers, un fichier par foyer. |
 | 2.9 | 9 novembre 2026 | Réglage des animations simplifié : Oui / Non. L'intensité est fixée par nous pour tout le monde. |
 | 2.8 | 9 novembre 2026 | Écran de veille fixé à 15 secondes pour tout le monde (plus de réglage). Il s'arrête si l'animation est sur « Arrêt ». |
 | 2.7 | 9 novembre 2026 | Écran de veille : sur l'accueil, l'animation passe devant l'écran après un moment sans toucher (15 s à 3 min, ou jamais) et repasse derrière au premier toucher. |

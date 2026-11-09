@@ -104,6 +104,9 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 2.4 | 9 novembre 2026 | Correctif : le prénom s'enregistre pendant la saisie (bouton OK) et n'est plus effacé par une mise à jour en arrière-plan ; les autres cases ne sont plus effacées non plus. |
+| 2.3 | 9 novembre 2026 | Animations des fêtes automatiques : Noël, Nouvel An (feux d'artifice), Chandeleur, Saint-Valentin, Pâques, Halloween. Désactivables dans les Réglages. |
+| 2.2 | 9 novembre 2026 | Animations : chiffres qui défilent à l'ouverture, étincelles à chaque chargement, flamme qui grossit quand on consomme plus que d'habitude, ciel du moment (soleil, pluie, neige, orage, vent). |
 | 2.1 | 9 novembre 2026 | Animation de l'accueil plus visible ; réglage par appareil : Arrêt, Douce, Normale ou Vive. |
 | 2.0 | 9 novembre 2026 | Nouvel accueil (dehors, maison, sacs) avec fond animé ; écrans séparés « Prendre les températures » et « Chargement pellets » ; écran Détails ; choix de la source de la température extérieure ; emplacements prévus pour thermomètres et poêles connectés (Jolly Mec / Agua IOT). Conversion automatique des données 1.x. |
 | 1.3 | 9 novembre 2026 | Cases des pièces compatibles avec « Scanner du texte » de l'iPhone pour lire un thermomètre avec l'appareil photo. |

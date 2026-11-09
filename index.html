@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 2.1 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 2.4 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -181,6 +181,24 @@ html.anim-off .flame{animation:none}
 @keyframes flicker{0%,100%{transform:scale(1) rotate(0)}40%{transform:scale(1.08) rotate(-4deg)}70%{transform:scale(.96) rotate(3deg)}}
 .f>span{font-size:.85rem;color:var(--muted)}
 
+/* 2.2 : flamme selon la consommation, ciel, compteurs */
+.flame{font-size:calc(2.6rem * var(--fl,1));transition:font-size .6s ease}
+.flt{display:block;font-size:.78rem;opacity:.85;margin-top:2px}
+.sky{font-size:1rem;margin-left:4px}
+.cnt{font-variant-numeric:tabular-nums}
+
+/* 2.3 : fêtes */
+.fete{font-size:1.3rem;vertical-align:2px}
+.fete-msg{font-weight:600;color:var(--warm)}
+html[data-fete="noel"] .t.sacs{background:linear-gradient(135deg,#14532d,#1b212c)}
+html[data-fete="halloween"] .t.sacs{background:linear-gradient(135deg,#3b0764,#1b212c)}
+html[data-fete="valentin"] .t.sacs{background:linear-gradient(135deg,#881337,#1b212c)}
+html[data-fete="paques"] .t.sacs{background:linear-gradient(135deg,#065f46,#1b212c)}
+html[data-fete="nouvelan"] .t.sacs{background:linear-gradient(135deg,#1e1b4b,#000)}
+
+.ok{color:var(--good);font-weight:600;margin-left:6px}
+.row.nowrap{flex-wrap:nowrap}.row.nowrap input{flex:1;min-width:0}
+
 </style>
 </head>
 <body>
@@ -201,7 +219,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='2.1', VERSION_DATE='9 novembre 2026';
+var VERSION='2.4', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -301,7 +319,7 @@ function enregistrer(msg){
     (function tenter(){
       ghEcrire(msg).then(function(){enCours=false;cacher(false);setStatus('ok','Enregistré');fini();if(attente){var m=attente;attente=null;enregistrer(m)}})
       .catch(function(e){
-        if((e.status===409||e.status===422)&&essais<3){essais++;ghLire().then(function(r){appliquer(fusion(r.data,donnees()));sha=r.sha;render();tenter()}).catch(echec);return}
+        if((e.status===409||e.status===422)&&essais<3){essais++;ghLire().then(function(r){appliquer(fusion(r.data,donnees()));sha=r.sha;renderFond();tenter()}).catch(echec);return}
         echec(e)});
     })();
     function echec(e){enCours=false;dirty=true;fini();
@@ -337,6 +355,7 @@ function agreger(j){
 var OpenMeteo={actualiser:function(){
   var R=S&&S.foyer;if(!R||R.lat==null)return Promise.resolve(false);
   var base='latitude='+R.lat+'&longitude='+R.lon+'&hourly=temperature_2m&timezone=Europe%2FParis',today=ymd(new Date());
+  var cur=fetch('https://api.open-meteo.com/v1/forecast?latitude='+R.lat+'&longitude='+R.lon+'&current=weather_code,wind_speed_10m,is_day&timezone=Europe%2FParis').then(function(r){return r.ok?r.json():null}).then(function(j){if(j&&j.current){S.ciel={code:j.current.weather_code,vent:j.current.wind_speed_10m,jour:j.current.is_day===1};renderFond()}}).catch(function(){});
   return fetch('https://api.open-meteo.com/v1/forecast?'+base+'&past_days=92&forecast_days=1').then(function(r){if(!r.ok)throw 0;return r.json()}).then(function(j){
     var h=new Date(),cle=today+'T'+p2(h.getHours())+':00',ix=(j.hourly.time||[]).indexOf(cle);
     if(ix>=0&&typeof j.hourly.temperature_2m[ix]==='number')S.actuelle=Math.round(j.hourly.temperature_2m[ix]*10)/10;
@@ -365,7 +384,7 @@ function connecter(c){
   ghLire().then(function(r){
     lsSet(CFGKEY,cfg);appliquer(r.data);sha=r.sha;mode='pret';cacher(false);
     if(r.v1&&r.sha)enregistrer('Passage au format 2.0');
-    render();Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));render()});
+    render();Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));renderFond()});
   }).catch(function(e){
     mode='connexion';
     ui.err=e.status===401?'Clé refusée par GitHub : vérifiez-la ou créez-en une nouvelle.':(e.status===403?'Cette clé n’a pas le droit d’accéder au dépôt (Contents : Read and write).':(e.repo||e.status===404?'Dépôt introuvable : vérifiez le compte et le nom du dépôt.':'Pas de réponse de GitHub. Vérifiez votre connexion internet.'));
@@ -385,9 +404,9 @@ function demarrer(){
     var reparer=!!(r.v1&&r.sha&&cache&&cache.cfgId===cfgId()&&cache.data&&cache.data.version===2);
     appliquer(enAttente||reparer?(cache.sha===r.sha?donnees():fusion(r.data,donnees())):r.data);
     if(reparer&&!enAttente){enAttente=true}
-    sha=r.sha;mode='pret';setStatus('ok','À jour');render();
+    sha=r.sha;mode='pret';setStatus('ok','À jour');renderFond();
     if(enAttente)enregistrer('Envoi des saisies faites hors ligne');else{cacher(false);if(r.v1&&r.sha)enregistrer('Passage au format 2.0')}
-    Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));render()});
+    Meteo.actualiser().then(function(chg){if(chg)sauver('Météo : '+(S.foyer?S.foyer.commune:''));renderFond()});
   }).catch(function(e){
     if(mode==='pret'){setStatus('err',e.status===401||e.status===403?'Clé GitHub refusée':'Hors ligne : données du téléphone');dirty=true;return}
     mode='connexion';ui.err=e.status===401?'Clé refusée par GitHub : reconnectez-vous.':'Impossible de joindre GitHub. Vérifiez internet puis rechargez.';render();
@@ -442,6 +461,17 @@ function analyse(){
     first:g[0]||null,last:g[g.length-1]||null,cout:total*R.prixSac,kg:total*R.poidsSac,dernierReleve:rel[rel.length-1]||null}
 }
 function predict(reg,t){return Math.max(0,reg.a+reg.b*t)}
+function cielType(){var c=S&&S.ciel;if(!c||c.code==null)return null;var k=c.code;
+  if(k>=95)return 'orage';if((k>=51&&k<=67)||(k>=80&&k<=82))return 'pluie';if((k>=71&&k<=77)||k===85||k===86)return 'neige';if(k===45||k===48)return 'brouillard';if(k<=1)return c.jour?'soleil':'nuit';if(k<=3)return 'nuages';return null}
+function cielIcone(){var t=cielType(),v=S&&S.ciel&&S.ciel.vent>=35;var i={orage:'⛈️',pluie:'🌧️',neige:'🌨️',brouillard:'🌫️',soleil:'☀️',nuit:'🌙',nuages:'⛅'}[t]||'';return i+(v?' 💨':'')}
+function cielTexte(){var t=cielType(),c=S&&S.ciel;var m={orage:'orage',pluie:'pluie',neige:'neige',brouillard:'brouillard',soleil:'ensoleillé',nuit:'ciel dégagé',nuages:'nuageux'}[t]||'';if(c&&c.vent>=35)m+=(m?', ':'')+'vent '+Math.round(c.vent)+' km/h';return m}
+function flamme(A){
+  // compare les 7 derniers jours à la moyenne de la saison
+  var ch=A.ch,now=Date.now(),d7=ch.filter(function(c){return now-parseDT(c.t)<7*864e5}),s7=sum(d7.map(function(c){return c.sacs}));
+  if(!A.rate||ch.length<4||!A.first)return {k:1,txt:''};
+  var jours=Math.min(7,(now-A.first.ms)/864e5);if(jours<3)return {k:1,txt:''};
+  var r=(s7/jours)/A.rate,k=Math.max(0.8,Math.min(1.6,0.5+0.5*r));
+  return {k:k,txt:r>1.15?'cette semaine : +'+Math.round((r-1)*100)+' % 🔥':(r<0.85?'cette semaine : '+Math.round((r-1)*100)+' % 🌿':'')}}
 function dehorsMaintenant(){
   var src=F().extSource||'auto',rel=relevesSaison().filter(function(r){return r.ext!=null}),der=rel[rel.length-1];
   if(src==='manuel')return der?{v:der.ext,note:'noté '+quand(der.t)}:{v:null,note:'à noter au prochain relevé'};
@@ -525,18 +555,19 @@ function vueFoyer(){
   '<p class="hint">Ces réglages sont communs à tout le foyer. Vous pourrez inviter la famille ensuite, depuis les Réglages.</p></div>';
 }
 function vueAccueil(){
-  var A=analyse(),d=dehorsMaintenant(),dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
+  var A=analyse(),fl=flamme(A),d=dehorsMaintenant(),dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
   var h='<div class="wrap">'+
-  '<header class="top"><div><h1>Suivi pellets</h1><p class="sub">'+esc(F().commune)+' · '+esc(F().saison)+'</p><p class="sync" id="status">'+statusHTML()+'</p></div><button class="gear" data-go="reglages" aria-label="Réglages">⚙︎</button></header>'+
+  '<header class="top"><div><h1>Suivi pellets'+(feteDuJour()?' <span class="fete" title="'+FETES[feteDuJour()].nom+'">'+FETES[feteDuJour()].ico+'</span>':'')+'</h1><p class="sub">'+esc(F().commune)+' · '+esc(F().saison)+'</p><p class="sync" id="status">'+statusHTML()+'</p></div><button class="gear" data-go="reglages" aria-label="Réglages">⚙︎</button></header>'+
   (ui.viaInvitation&&!estInstallee()&&(/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document))?'<section class="card install"><h2>📲 Installez-la maintenant</h2><p class="hint">Touchez <b>Partager</b> puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>, <b>avant</b> de quitter cette page : l’icône gardera la connexion.</p></section>':'')+
   '<section class="big2" aria-label="Températures">'+
-  '<div class="t ext"><span class="l">Dehors</span><span class="v">'+(d.v!=null?nf(d.v,1)+'<small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+'</span></div>'+
-  '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?nf(mai,1)+'<small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v" id="compteur">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div></div><span class="flame" aria-hidden="true">🔥</span></div></section>'+
+  '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
+  '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
+  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'">🔥</span></div></section>'+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">🪵</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
   if(A.rate!=null)h+='<p class="last">En moyenne <b>'+nf(A.rate,2)+' sac par jour</b> cette saison</p>';
+  if(feteDuJour())h+='<p class="last fete-msg">'+FETES[feteDuJour()].ico+' '+FETES[feteDuJour()].msg+'</p>';
   h+='<button class="det" data-go="details">📊 Voir tous les détails →</button></div>';
   return h;
 }
@@ -600,9 +631,11 @@ function vueDetails(){
 function vueReglages(){
   var R=F(),src=R.extSource||'auto',h='<div class="wrap">'+entete('Réglages',true);
   var an=(cfg&&cfg.anim)||(Fond.systemeCalme()?'off':'normale');
-  h+='<section class="card"><h2>Cet appareil</h2><label class="f">Mon prénom (apparaît dans le journal)<input id="r-moi" data-moi="1" value="'+esc(moi())+'" placeholder="ex. Benoît"></label>'+
+  h+='<section class="card"><h2>Cet appareil</h2><label class="f" for="r-moi">Mon prénom (apparaît dans le journal) <span id="moi-ok" class="ok">'+(moi()?'✓ enregistré':'')+'</span></label><div class="row nowrap"><input id="r-moi" data-moi="1" value="'+esc(moi())+'" placeholder="ex. Marie" autocomplete="given-name" autocapitalize="words" enterkeyhint="done"><button type="button" class="primary" data-a="moiok">OK</button></div>'+
     '<div class="f"><span>Animation de l’accueil (neige et braises)</span><div class="seg" role="radiogroup" aria-label="Animation de l’accueil">'+
     [['off','Arrêt'],['douce','Douce'],['normale','Normale'],['vive','Vive']].map(function(o){return '<button type="button" role="radio" aria-checked="'+(an===o[0])+'" data-a="anim" data-n="'+o[0]+'" class="'+(an===o[0]?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
+    '<div class="f"><span>Animations des fêtes (Noël, Nouvel An, Chandeleur, Saint-Valentin, Pâques, Halloween)</span><div class="seg" role="radiogroup" aria-label="Animations des fêtes">'+
+    [['auto','Automatiques'],['off','Désactivées']].map(function(o){var on=((cfg&&cfg.fetes)||'auto')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="fetes" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
     (Fond.systemeCalme()&&!(cfg&&cfg.anim)?'<p class="hint">Animation coupée car cet appareil demande de « réduire les animations » (Accessibilité). Vous pouvez la rallumer ici.</p>':'')+'</section>';
   h+='<section class="card"><h2>Température extérieure</h2><div class="radios">';
   EXT_SOURCES.forEach(function(o){h+='<label class="radio'+(o.bientot?' off':'')+'"><input type="radio" name="extSource" value="'+o.id+'"'+(src===o.id?' checked':'')+(o.bientot?' disabled':'')+'><span><b>'+o.lab+(o.bientot?' <span class="soon">bientôt</span>':'')+'</b><span class="s">'+o.desc+'</span></span></label>'});
@@ -644,6 +677,19 @@ function csv(A){
    Fond animé : neige (froid dehors) en haut, braises (poêle) en bas.
    Plus il fait froid, plus il neige. Coupé si l'appareil demande moins d'animations.
    ================================================================== */
+function paques(an){var a=an%19,b=Math.floor(an/100),c=an%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451),mo=Math.floor((h+l-7*m+114)/31),j=((h+l-7*m+114)%31)+1;return new Date(an,mo-1,j)}
+var FETES={noel:{nom:'Noël',ico:'🎄',msg:'Joyeux Noël !'},nouvelan:{nom:'Nouvel An',ico:'🎆',msg:'Bonne année !'},halloween:{nom:'Halloween',ico:'🎃',msg:'Joyeux Halloween !'},paques:{nom:'Pâques',ico:'🐣',msg:'Joyeuses Pâques !'},valentin:{nom:'Saint-Valentin',ico:'❤️',msg:'Bonne Saint-Valentin !'},chandeleur:{nom:'Chandeleur',ico:'🥞',msg:'Bonne Chandeleur !'}};
+function feteDuJour(d){
+  if(window.__fete!==undefined)return window.__fete;
+  if(cfg&&cfg.fetes==='off')return null;
+  d=d||new Date();var m=d.getMonth()+1,j=d.getDate(),t=new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime();
+  if((m===12&&j===31)||(m===1&&j<=2))return 'nouvelan';
+  if(m===12&&j<=30)return 'noel';
+  if((m===10&&j>=24)||(m===11&&j===1))return 'halloween';
+  if(m===2&&j===2)return 'chandeleur';
+  if(m===2&&(j===13||j===14))return 'valentin';
+  var p=paques(d.getFullYear()).getTime();if(t>=p-7*864e5&&t<=p+864e5)return 'paques';
+  return null}
 var Fond=(function(){
   var cv=document.getElementById('fond'),ctx=cv&&cv.getContext&&cv.getContext('2d'),W=0,H=0,dpr=1,flocons=[],braises=[],actif=false,raf=null,der=0,froid=0.5,force=1,visible=false;
   var calme=false;try{calme=window.matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){}
@@ -652,46 +698,103 @@ var Fond=(function(){
   function taille(){if(!cv)return;dpr=Math.min(2,window.devicePixelRatio||1);W=window.innerWidth;H=window.innerHeight;cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0)}
   function flocon(y){return {x:Math.random()*W,y:y==null?-10:y,r:1.4+Math.random()*3.4,v:0.35+Math.random()*0.8,o:Math.random()*Math.PI*2,a:0.45+Math.random()*0.5}}
   function braise(y){return {x:Math.random()*W,y:y==null?H+5:y,r:1.2+Math.random()*2.6,v:0.45+Math.random()*0.9,o:Math.random()*Math.PI*2,vie:1}}
-  function peupler(){var f=facteur(),cap=Math.min(1,700/Math.sqrt(W*H));var nf=Math.round((W*H/5200)*(0.55+froid*0.9)*f*Math.max(cap,0.45)),nb=Math.round((W*H/13000)*f*Math.max(cap,0.45));
+  function peupler(){var f=facteur(),cap=Math.min(1,700/Math.sqrt(W*H));var meteoF=(ciel==='pluie'||ciel==='orage')?1.3:(ciel==='neige'?1.6:1);var nf=Math.round((W*H/5200)*(0.55+froid*0.9)*f*meteoF*Math.max(cap,0.45)),nb=Math.round((W*H/13000)*f*Math.max(cap,0.45));
     flocons=[];braises=[];for(var i=0;i<nf;i++)flocons.push(flocon(Math.random()*H));for(var j=0;j<nb;j++)braises.push(braise(H*0.45+Math.random()*H*0.55))}
-  function couleurs(){var cs=getComputedStyle(document.documentElement);return {neige:cs.getPropertyValue('--snow').trim()||'#ffffff',braise:cs.getPropertyValue('--accent').trim()||'#d9611a'}}
+  var ciel=null,ancien=null,vent=0,soleilA=0,etincelles=[],theme=null,deco=[],sprites={},prochainFeu=0;
+  function sprite(ch,px){var k=ch+px;if(sprites[k])return sprites[k];var c=document.createElement('canvas'),s=Math.ceil(px*1.4);c.width=s*dpr;c.height=s*dpr;var x=c.getContext('2d');x.scale(dpr,dpr);x.font=px+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillText(ch,s/2,s/2+px*0.05);sprites[k]={c:c,s:s};return sprites[k]}
+  var JEUX={noel:{ch:['❄️','⭐','❄️','🎁'],mode:'tombe'},halloween:{ch:['🦇','🦇','🎃','👻'],mode:'vole'},paques:{ch:['🥚','🐣','🌷','🥚'],mode:'tombe'},valentin:{ch:['❤️','💕','❤️'],mode:'monte'},chandeleur:{ch:['🥞'],mode:'tombe'},nouvelan:{ch:['✨','⭐'],mode:'tombe'}};
+  function unDeco(init){var J=JEUX[theme];if(!J)return null;var px=22+Math.random()*18,o={ch:J.ch[Math.floor(Math.random()*J.ch.length)],px:px,o:Math.random()*6.28,rot:(Math.random()-.5)*0.6,vr:(Math.random()-.5)*0.02,a:0.9};
+    if(J.mode==='tombe'){o.x=Math.random()*W;o.y=init?Math.random()*H:-40;o.vy=0.4+Math.random()*0.7;o.vx=0}
+    else if(J.mode==='monte'){o.x=Math.random()*W;o.y=init?H*0.3+Math.random()*H*0.7:H+40;o.vy=-(0.4+Math.random()*0.7);o.vx=0}
+    else{var g=Math.random()<.5;o.x=init?Math.random()*W:(g?-40:W+40);o.y=40+Math.random()*H*0.55;o.vx=(g?1:-1)*(1.2+Math.random()*1.6);o.vy=0;if(o.ch==='🎃'){o.x=Math.random()*W;o.y=init?H*0.5+Math.random()*H*0.5:H+40;o.vx=0;o.vy=-(0.3+Math.random()*0.4)}}
+    return o}
+  function peuplerDeco(){deco=[];if(!theme||!JEUX[theme])return;var n=Math.round(Math.min(40,W*H/19000)*Math.max(0.6,facteur()));for(var i=0;i<n;i++)deco.push(unDeco(true))}
+  function pluieOuNeige(t){return t==='pluie'||t==='orage'||t==='neige'}
+  function couleurs(){var cs=getComputedStyle(document.documentElement);var b=cs.getPropertyValue('--accent').trim()||'#d9611a';if(theme==='halloween')b=Math.random()<.5?'#8b5cf6':'#f97316';if(theme==='valentin')b='#e11d48';return {neige:cs.getPropertyValue('--snow').trim()||'#ffffff',braise:b}}
   function dessiner(t){
     raf=requestAnimationFrame(dessiner);if(t-der<33)return;var dt=Math.min(3,(t-der)/16.7);der=t;
     ctx.clearRect(0,0,W,H);var c=couleurs();
-    ctx.fillStyle=c.neige;
-    for(var i=0;i<flocons.length;i++){var f=flocons[i];f.y+=f.v*dt;f.o+=0.02*dt;f.x+=Math.sin(f.o)*0.35*dt;
+    var dx=Math.min(4,vent/12);
+    if(ciel==='soleil'){soleilA+=0.004*dt;var sx=W-90,sy=70,g=ctx.createRadialGradient(sx,sy,10,sx,sy,190);g.addColorStop(0,'rgba(255,214,102,.55)');g.addColorStop(1,'rgba(255,214,102,0)');
+      ctx.globalAlpha=1;ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,190,0,6.283);ctx.fill();
+      ctx.strokeStyle='rgba(255,196,60,.45)';ctx.lineWidth=3;for(var q=0;q<12;q++){var an=soleilA+q*Math.PI/6;ctx.beginPath();ctx.moveTo(sx+Math.cos(an)*46,sy+Math.sin(an)*46);ctx.lineTo(sx+Math.cos(an)*78,sy+Math.sin(an)*78);ctx.stroke()}
+      ctx.fillStyle='rgba(255,200,70,.85)';ctx.beginPath();ctx.arc(sx,sy,34,0,6.283);ctx.fill()}
+    var pluie=ciel==='pluie'||ciel==='orage';
+    ctx.fillStyle=c.neige;ctx.strokeStyle=c.neige;
+    for(var i=0;i<flocons.length;i++){var f=flocons[i];
+      if(pluie){f.y+=(f.v*7+3)*dt;f.x+=(dx+0.6)*dt}else{f.y+=f.v*dt*(ciel==='neige'?1.4:1);f.o+=0.02*dt;f.x+=(Math.sin(f.o)*0.35+dx)*dt}
+      if(f.x>W+10)f.x-=W+20;
       if(f.y>H*0.8){f.a-=0.01*dt}if(f.y>H+5||f.a<=0){flocons[i]=flocon()}
-      ctx.globalAlpha=Math.max(0,f.a);ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}
+      ctx.globalAlpha=Math.max(0,f.a)*(pluie?0.6:1);
+      if(pluie){ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(f.x,f.y);ctx.lineTo(f.x-(dx+0.6)*3,f.y-14);ctx.stroke()}
+      else{ctx.beginPath();ctx.arc(f.x,f.y,f.r,0,6.283);ctx.fill()}}
+    if(ciel==='orage'&&Math.random()<0.004*dt){ctx.globalAlpha=0.35;ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H)}
     ctx.fillStyle=c.braise;
     for(var j=0;j<braises.length;j++){var b=braises[j];b.y-=b.v*dt;b.o+=0.05*dt;b.x+=Math.sin(b.o)*0.4*dt;b.vie-=0.0011*dt*(1+b.v);
       if(b.vie<=0||b.y<H*0.2){braises[j]=braise()}
       var al=Math.max(0,b.vie);ctx.globalAlpha=al*0.18;ctx.beginPath();ctx.arc(b.x,b.y,b.r*2.6,0,6.283);ctx.fill();
       ctx.globalAlpha=al*0.85;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,6.283);ctx.fill()}
+    for(var e2=etincelles.length-1;e2>=0;e2--){var s2=etincelles[e2];s2.vy+=0.14*dt;s2.vx*=0.985;s2.x+=s2.vx*dt;s2.y+=s2.vy*dt;s2.vie-=0.011*dt;
+      if(s2.vie<=0){etincelles.splice(e2,1);continue}
+      ctx.globalAlpha=Math.max(0,s2.vie);ctx.fillStyle=s2.c;ctx.beginPath();ctx.arc(s2.x,s2.y,s2.r,0,6.283);ctx.fill()}
+    for(var k=0;k<deco.length;k++){var o=deco[k];o.o+=0.03*dt;o.rot+=o.vr*dt;
+      if(o.vx){o.x+=o.vx*dt;o.y+=Math.sin(o.o*2)*1.2*dt}else{o.y+=o.vy*dt;o.x+=Math.sin(o.o)*0.5*dt}
+      if(o.y>H+50||o.y<-60||o.x<-60||o.x>W+60){deco[k]=unDeco(false);continue}
+      var sp=sprite(o.ch,Math.round(o.px));ctx.save();ctx.globalAlpha=o.a;ctx.translate(o.x,o.y);ctx.rotate(o.vx?Math.sin(o.o*2)*0.15:o.rot);ctx.drawImage(sp.c,-sp.s/2,-sp.s/2,sp.s,sp.s);ctx.restore()}
+    if(theme==='nouvelan'&&t>prochainFeu){prochainFeu=t+900+Math.random()*1400;bouquet(W*0.15+Math.random()*W*0.7,H*0.12+Math.random()*H*0.35)}
     ctx.globalAlpha=1}
-  function demarrer(){if(!ctx||!facteur()||actif)return;actif=true;der=0;raf=requestAnimationFrame(dessiner)}
+  function bouquet(x,y){var pal=[['#ff5d8f','#ffd166','#ffffff'],['#4cc9f0','#b5e48c','#ffffff'],['#f72585','#7209b7','#ffd166'],['#ffd166','#ef5d1a','#ffffff']][Math.floor(Math.random()*4)];
+    for(var i=0;i<70;i++){var a=i/70*6.283,sp=2+Math.random()*3.5;etincelles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:1.6+Math.random()*1.8,vie:1,c:pal[i%3]})}}
+  function demarrer(){if(!ctx||!facteur()||actif)return;var th=feteDuJour();if(th!==theme){theme=th;peuplerDeco()}actif=true;der=0;raf=requestAnimationFrame(dessiner)}
   function arreter(){actif=false;if(raf)cancelAnimationFrame(raf);raf=null}
-  window.addEventListener('resize',function(){taille();peupler()});
+  window.addEventListener('resize',function(){taille();peupler();peuplerDeco()});
   document.addEventListener('visibilitychange',function(){if(document.hidden)arreter();else if(visible)demarrer()});
   if(cv){taille();peupler()}
   return {
     montrer:function(oui,tempDehors){if(!cv)return;
       if(tempDehors!=null){var nv=Math.max(0,Math.min(1,(12-tempDehors)/14));if(Math.abs(nv-froid)>0.08){froid=nv;peupler()}}
       visible=oui&&facteur()>0;cv.style.opacity=visible?'1':'0';if(visible)demarrer();else{arreter();ctx&&ctx.clearRect(0,0,W,H)}},
-    regler:function(){arreter();peupler();},
+    regler:function(){arreter();peupler();theme=undefined;},
+    ciel:function(type,v){var n=pluieOuNeige(type);ciel=type;vent=v||0;if(n!==pluieOuNeige(ancien))peupler();ancien=type},
+    feu:function(x,y){if(!ctx||!facteur())return;var cols=['#ff9a3c','#ffd166','#ef5d1a','#ffb703','#ffffff'];
+      for(var i=0;i<120;i++){var a=Math.random()*Math.PI*2,sp=2.5+Math.random()*8;etincelles.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-5,r:2+Math.random()*3.5,vie:1,c:cols[i%cols.length]})}
+      if(!actif){visible=true;cv.style.opacity='1';demarrer()}},
     systemeCalme:function(){return calme}
   };
 })();
 
 /* ---------- rendu ---------- */
+var renduEnAttente=false;
+function enSaisie(){var a=document.activeElement;return !!(a&&app.contains(a)&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=='radio'&&a.type!=='submit')}
+function renderFond(){if(enSaisie()){renduEnAttente=true;return}render()}
+app.addEventListener('focusout',function(){setTimeout(function(){if(renduEnAttente&&!enSaisie()){renduEnAttente=false;render()}},250)});
 function render(){
+  renduEnAttente=false;
   var e=ecran();
+  var garde={},foc=document.activeElement&&app.contains(document.activeElement)?document.activeElement.id:null;
+  Array.prototype.forEach.call(app.querySelectorAll('input[id],textarea[id]'),function(el){if(el.dataset.tape)garde[el.id]=el.value});
   if(mode==='connexion')e='bienvenue';else if(mode==='chargement'||!S)e='attente';else if(!S.foyer)e='foyer';
   if(e==='attente'){app.innerHTML=vueChargementDonnees();Fond.montrer(true,null);return}
   var v={bienvenue:vueBienvenue,foyer:vueFoyer,accueil:vueAccueil,temperatures:vueTemperatures,chargement:vueChargement,details:vueDetails,reglages:vueReglages}[e]||vueAccueil;
   app.innerHTML=v();
+  Object.keys(garde).forEach(function(id){var el=document.getElementById(id);if(el){el.value=garde[id];el.dataset.tape='1'}});
+  if(foc){var fe=document.getElementById(foc);if(fe&&fe.focus)try{fe.focus({preventScroll:true})}catch(x){}}
   var dh=null;try{dh=(e==='accueil'&&S&&S.foyer)?dehorsMaintenant().v:null}catch(err){}
+  document.documentElement.setAttribute('data-fete',feteDuJour()||'');
   document.documentElement.classList.toggle('anim-on',!!(cfg&&cfg.anim&&cfg.anim!=='off'));document.documentElement.classList.toggle('anim-off',!!(cfg&&cfg.anim==='off'));
+  if(S&&S.ciel)Fond.ciel(cielType(),S.ciel.vent);
   Fond.montrer(e==='accueil'||e==='bienvenue',dh);
+  if(e==='accueil')compter();
+  if(e==='accueil'&&ui.fete){ui.fete=false;setTimeout(function(){var c=document.getElementById('compteur');if(!c)return;var r=c.getBoundingClientRect();Fond.feu(r.left+r.width/2,r.top+r.height/2)},120)}
+}
+var dejaCompte=false;
+function compter(){
+  if(dejaCompte)return;dejaCompte=true;var anim=(cfg&&cfg.anim)?cfg.anim!=='off':!Fond.systemeCalme();if(!anim)return;
+  var t0=null,dur=1400;
+  function pas(t){if(!t0)t0=t;var p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    Array.prototype.forEach.call(document.querySelectorAll('.cnt'),function(el){var v=+el.getAttribute('data-val'),d=+el.getAttribute('data-dec');el.textContent=nf(v*e,d)});
+    if(p<1)requestAnimationFrame(pas)}
+  requestAnimationFrame(pas);
 }
 var toastT=null;
 function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('on')},2600)}
@@ -700,6 +803,8 @@ function copier(id){var t=document.getElementById(id);try{navigator.clipboard.wr
 app.addEventListener('click',function(ev){
   var go=ev.target.closest('[data-go]');if(go){ev.preventDefault();aller(go.getAttribute('data-go'));return}
   var b=ev.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
+  if(a==='moiok'){var im=document.getElementById('r-moi');if(im){garderPrenom(im.value,true);delete im.dataset.tape;im.blur()}return}
+  if(a==='fetes'){cfg.fetes=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Fêtes : '+b.textContent);return}
   if(a==='anim'){cfg.anim=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Animation : '+b.textContent);return}
   if(a==='logout'){lsDel(CFGKEY);lsDel(CACHEKEY);cfg=null;S=null;sha=null;mode='connexion';ui.invite=false;aller('accueil')}
   else if(a==='commune'){ui.commune=!ui.commune;render()}
@@ -722,7 +827,7 @@ app.addEventListener('click',function(ev){
 app.addEventListener('change',function(ev){
   var el=ev.target;
   if(el.name==='extSource'){F().extSource=el.value;F().maj=Date.now();sauver('Source de la température extérieure');toast('Température extérieure : '+EXT_SOURCES.filter(function(o){return o.id===el.value})[0].lab);return}
-  if(el.getAttribute('data-moi')){cfg.moi=el.value.trim();lsSet(CFGKEY,cfg);toast('Prénom enregistré');return}
+  if(el.getAttribute('data-moi')){garderPrenom(el.value,true);delete el.dataset.tape;return}
   var pr=el.getAttribute('data-pren');if(pr){var v=el.value.trim();if(!v)return;pieces().forEach(function(p){if(p.id===pr)p.nom=v});F().maj=Date.now();sauver('Pièce renommée');toast('Pièce renommée');return}
   var r=el.getAttribute('data-r');if(r){var old=F().saison;if(el.type==='text'){var t=el.value.trim();if(t)F()[r]=t}else{var n=num(el.value);if(n!=null&&n>0)F()[r]=n}
     if(r==='saison'&&old!==F().saison){var now=Date.now();S.chargements.concat(S.releves).forEach(function(x){if((x.saison||old)===old){x.saison=F().saison;x.maj=now}})}
@@ -732,7 +837,7 @@ app.addEventListener('submit',function(ev){
   ev.preventDefault();var f=ev.target;
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
-    var n=ui.charge;ui.charge=1;ui.autreHeure=false;aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
+    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;aller('accueil');toast('🔥 '+sacsTxt(n)+' noté'+(n>=2?'s':'')+', merci !');
     var c=document.getElementById('compteur');if(c){c.classList.add('pop')}return}
   if(f.id==='fTemp'){var temps={},nb=0;Array.prototype.forEach.call(f.querySelectorAll('[data-piece]'),function(el){var v=num(el.value);if(v!=null&&v>-30&&v<45){temps[el.getAttribute('data-piece')]=Math.round(v*10)/10;nb++}});
     var ext=f.ext?num(f.ext.value):null;
@@ -751,7 +856,7 @@ app.addEventListener('submit',function(ev){
         S.foyer={nom:com,commune:com,cp:cp,lat:g.lat,lon:g.lon,extSource:'auto',pieces:(noms.length?noms:['Salon']).map(function(n,i){return {id:'p'+(i+1),nom:n,source:'saisie'}}),poidsSac:15,prixSac:6.9,saison:'Hiver 2026-2027',historique:[],maj:Date.now()}}
       else{var chg=S.foyer.lat!==g.lat||S.foyer.lon!==g.lon;S.foyer.commune=com;S.foyer.cp=cp;S.foyer.lat=g.lat;S.foyer.lon=g.lon;S.foyer.maj=Date.now();if(chg)S.meteo={};ui.commune=false}
       ui.err='';sauver('Foyer : '+com);aller('accueil');toast(nouveau?'Foyer créé !':'Commune enregistrée');
-      Meteo.actualiser().then(function(c){if(c)sauver('Météo : '+com);render()});
+      Meteo.actualiser().then(function(c){if(c)sauver('Météo : '+com);renderFond()});
     }).catch(function(){ui.err='Impossible de chercher la commune (réseau ?).';btn.disabled=false;render()});
     return}
   if(f.id==='fConn'){connecter({owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()});return}
@@ -760,6 +865,12 @@ app.addEventListener('submit',function(ev){
 });
 
 document.getElementById('version').textContent='Suivi pellets · version '+VERSION+' · '+VERSION_DATE;
+app.addEventListener('keydown',function(ev){var el=ev.target;if(ev.key==='Enter'&&el.getAttribute&&el.getAttribute('data-moi')){ev.preventDefault();garderPrenom(el.value,true);delete el.dataset.tape;el.blur()}});
+app.addEventListener('input',function(ev){var el=ev.target;if(el.id&&(el.tagName==='INPUT'||el.tagName==='TEXTAREA'))el.dataset.tape='1';
+  if(el.getAttribute&&el.getAttribute('data-moi')){clearTimeout(window.__tMoi);window.__tMoi=setTimeout(function(){garderPrenom(el.value,false)},500)}});
+function garderPrenom(v,msg){v=String(v||'').trim();if(!cfg)return;var avant=cfg.moi||'';cfg.moi=v;lsSet(CFGKEY,cfg);var ok=document.getElementById('moi-ok');if(ok)ok.textContent=v?'✓ enregistré':'';if(msg&&v!==avant)toast(v?'Prénom enregistré : '+v:'Prénom effacé')}
+window.__majCiel=function(c){if(S){S.ciel=c;renderFond()}};
+window.__majFete=function(f){window.__fete=f;Fond.regler();render()};
 demarrer();
 })();
 

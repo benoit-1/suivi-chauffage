@@ -17,18 +17,18 @@ Si vous n'en avez pas encore : <https://github.com/signup> (gratuit).
 ### 2. Créer le dépôt du site (public)
 
 1. En haut à droite, cliquez sur **+**, puis **New repository**.
-2. Nom : `suivi-pellets`. Visibilité : **Public**. Cliquez sur **Create repository**.
+2. Nom : `suivi-chauffage`. Visibilité : **Public**. Cliquez sur **Create repository**.
 3. Sur la page du dépôt, cliquez sur **uploading an existing file**. Déposez `index.html` (et ce `README.md` si vous voulez), puis cliquez sur **Commit changes**.
 4. Allez dans **Settings**, puis **Pages**. Dans **Branch**, choisissez `main` et `/ (root)`, puis cliquez sur **Save**.
 5. Au bout d'une ou deux minutes, le site est en ligne à l'adresse
-   `https://VOTRE-IDENTIFIANT.github.io/suivi-pellets/`
+   `https://VOTRE-IDENTIFIANT.github.io/suivi-chauffage/`
 
 > Le dépôt du site doit être public pour que GitHub Pages soit gratuit. Il ne contient que le programme, jamais vos relevés.
 
 ### 3. Créer le dépôt des données (privé)
 
 1. Cliquez sur **+**, puis **New repository**.
-2. Nom : `suivi-pellets-donnees`. Visibilité : **Private**.
+2. Nom : `suivi-chauffage-donnees`. Visibilité : **Private**.
 3. Cochez **Add a README file**, puis cliquez sur **Create repository**.
 
 Vous n'avez rien d'autre à y mettre : l'application crée elle-même le fichier `donnees.json`.
@@ -38,16 +38,16 @@ Vous n'avez rien d'autre à y mettre : l'application crée elle-même le fichier
 C'est elle qui permet à l'application d'écrire dans le dépôt privé, et **seulement dans celui-là**.
 
 1. Ouvrez <https://github.com/settings/personal-access-tokens/new>.
-2. **Token name** : `Suivi pellets`.
+2. **Token name** : `Suivi chauffage`.
 3. **Expiration** : choisissez la durée la plus longue proposée et notez la date. À l'échéance, il faudra recréer une clé.
-4. **Repository access** : cochez **Only select repositories**, puis choisissez `suivi-pellets-donnees`.
+4. **Repository access** : cochez **Only select repositories**, puis choisissez `suivi-chauffage-donnees`.
 5. **Permissions**, puis **Repository permissions**, puis **Contents** : choisissez **Read and write**.
 6. Cliquez sur **Generate token**, puis copiez la clé. Elle commence par `github_pat_` et ne s'affiche qu'une fois.
 
 ### 5. Connecter votre téléphone
 
 1. Ouvrez l'adresse du site sur votre téléphone.
-2. Indiquez votre identifiant GitHub, le dépôt (`suivi-pellets-donnees`) et collez la clé.
+2. Indiquez votre identifiant GitHub, le dépôt (`suivi-chauffage-donnees`) et collez la clé.
 3. Indiquez la commune, le code postal et les pièces, en mettant **en premier la pièce du poêle**.
 4. Dans **Réglages**, renseignez « Qui utilise ce téléphone ? » : votre prénom apparaîtra dans le journal.
 5. Ajoutez la page à l'écran d'accueil :
@@ -88,7 +88,7 @@ Sur iPhone et iPad, ouvrez le lien dans **Safari**, puis tout de suite **Partage
 | Message | Que faire |
 |---|---|
 | « Clé refusée par GitHub » | La clé a expiré ou a été supprimée. Recréez-la (étape 4), puis **Réglages**, **Changer la connexion**, sur chaque téléphone. |
-| « Dépôt introuvable » | Vérifiez l'identifiant, le nom du dépôt, et que la clé a bien accès à `suivi-pellets-donnees`. |
+| « Dépôt introuvable » | Vérifiez l'identifiant, le nom du dépôt, et que la clé a bien accès à `suivi-chauffage-donnees`. |
 | « La météo n'est pas joignable » | Open-Meteo ne répond pas pour le moment. Notez la température dehors à la main, ou réessayez plus tard. |
 | Téléphone perdu | Sur GitHub, allez dans **Settings**, **Developer settings**, **Personal access tokens**, supprimez la clé, puis recréez-en une. |
 
@@ -104,6 +104,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 2.1 | 9 novembre 2026 | Animation de l'accueil plus visible ; réglage par appareil : Arrêt, Douce, Normale ou Vive. |
 | 2.0 | 9 novembre 2026 | Nouvel accueil (dehors, maison, sacs) avec fond animé ; écrans séparés « Prendre les températures » et « Chargement pellets » ; écran Détails ; choix de la source de la température extérieure ; emplacements prévus pour thermomètres et poêles connectés (Jolly Mec / Agua IOT). Conversion automatique des données 1.x. |
 | 1.3 | 9 novembre 2026 | Cases des pièces compatibles avec « Scanner du texte » de l'iPhone pour lire un thermomètre avec l'appareil photo. |
 | 1.2 | 9 novembre 2026 | L'icône ajoutée à l'écran d'accueil (iPhone, iPad) garde la connexion. Numéro de version affiché. |

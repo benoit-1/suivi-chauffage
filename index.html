@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 3.7 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 3.8 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -217,6 +217,8 @@ html.veille #app{filter:saturate(.85) brightness(.97);transition:filter .6s}
 .install-ios{background:var(--accent-soft);border-radius:12px;padding:10px 12px;color:var(--ink)}
 .hero .card.left .primary.big{width:100%}
 
+.avance{text-align:center;margin-top:6px}.avance .lnk{font-size:14px;opacity:.75}
+
 </style>
 </head>
 <body>
@@ -237,7 +239,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='3.7', VERSION_DATE='9 novembre 2026';
+var VERSION='3.8', VERSION_DATE='9 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -580,6 +582,10 @@ function vueBienvenue(){
   h+='<div class="logo" aria-hidden="true">🔥</div><h1 class="big-title">Suivi pellets</h1><p class="lead">Notez vos chargements et vos températures, et découvrez combien vous consommez selon le froid.</p>';
   if(ui.err)h+='<p class="errbox">'+esc(ui.err)+'</p>';
   h+='<section class="card left"><button class="primary big" data-a="local">🔥 Commencer</button><p class="hint">Gratuit, sans compte : vos relevés restent sur cet appareil.</p>'+blocInstall()+'</section>';
+  // v3.8 : options GitHub repliées derrière « Options avancées »
+  var avance=ui.avance||!!ui.err||!!(cfg&&cfg.owner);
+  if(!avance){h+='<p class="avance"><button class="lnk" data-a="avance">Options avancées</button></p>';return h+'</div>'}
+  h+='<p class="hint avance">Pour une famille déjà équipée qui partage ses relevés avec GitHub.</p>';
   h+='<details class="card left"><summary>J’ai reçu un lien ou un code de connexion</summary><p class="hint">Ouvrez-le simplement : l’application se connecte toute seule. Vous pouvez aussi coller ici le lien ou le code reçu.</p>';
   h+='<form id="fCode" class="stack"><input id="c-code" name="code" autocomplete="off" spellcheck="false" placeholder="Lien ou code de connexion"><button class="primary" type="submit">Me connecter</button></form></details>';
   h+='<details class="card left"><summary>Première installation (avec une clé GitHub)</summary><form id="fConn" class="stack">'+
@@ -947,6 +953,7 @@ app.addEventListener('click',function(ev){
   else if(a==='csv'){ui.csv=!ui.csv;render()}
   else if(a==='copycsv')copier('csv');
   else if(a==='copylien')copier('lien');
+  else if(a==='avance'){ui.avance=true;render()}
   else if(a==='sharepublic'){statistique('partage');try{navigator.share({title:'Suivi pellets',text:'Une petite application gratuite pour suivre sa consommation de pellets selon le froid :',url:lienPublic()}).catch(function(){})}catch(e){copier('lienpublic')}}
   else if(a==='copypublic'){statistique('partage');copier('lienpublic')}
   else if(a==='share'){try{navigator.share({title:'Suivi pellets',text:'Rejoins notre suivi des pellets :',url:document.getElementById('lien').value}).catch(function(){})}catch(e){copier('lien')}}

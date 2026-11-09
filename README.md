@@ -153,6 +153,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 3.8 | 9 novembre 2026 | Écran de départ épuré : seul « Commencer » est visible ; les connexions GitHub sont rangées sous « Options avancées ». |
 | 3.7 | 9 novembre 2026 | Compteur d'utilisateurs activé : tableau de bord sur https://suivi-pellets.goatcounter.com |
 | 3.6 | 9 novembre 2026 | Réglages : « Faire connaître l’application », avec QR code et lien sans aucune donnée, pour les autres foyers. |
 | 3.5 | 9 novembre 2026 | Correctif iPhone : l'icône ajoutée à l'écran d'accueil après une invitation garde de nouveau la connexion (elle s'ouvrait sur l'écran de départ depuis la 3.2). |

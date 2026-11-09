@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#d9611a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pellets"><meta name="robots" content="noindex"><title>Suivi pellets</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet"><style id="css">
+/* Mise en page : une colonne d'outil. Saisie d'un remplissage en tête, puis le lien consommation / température. Braise (pellets) et bleu froid (extérieur) sur gris ardoise. */
+:root{
+  --bg:#eef0f3; --surface:#ffffff; --ink:#1b212c; --muted:#5a6372; --line:#d9dde4;
+  --accent:#d9611a; --accent-soft:#fbe7da; --accent-ink:#ffffff; --cold:#2b6cb0;
+  --good:#2c8653; --warn:#a86f12; --bad:#bf3d31;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#111419; --surface:#1a1f27; --ink:#e7eaf0; --muted:#98a1b0; --line:#2b323d;
+    --accent:#f0873a; --accent-soft:#3a2516; --accent-ink:#1a1006; --cold:#6aa8ea;
+    --good:#4db37a; --warn:#e0a73b; --bad:#e46a5e; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111419; --surface:#1a1f27; --ink:#e7eaf0; --muted:#98a1b0; --line:#2b323d;
+  --accent:#f0873a; --accent-soft:#3a2516; --accent-ink:#1a1006; --cold:#6aa8ea;
+  --good:#4db37a; --warn:#e0a73b; --bad:#e46a5e; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:800px;margin:0 auto;padding:20px 16px 48px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--display);font-weight:700;font-size:1.9rem;line-height:1.1;margin:0;text-wrap:balance}
+h2{font-family:var(--display);font-weight:600;font-size:1.2rem;margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:.9rem;margin:2px 0 0}
+.status{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.ok{background:var(--good)} .dot.busy{background:var(--warn)} .dot.err{background:var(--bad)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card.entry{border:2px solid var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile .lab{font-size:.78rem;color:var(--muted)}
+.tile .val{font-family:var(--display);font-weight:700;font-size:1.6rem;line-height:1.15;font-variant-numeric:tabular-nums}
+.tile .val small{font-size:.85rem;font-weight:600;color:var(--muted)}
+.tile .note{font-size:.78rem;color:var(--muted)}
+button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px}
+button:hover{border-color:var(--accent)}
+button:disabled{opacity:.5;cursor:default}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+button.big{font-size:1.1rem;padding:11px 22px}
+button.small{padding:3px 10px;font-size:.85rem}
+button.danger{color:var(--bad)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--muted);flex:1 1 140px;min-width:0}
+label.f.wide{flex:3 1 260px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%;font-variant-numeric:tabular-nums}
+input.temp{font-size:1.1rem}
+.photozone{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:.88rem;color:var(--muted)}
+.photozone img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.filebtn{display:inline-flex;align-items:center;gap:6px;border:1px dashed var(--muted);border-radius:10px;padding:8px 14px;cursor:pointer;color:var(--ink);font-size:.95rem}
+.filebtn input{position:absolute;opacity:0;width:1px;height:1px}
+.filebtn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:.8rem;border-bottom:1px solid var(--line);padding:6px 5px}
+td{border-bottom:1px solid var(--line);padding:6px 5px;vertical-align:middle}
+td.num,th.num{text-align:right}
+td.act{text-align:right;white-space:nowrap}
+td img{width:40px;height:40px;object-fit:cover;border-radius:6px;display:block}
+.tablewrap{overflow-x:auto}
+.tablewrap td,.tablewrap th{white-space:nowrap}
+.tablewrap td:nth-last-child(2){white-space:normal;min-width:8em}
+.empty{color:var(--muted);font-size:.92rem;margin:0;max-width:65ch}
+.hint{font-size:.85rem;color:var(--muted);margin:0;max-width:65ch}
+.kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kv div{display:flex;flex-direction:column}
+.kv span{font-size:.8rem;color:var(--muted)}
+.kv b{font-variant-numeric:tabular-nums;font-size:1.05rem}
+.chart{overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:480px;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-2px}
+.bar{display:block;height:8px;border-radius:4px;background:var(--accent);min-width:2px}
+.confirm{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:.92rem}
+.ext{color:var(--cold);font-weight:600}
+textarea{min-height:120px;font-size:.8rem;font-family:ui-monospace,Menlo,monospace}
+.tf{display:flex;flex-direction:column;gap:3px;font-size:.8rem;color:var(--muted);flex:1 1 150px;min-width:0}
+.tin{display:flex;gap:6px;align-items:stretch}
+.tin input{flex:1;min-width:0}
+.cam{position:relative;display:inline-flex;align-items:center;justify-content:center;width:46px;flex:none;border:1px solid var(--accent);border-radius:8px;color:var(--accent);background:var(--accent-soft);cursor:pointer}
+.cam input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+.cam:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.tmsg{font-size:.78rem;min-height:1em;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.errbox{background:var(--accent-soft);border-left:4px solid var(--bad);padding:8px 12px;border-radius:6px;margin:0;font-size:.92rem}
+details{font-size:.92rem}
+summary{cursor:pointer;color:var(--accent);font-weight:500;padding:4px 0}
+details form{margin-top:8px}
+@media (max-width:620px){.tiles{grid-template-columns:repeat(2,1fr)} h1{font-size:1.6rem}}
+@media (prefers-reduced-motion:no-preference){button{transition:border-color .15s}}
+</style></head>
+<body>
+<div id="app"></div>
+<noscript>Cette application a besoin de JavaScript.</noscript>
+<script>
+(function(){
+"use strict";
+/* ============================================================
+   Suivi pellets – version autonome
+   Données : un fichier JSON dans un dépôt GitHub privé (API Contents).
+   Météo : Open-Meteo (gratuit, sans clé).
+   ============================================================ */
+var CFGKEY='suivi-pellets-github', CACHEKEY='suivi-pellets-cache';
+var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
+var DEFPROFIL={commune:'',cp:'',lat:null,lon:null,poidsSac:15,prixSac:6.9,saison:'Hiver 2026-2027',historique:[],pieces:[{id:'p1',nom:'Salon'}],piecesRetirees:[]};
+
+var cfg=null, data=null, sha=null;
+var mode='connexion'; // connexion | chargement | pret
+var ui={editId:null,confirmClose:false,csv:false,setup:false,err:'',showCode:false};
+var meteoEtat='attente';
+
+/* ---------- utilitaires ---------- */
+function p2(n){return (n<10?'0':'')+n}
+function ymd(d){return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate())}
+function nowDT(){var t=new Date();return ymd(t)+'T'+p2(t.getHours())+':'+p2(t.getMinutes())}
+function parseDT(s){var a=String(s).split(/[-T:]/);return new Date(+a[0],+a[1]-1,+a[2],+a[3]||0,+a[4]||0).getTime()}
+var fDT=new Intl.DateTimeFormat('fr-FR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+var fD=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'});
+function fdt(s){return fDT.format(new Date(parseDT(s)))}
+function fds(s){return fD.format(new Date(parseDT(s)))}
+function nf(x,d){d=d==null?0:d;return new Intl.NumberFormat('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d}).format(x)}
+function deg(x){return x==null?'—':nf(x,1)+' °C'}
+function sum(a){return a.reduce(function(s,x){return s+(+x||0)},0)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function num(v){if(v==null||String(v).trim()==='')return null;var n=parseFloat(String(v).replace(',','.').replace('−','-'));return isFinite(n)?n:null}
+function avg2(a,b){if(a!=null&&b!=null)return (a+b)/2;return a!=null?a:(b!=null?b:null)}
+function sacsTxt(n){return nf(n,n%1?1:0)+' sac'+(Math.abs(n)>=2?'s':'')}
+function duree(ms){var h=Math.floor(ms/36e5),j=Math.floor(h/24);h=h%24;return (j?j+' j ':'')+h+' h'}
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function clone(o){return JSON.parse(JSON.stringify(o))}
+function b64enc(s){return btoa(unescape(encodeURIComponent(s)))}
+function b64dec(s){return decodeURIComponent(escape(atob(String(s).replace(/\s/g,''))))}
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+
+function emptyData(){return {version:1,profil:null,rem:[],supprimes:[],meteo:{}}}
+function norm(d){d=d||{};var o=emptyData();o.profil=d.profil?Object.assign(clone(DEFPROFIL),d.profil):null;o.rem=Array.isArray(d.rem)?d.rem:[];o.supprimes=Array.isArray(d.supprimes)?d.supprimes:[];o.meteo=d.meteo&&typeof d.meteo==='object'?d.meteo:{};return o}
+function P(){return (data&&data.profil)||DEFPROFIL}
+function pieces(){var p=P().pieces;return p&&p.length?p:DEFPROFIL.pieces}
+function tempPiece(r,pc,i){if(r.temps&&typeof r.temps[pc.id]==='number')return r.temps[pc.id];if(!r.temps&&i===0&&r.int!=null)return r.int;return null}
+function intOf(r){if(r.temps){var v=Object.keys(r.temps).map(function(k){return r.temps[k]}).filter(function(x){return typeof x==='number'});if(v.length)return sum(v)/v.length}return r.int!=null?r.int:null}
+function meteo(){return (data&&data.meteo)||{}}
+function jourMeteo(t){var m=meteo()[String(t).slice(0,10)];return m&&typeof m.moy==='number'?m:null}
+function extOf(r){if(r.ext!=null)return r.ext;var m=jourMeteo(r.t);return m?m.moy:null}
+
+/* ---------- GitHub ---------- */
+function ghUrl(){return 'https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo)+'/contents/'+cfg.path.split('/').map(encodeURIComponent).join('/')}
+function gh(method,body){
+  return fetch(ghUrl()+(method==='GET'?'?t='+Date.now():''),{method:method,cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},body:body?JSON.stringify(body):undefined})
+    .then(function(r){return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null}catch(e){}if(!r.ok){var e=new Error((j&&j.message)||('HTTP '+r.status));e.status=r.status;throw e}return j})});
+}
+function ghLire(){
+  return gh('GET').then(function(j){
+    var txt=j.content!=null&&j.encoding==='base64'?b64dec(j.content):null;
+    if(txt==null)throw Object.assign(new Error('Fichier de données trop gros ou illisible'),{status:0});
+    return {data:norm(JSON.parse(txt)),sha:j.sha};
+  }).catch(function(e){
+    if(e.status===404)return gh2check().then(function(existe){if(existe)return {data:emptyData(),sha:null};throw Object.assign(new Error('Dépôt introuvable'),{status:404,repo:true})});
+    throw e;
+  });
+}
+function gh2check(){
+  return fetch('https://api.github.com/repos/'+encodeURIComponent(cfg.owner)+'/'+encodeURIComponent(cfg.repo),{cache:'no-store',headers:{'Authorization':'Bearer '+cfg.token,'Accept':'application/vnd.github+json'}}).then(function(r){return r.ok});
+}
+function ghEcrire(msg){
+  var txt=JSON.stringify(data,null,1);
+  var body={message:msg,content:b64enc(txt)};if(sha)body.sha=sha;
+  return gh('PUT',body).then(function(j){sha=j&&j.content&&j.content.sha;});
+}
+
+/* fusion quand l'autre téléphone a enregistré entre-temps */
+function fusion(remote,local){
+  var o=emptyData();
+  var sup={};remote.supprimes.concat(local.supprimes).forEach(function(id){sup[id]=1});o.supprimes=Object.keys(sup);
+  var by={};remote.rem.concat(local.rem).forEach(function(r){var x=by[r.id];if(!x||(r.maj||0)>(x.maj||0))by[r.id]=r});
+  o.rem=Object.keys(by).filter(function(id){return !sup[id]}).map(function(id){return by[id]});
+  o.meteo=Object.assign({},local.meteo,remote.meteo);
+  var rp=remote.profil,lp=local.profil;
+  o.profil=!rp?lp:(!lp?rp:((lp.maj||0)>=(rp.maj||0)?lp:rp));
+  return o;
+}
+
+var enCours=false,attente=null,essais=0;
+function enregistrer(msg){
+  lsSet(CACHEKEY,{cfgId:cfgId(),data:data,sha:sha,pending:true});
+  if(enCours){attente=msg;return}
+  enCours=true;essais=0;setStatus('busy','Enregistrement…');
+  (function tenter(){
+    ghEcrire(msg).then(function(){
+      enCours=false;lsSet(CACHEKEY,{cfgId:cfgId(),data:data,sha:sha});setStatus('ok','Enregistré sur GitHub');
+      if(attente){var m=attente;attente=null;enregistrer(m)}
+    }).catch(function(e){
+      if((e.status===409||e.status===422)&&essais<3){essais++;
+        ghLire().then(function(r){data=fusion(r.data,data);sha=r.sha;render();tenter()}).catch(echec);return}
+      echec(e);
+    });
+  })();
+  function echec(e){enCours=false;
+    if(e.status===401||e.status===403)setStatus('err','Clé GitHub refusée : vérifiez-la dans Connexion');
+    else if(!navigator.onLine||e instanceof TypeError)setStatus('err','Hors ligne : sera envoyé au retour du réseau');
+    else setStatus('err','Échec de l’envoi ('+(e.message||'erreur')+')');
+    dirty=true;
+  }
+}
+var dirty=false;
+window.addEventListener('online',function(){if(dirty&&mode==='pret'){dirty=false;enregistrer('Synchronisation après coupure')}});
+function cfgId(){return cfg?cfg.owner+'/'+cfg.repo+'/'+cfg.path:''}
+
+/* ---------- météo (Open-Meteo) ---------- */
+function agreger(j){
+  var out={};if(!j||!j.hourly)return out;
+  var t=j.hourly.time||[],v=j.hourly.temperature_2m||[];
+  for(var i=0;i<t.length;i++){if(typeof v[i]!=='number')continue;var d=t[i].slice(0,10);var o=out[d]||(out[d]={s:0,n:0,min:99,max:-99});o.s+=v[i];o.n++;if(v[i]<o.min)o.min=v[i];if(v[i]>o.max)o.max=v[i]}
+  var res={};Object.keys(out).forEach(function(d){var o=out[d];if(o.n>=20)res[d]={min:Math.round(o.min*10)/10,max:Math.round(o.max*10)/10,moy:Math.round(o.s/o.n*10)/10}});
+  return res;
+}
+function chargerMeteo(){
+  var R=P();if(R.lat==null||R.lon==null){meteoEtat='sans-lieu';return}
+  meteoEtat='attente';
+  var base='latitude='+R.lat+'&longitude='+R.lon+'&hourly=temperature_2m&timezone=Europe%2FParis';
+  var today=ymd(new Date());
+  fetch('https://api.open-meteo.com/v1/forecast?'+base+'&past_days=92&forecast_days=1').then(function(r){if(!r.ok)throw new Error('meteo');return r.json()}).then(function(j){
+    var res=agreger(j),chg=false,m=data.meteo;
+    Object.keys(res).forEach(function(d){if(d>today)return;var a=m[d],b=res[d];if(!a||a.min!==b.min||a.max!==b.max||a.moy!==b.moy){if(d<today&&!(a&&a.fige))chg=true;m[d]=b}});
+    // trous plus anciens que 90 jours : archives
+    var first=data.rem.length?data.rem.map(function(r){return r.t.slice(0,10)}).sort()[0]:null;
+    var lim=ymd(new Date(Date.now()-88*864e5));
+    var p=Promise.resolve();
+    if(first&&first<lim){var manque=false;for(var d=new Date(parseDT(first));ymd(d)<lim;d.setDate(d.getDate()+1)){if(!m[ymd(d)]){manque=true;break}}
+      if(manque)p=fetch('https://archive-api.open-meteo.com/v1/archive?'+base+'&start_date='+first+'&end_date='+lim).then(function(r){return r.ok?r.json():null}).then(function(a){var ra=agreger(a);Object.keys(ra).forEach(function(d){if(!m[d]){m[d]=ra[d];chg=true}})}).catch(function(){})}
+    return p.then(function(){meteoEtat='ok';render();if(chg)enregistrer('Météo : '+R.commune)});
+  }).catch(function(){meteoEtat='indispo';render()});
+}
+function geocoder(commune,cp){
+  return fetch('https://geocoding-api.open-meteo.com/v1/search?name='+encodeURIComponent(commune)+'&count=20&language=fr&format=json').then(function(r){if(!r.ok)throw new Error('geo');return r.json()}).then(function(j){
+    var L=(j&&j.results)||[];if(!L.length)return null;
+    var fr=L.filter(function(x){return x.country_code==='FR'});
+    var pool=fr.length?fr:L;
+    var m=pool.filter(function(x){return (x.postcodes||[]).indexOf(cp)>=0})[0]
+      ||pool.filter(function(x){return cp&&x.admin2_id&&String(cp).slice(0,2)&&(x.postcodes||[]).some(function(p){return p.slice(0,2)===String(cp).slice(0,2)})})[0]
+      ||pool[0];
+    return {lat:Math.round(m.latitude*1000)/1000,lon:Math.round(m.longitude*1000)/1000,nom:m.name,dep:m.admin2||m.admin1||''};
+  });
+}
+
+/* ---------- analyse ---------- */
+function autoExt(a,b){
+  var tot=0,w=0,cur=a,M=meteo();
+  while(cur<b){var d=new Date(cur),next=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),end=Math.min(next,b),m=M[ymd(d)];
+    if(m&&typeof m.moy==='number'){tot+=m.moy*(end-cur);w+=end-cur}cur=end}
+  return w>0&&w>=(b-a)*0.5?tot/w:null;
+}
+function analyse(){
+  var R=P();
+  var rem=data.rem.filter(function(r){return (r.saison||R.saison)===R.saison}).sort(function(a,b){return parseDT(a.t)-parseDT(b.t)});
+  var g=[];
+  rem.forEach(function(r){var ms=parseDT(r.t),last=g[g.length-1],ri=intOf(r);
+    if(last&&ms-last.ms<6*36e5){last.sacs+=r.sacs;if(last.ext==null)last.ext=r.ext;if(last.int==null)last.int=ri}
+    else g.push({ms:ms,t:r.t,sacs:r.sacs,ext:r.ext,int:ri})});
+  var iv=[];
+  for(var i=0;i<g.length-1;i++){var days=(g[i+1].ms-g[i].ms)/864e5,ae=autoExt(g[i].ms,g[i+1].ms),me=avg2(g[i].ext,g[i+1].ext);
+    iv.push({from:g[i].t,to:g[i+1].t,days:days,sacs:g[i].sacs,rate:g[i].sacs/days,ext:ae!=null?ae:me,int:avg2(g[i].int,g[i+1].int)})}
+  var total=sum(rem.map(function(r){return r.sacs}));
+  var dIv=sum(iv.map(function(x){return x.days})),sIv=sum(iv.map(function(x){return x.sacs}));
+  var withE=iv.filter(function(x){return x.ext!=null}),dE=sum(withE.map(function(x){return x.days}));
+  var extMoy=dE?sum(withE.map(function(x){return x.ext*x.days}))/dE:null;
+  var withI=iv.filter(function(x){return x.int!=null}),dI=sum(withI.map(function(x){return x.days}));
+  var intMoy=dI?sum(withI.map(function(x){return x.int*x.days}))/dI:null;
+  var bands=BANDS.map(function(b){var xs=withE.filter(function(x){return x.ext>=b.lo&&x.ext<b.hi});var d=sum(xs.map(function(x){return x.days})),s=sum(xs.map(function(x){return x.sacs}));return {lab:b.lab,days:d,sacs:s,rate:d?s/d:null}});
+  var reg=null;
+  if(withE.length>=3){var mx=extMoy,my=sum(withE.map(function(x){return x.rate*x.days}))/dE,sxx=0,sxy=0;
+    withE.forEach(function(x){sxx+=x.days*(x.ext-mx)*(x.ext-mx);sxy+=x.days*(x.ext-mx)*(x.rate-my)});
+    if(sxx>0){var b=sxy/sxx;reg={a:my-b*mx,b:b}}}
+  var both=iv.filter(function(x){return x.ext!=null&&x.int!=null&&x.int-x.ext>1});
+  var dj=sum(both.map(function(x){return x.days*(x.int-x.ext)}));
+  var sig=dj?sum(both.map(function(x){return x.sacs}))*R.poidsSac/dj:null;
+  var ps=pieces(),ref0=ps[0];
+  var salles=ps.map(function(pc,i){var all=[],froid=[],doux=[],ec=[];
+    rem.forEach(function(r){var v=tempPiece(r,pc,i);if(v==null)return;all.push(v);var e=extOf(r);if(e!=null)(e<5?froid:doux).push(v);
+      if(i>0){var v0=tempPiece(r,ref0,0);if(v0!=null)ec.push(v-v0)}});
+    function m(a){return a.length?sum(a)/a.length:null}
+    return {nom:pc.nom,n:all.length,moy:m(all),min:all.length?Math.min.apply(null,all):null,max:all.length?Math.max.apply(null,all):null,froid:m(froid),doux:m(doux),ecart:i>0?m(ec):null}});
+  return {salles:salles,rem:rem,iv:iv,total:total,rate:dIv?sIv/dIv:null,extMoy:extMoy,intMoy:intMoy,bands:bands,reg:reg,sig:sig,
+    first:g[0]||null,last:g[g.length-1]||null,cout:total*R.prixSac,kg:total*R.poidsSac};
+}
+function predict(reg,t){return Math.max(0,reg.a+reg.b*t)}
+
+/* ---------- graphiques ---------- */
+function niceTop(v){var s=v>4?1:(v>2?0.5:0.25);return {top:Math.max(s,Math.ceil(v*1.15/s)*s),step:s}}
+function scatterSVG(A){
+  var pts=A.iv.filter(function(x){return x.ext!=null});
+  if(pts.length<2)return '<p class="empty">Le nuage de points apparaît après 3 remplissages, dès que la température extérieure est connue.</p>';
+  var W=700,H=280,L=46,Rr=14,T=14,B=34;
+  var mn=Math.min.apply(null,pts.map(function(x){return x.ext})),mx=Math.max.apply(null,pts.map(function(x){return x.ext}));
+  var lo=Math.min(-5,Math.floor(mn/5)*5),hi=Math.max(15,Math.ceil(mx/5)*5);
+  var yt=niceTop(Math.max.apply(null,pts.map(function(x){return x.rate})));
+  var X=function(v){return L+(W-L-Rr)*(v-lo)/(hi-lo)},Y=function(v){return T+(H-T-B)*(1-v/yt.top)};
+  var g='<defs><clipPath id="cp"><rect x="'+L+'" y="'+T+'" width="'+(W-L-Rr)+'" height="'+(H-T-B)+'"/></clipPath></defs>';
+  for(var v=0;v<=yt.top+1e-9;v+=yt.step){g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="12" fill="var(--muted)">'+nf(v,yt.step<1?2:0)+'</text>'}
+  for(var t=lo;t<=hi;t+=5){g+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--line)" stroke-dasharray="'+(t===0?'0':'2 4')+'"/><text x="'+X(t)+'" y="'+(H-B+16)+'" text-anchor="middle" font-size="12" fill="var(--muted)">'+nf(t)+' °C</text>'}
+  g+='<text x="'+(W-Rr)+'" y="'+(H-2)+'" text-anchor="end" font-size="12" fill="var(--muted)">température extérieure</text><text x="'+L+'" y="'+(T-3)+'" font-size="12" fill="var(--muted)">sacs par jour</text>';
+  if(A.reg)g+='<line clip-path="url(#cp)" x1="'+X(lo)+'" y1="'+Y(A.reg.a+A.reg.b*lo)+'" x2="'+X(hi)+'" y2="'+Y(A.reg.a+A.reg.b*hi)+'" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.65"/>';
+  pts.forEach(function(x){g+='<circle cx="'+X(x.ext).toFixed(1)+'" cy="'+Y(x.rate).toFixed(1)+'" r="7" fill="var(--accent)" fill-opacity="0.8" stroke="var(--surface)" stroke-width="1.5"><title>'+fds(x.from)+' → '+fds(x.to)+' : '+nf(x.rate,2)+' sac/j à '+deg(x.ext)+'</title></circle>'});
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Sacs par jour selon la température extérieure">'+g+'</svg>';
+}
+function timelineSVG(A){
+  var iv=A.iv.slice(-30);if(iv.length<2)return '';
+  var W=700,H=240,L=46,Rr=46,T=16,B=30;
+  var yt=niceTop(Math.max.apply(null,iv.map(function(x){return x.rate})));
+  var ex=iv.filter(function(x){return x.ext!=null}).map(function(x){return x.ext});
+  var tlo=Math.min(-5,Math.floor((ex.length?Math.min.apply(null,ex):0)/5)*5),thi=Math.max(15,Math.ceil((ex.length?Math.max.apply(null,ex):10)/5)*5);
+  var Y=function(v){return T+(H-T-B)*(1-v/yt.top)},YT=function(v){return T+(H-T-B)*(1-(v-tlo)/(thi-tlo))};
+  var bw=(W-L-Rr)/iv.length,g='';
+  for(var v=0;v<=yt.top+1e-9;v+=yt.step)g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="12" fill="var(--accent)">'+nf(v,yt.step<1?2:0)+'</text>';
+  for(var t=tlo;t<=thi;t+=5)g+='<text x="'+(W-Rr+6)+'" y="'+(YT(t)+4)+'" font-size="12" fill="var(--cold)">'+nf(t)+'°</text>';
+  var every=Math.ceil(iv.length/7),path='';
+  iv.forEach(function(x,i){var bx=L+i*bw+bw*0.15,w=bw*0.7,yy=Y(x.rate);
+    g+='<rect x="'+bx.toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+(Y(0)-yy).toFixed(1)+'" rx="3" fill="var(--accent)" opacity="0.75"><title>'+fds(x.from)+' → '+fds(x.to)+' : '+nf(x.rate,2)+' sac/j</title></rect>';
+    if(i%every===0||i===iv.length-1)g+='<text x="'+(bx+w/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="var(--muted)">'+fds(x.from)+'</text>';
+    if(x.ext!=null){var cx=(bx+w/2).toFixed(1),cy=YT(x.ext).toFixed(1);path+=(path?' L':'M')+cx+' '+cy;g+='<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="var(--cold)"><title>'+deg(x.ext)+'</title></circle>'}});
+  if(path)g+='<path d="'+path+'" fill="none" stroke="var(--cold)" stroke-width="2"/>';
+  return '<div class="legend"><span><i style="background:var(--accent)"></i>Sacs par jour</span><span><i style="background:var(--cold)"></i>Température extérieure</span></div><div class="chart"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Consommation et température au fil de la saison">'+g+'</svg></div>';
+}
+
+/* ---------- rendu ---------- */
+var app=document.getElementById('app');
+var status={cls:'',txt:''};
+function statusHTML(){return status.txt?'<span class="dot '+status.cls+'"></span><span>'+esc(status.txt)+'</span>':''}
+function setStatus(c,t){status={cls:c,txt:t};var el=document.getElementById('status');if(el)el.innerHTML=statusHTML()}
+function tile(l,v,n){return '<div class="tile"><span class="lab">'+l+'</span><span class="val">'+v+'</span>'+(n?'<span class="note">'+n+'</span>':'')+'</div>'}
+function codeConnexion(){return b64enc(JSON.stringify({o:cfg.owner,r:cfg.repo,p:cfg.path,t:cfg.token}))}
+
+function connexionHTML(){
+  var c=cfg||{owner:'',repo:'',path:'donnees.json',token:''},h='';
+  h+='<section class="card entry" aria-label="Connexion à GitHub"><h2>Connexion à vos données</h2>';
+  h+='<p class="hint">Vos relevés sont enregistrés dans un dépôt GitHub privé, à vous. À faire une seule fois sur chaque téléphone.</p>';
+  if(ui.err)h+='<p class="errbox">'+esc(ui.err)+'</p>';
+  h+='<form id="fc"><div class="row"><label class="f">Compte GitHub<input type="text" id="c-owner" name="owner" required autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="votre identifiant GitHub" value="'+esc(c.owner)+'"></label>';
+  h+='<label class="f">Dépôt privé des données<input type="text" id="c-repo" name="repo" required autocapitalize="none" spellcheck="false" placeholder="suivi-pellets-donnees" value="'+esc(c.repo||'suivi-pellets-donnees')+'"></label></div>';
+  h+='<div class="row"><label class="f wide">Clé d’accès GitHub (jeton)<input type="password" id="c-token" name="token" required autocomplete="off" spellcheck="false" placeholder="github_pat_…" value="'+esc(c.token)+'"></label></div>';
+  h+='<div class="row"><button type="submit" class="primary big">Se connecter</button>'+(mode==='pret'?'<button type="button" data-a="conn0">Annuler</button>':'')+'</div></form>';
+  h+='<details><summary>Vous avez reçu un code de connexion ?</summary><form id="fk" class="row"><label class="f wide">Code de connexion<input type="text" id="c-code" name="code" required autocomplete="off" spellcheck="false" placeholder="collez le code ici"></label><button type="submit">Utiliser ce code</button></form></details>';
+  h+='<p class="hint">La clé reste dans ce téléphone et n’est envoyée qu’à GitHub. Le guide de mise en route explique comment la créer.</p></section>';
+  return h;
+}
+function setupHTML(first){
+  var R=P(),h='';
+  h+='<section class="card entry" aria-label="Votre maison"><h2>'+(first?'Où habitez-vous ?':'Changer de commune')+'</h2>';
+  if(first)h+='<p class="hint">La commune sert à récupérer la température extérieure. Ces réglages sont communs à tout le foyer.</p>';
+  if(ui.err)h+='<p class="errbox">'+esc(ui.err)+'</p>';
+  h+='<form id="fs"><div class="row"><label class="f wide">Commune<input type="text" id="s-commune" name="commune" required placeholder="ex. Étaples-sur-Mer" value="'+esc(R.commune)+'" autocomplete="address-level2"></label>';
+  h+='<label class="f">Code postal<input type="text" id="s-cp" name="cp" required inputmode="numeric" placeholder="ex. 62630" value="'+esc(R.cp)+'" autocomplete="postal-code"></label></div>';
+  if(first)h+='<div class="row"><label class="f wide">Pièces où vous relevez la température (séparées par des virgules, la pièce du poêle en premier)<input type="text" id="s-pieces" name="pieces" value="Salon" placeholder="ex. Salon, Chambre, Salle de bain"></label></div>';
+  h+='<div class="row"><label class="f">Poids d’un sac (kg)<input type="number" id="s-poids" name="poids" value="'+R.poidsSac+'" step="1" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" id="s-prix" name="prix" value="'+R.prixSac+'" step="0.01" min="0"></label></div>';
+  h+='<div class="row"><button type="submit" class="primary big">'+(first?'Commencer':'Enregistrer')+'</button>'+(first?'':'<button type="button" data-a="setup0">Annuler</button>')+'</div></form></section>';
+  return h;
+}
+
+function render(){
+  var R=P(),h='';
+  var keep={};Array.prototype.forEach.call(app.querySelectorAll('[data-touched]'),function(el){if(el.id)keep[el.id]=el.value});
+  h+='<div class="wrap"><header><div><h1>Suivi pellets</h1><p class="sub">'+(R.commune?esc(R.saison)+' · '+esc(R.commune)+(R.cp?' ('+esc(R.cp)+')':''):'Consommation de granulés selon la température')+'</p></div><div class="status" id="status">'+statusHTML()+'</div></header>';
+  if(mode==='connexion'||ui.conn){h+=connexionHTML()+'</div>';app.innerHTML=h;restore(keep);return}
+  if(mode==='chargement'){h+='<section class="card"><p class="empty">Chargement de vos données depuis GitHub…</p></section></div>';app.innerHTML=h;return}
+  if(!data.profil){h+=setupHTML(true)+'</div>';app.innerHTML=h;restore(keep);return}
+  if(ui.setup)h+=setupHTML(false);
+
+  var A=analyse();
+  var ed=ui.editId?data.rem.filter(function(r){return r.id===ui.editId})[0]:null;
+  h+='<section class="card entry" aria-label="Noter un remplissage"><h2>'+(ed?'Modifier le remplissage':'Je remets des pellets')+'</h2><form id="fr"><div class="row">';
+  h+='<label class="f">Date et heure<input type="datetime-local" id="f-dt" name="t" value="'+esc(ed?ed.t:nowDT())+'" required></label>';
+  h+='<label class="f">Sacs versés<input type="number" id="f-sacs" name="sacs" value="'+(ed?ed.sacs:1)+'" step="0.5" min="0.5" required></label></div><div class="row">';
+  pieces().forEach(function(pc,i){var v=ed?tempPiece(ed,pc,i):null;
+    h+='<label class="f">'+esc(pc.nom)+' (°C)<input class="temp" type="number" id="f-t-'+esc(pc.id)+'" data-piece="'+esc(pc.id)+'" step="0.1" placeholder="ex. '+(i?19:20)+'" value="'+(v!=null?v:'')+'"></label>'});
+  h+='</div><div class="row"><label class="f">Dehors (°C, facultatif)<input class="temp" type="number" id="f-ext" name="ext" step="0.1" placeholder="automatique" value="'+(ed&&ed.ext!=null?ed.ext:'')+'"></label></div>';
+  var mj=jourMeteo(ymd(new Date()));
+  h+='<p class="hint">'+(mj?'Aujourd’hui à '+esc(R.commune)+' : <span class="ext">'+nf(mj.min,1)+' à '+nf(mj.max,1)+' °C</span>. ':'')+'La température extérieure se remplit toute seule ; ne la notez que pour la remplacer.</p>';
+  h+='<div class="row"><label class="f wide">Note (facultatif)<input type="text" id="f-note" name="note" placeholder="ex. vent fort, maison vide le week-end" value="'+esc(ed?ed.note||'':'')+'"></label></div>';
+  h+='<div class="row"><button type="submit" class="primary big">'+(ed?'Enregistrer les modifications':'Enregistrer le remplissage')+'</button>'+(ed?'<button type="button" data-a="cancel">Annuler</button>':'')+'</div></form>';
+  if(!ed&&A.last&&Date.now()>=A.last.ms)h+='<p class="hint">Dernier remplissage : '+fdt(A.last.t)+' ('+sacsTxt(A.last.sacs)+(A.last&&lastBy(A)?', par '+esc(lastBy(A)):'')+'), il y a '+duree(Date.now()-A.last.ms)+'.</p>';
+  h+='<p class="hint">Pour des chiffres justes, remettez des pellets toujours au même niveau de réservoir (par exemple quand il est presque vide).</p></section>';
+
+  h+='<section class="tiles" aria-label="Résumé de la saison">';
+  h+=tile('Cette saison',nf(A.total,A.total%1?1:0)+' <small>sacs</small>',A.rem.length+' remplissage'+(A.rem.length>1?'s':'')+' · '+nf(A.kg/1000,2)+' t');
+  h+=tile('Moyenne',A.rate!=null?nf(A.rate,2)+' <small>sac/j</small>':'—',A.rate!=null?nf(A.rate*R.poidsSac,1)+' kg par jour':'après 2 remplissages');
+  h+=tile('Extérieur moyen',A.extMoy!=null?'<span class="ext">'+nf(A.extMoy,1)+'</span> <small>°C</small>':'—',A.intMoy!=null?'maison : '+nf(A.intMoy,1)+' °C':'');
+  h+=tile('Coût',nf(A.cout)+' <small>€</small>',nf(R.prixSac,2)+' € le sac');
+  h+='</section>';
+
+  h+='<section class="card"><h2>Sacs par jour selon la température extérieure</h2><div class="chart">'+scatterSVG(A)+'</div>';
+  if(A.reg){h+='<div class="kv">';[-5,0,5,10].forEach(function(t){h+='<div><span>Par '+nf(t)+' °C dehors</span><b>'+nf(predict(A.reg,t),2)+' sac/j</b></div>'});
+    h+='<div><span>Chaque degré plus froid</span><b>'+(A.reg.b<0?'+':'')+nf(-A.reg.b,2)+' sac/j</b></div></div><p class="hint">La ligne pointillée résume vos points : elle donne la consommation attendue pour une température donnée. Elle devient fiable à partir d’une dizaine de remplissages par des temps variés.</p>'}
+  h+='</section>';
+
+  if(A.salles.some(function(x){return x.n})){
+    var multi=A.salles.length>1;
+    h+='<section class="card"><h2>Températures par pièce</h2><div class="tablewrap"><table><thead><tr><th>Pièce</th><th class="num">Relevés</th><th class="num">Moyenne</th><th class="num">Mini</th><th class="num">Maxi</th><th class="num">Dehors &lt; 5 °C</th><th class="num">Dehors ≥ 5 °C</th>'+(multi?'<th class="num">Écart / '+esc(A.salles[0].nom)+'</th>':'')+'</tr></thead><tbody>';
+    A.salles.forEach(function(x,i){h+='<tr><td>'+esc(x.nom)+'</td><td class="num">'+x.n+'</td><td class="num"><b>'+deg(x.moy)+'</b></td><td class="num">'+deg(x.min)+'</td><td class="num">'+deg(x.max)+'</td><td class="num">'+deg(x.froid)+'</td><td class="num">'+deg(x.doux)+'</td>'+(multi?'<td class="num">'+(i===0?'référence':(x.ecart!=null?(x.ecart>0?'+':'')+nf(x.ecart,1)+' °C':'—'))+'</td>':'')+'</tr>'});
+    h+='</tbody></table></div><p class="hint">La comparaison froid / doux montre les pièces qui perdent le plus de chaleur quand il gèle dehors. La moyenne de toutes les pièces sert de « température maison » dans les calculs.</p></section>';
+  }
+  if(A.iv.some(function(x){return x.ext!=null})){
+    var mxr=Math.max.apply(null,A.bands.map(function(b){return b.rate||0}))||1;
+    h+='<section class="card"><h2>Par tranche de température</h2><div class="tablewrap"><table><thead><tr><th>Dehors</th><th class="num">Jours</th><th class="num">Sacs</th><th class="num">Sac/jour</th><th style="width:28%"></th><th class="num">€/jour</th></tr></thead><tbody>';
+    A.bands.forEach(function(b){h+='<tr><td>'+b.lab+'</td><td class="num">'+(b.days?nf(b.days,1):'—')+'</td><td class="num">'+(b.days?nf(b.sacs,b.sacs%1?1:0):'—')+'</td><td class="num">'+(b.rate!=null?nf(b.rate,2):'—')+'</td><td>'+(b.rate!=null?'<span class="bar" style="width:'+(b.rate/mxr*100).toFixed(0)+'%"></span>':'')+'</td><td class="num">'+(b.rate!=null?nf(b.rate*R.prixSac,2):'—')+'</td></tr>'});
+    h+='</tbody></table></div>';
+    if(A.sig!=null)h+='<div class="kv"><div><span>Signature de la maison</span><b>'+nf(A.sig,2)+' kg/j par °C d’écart</b></div><div><span>1 °C de plus dans la maison</span><b>≈ +'+nf(A.sig/R.poidsSac,2)+' sac/j</b></div></div><p class="hint">La signature compare les pellets brûlés à l’écart entre l’intérieur et l’extérieur. Plus elle est basse, mieux la maison garde la chaleur ; d’une saison à l’autre, elle montre l’effet d’une isolation ou d’un réglage.</p>';
+    h+='</section>';
+  }
+  var tl=timelineSVG(A);if(tl)h+='<section class="card"><h2>Au fil de la saison</h2>'+tl+'</section>';
+
+  var jours=Object.keys(meteo()).filter(function(k){return k<=ymd(new Date())}).sort().reverse().slice(0,7);
+  h+='<section class="card"><h2>Météo à '+esc(R.commune)+'</h2>';
+  if(jours.length){h+='<div class="tablewrap"><table><thead><tr><th>Jour</th><th class="num">Mini</th><th class="num">Maxi</th><th class="num">Moyenne</th></tr></thead><tbody>';
+    jours.forEach(function(k){var m=meteo()[k];h+='<tr><td>'+fds(k)+(k===ymd(new Date())?' (en cours)':'')+'</td><td class="num">'+deg(m.min)+'</td><td class="num">'+deg(m.max)+'</td><td class="num ext">'+deg(m.moy)+'</td></tr>'});
+    h+='</tbody></table></div><p class="hint">'+(meteoEtat==='indispo'?'Pas de réseau météo pour le moment : les valeurs affichées sont les dernières enregistrées. ':'')+'Moyenne des 24 relevés horaires de chaque jour. Données météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Entre deux remplissages, l’application fait la moyenne de ces journées ; une température notée à la main ne sert que si la météo manque.</p>'}
+  else h+='<p class="empty">'+(meteoEtat==='indispo'?'La météo n’est pas joignable pour le moment. Notez la température extérieure à la main.':(meteoEtat==='sans-lieu'?'Commune introuvable : vérifiez-la dans les réglages.':'Chargement de la météo…'))+'</p>';
+  h+='</section>';
+
+  h+='<section class="card"><h2>Journal des remplissages</h2>';
+  if(A.rem.length){
+    h+='<div class="tablewrap"><table><thead><tr><th>Quand</th><th class="num">Sacs</th><th class="num">Dehors</th>'+pieces().map(function(pc){return '<th class="num">'+esc(pc.nom)+'</th>'}).join('')+'<th>Par</th><th>Note</th><th></th></tr></thead><tbody>';
+    A.rem.slice().reverse().forEach(function(r){var jm=jourMeteo(r.t);
+      h+='<tr><td>'+fdt(r.t)+'</td><td class="num">'+nf(r.sacs,r.sacs%1?1:0)+'</td><td class="num ext">'+(r.ext!=null?deg(r.ext):(jm?'≈ '+deg(jm.moy):'—'))+'</td>'+pieces().map(function(pc,i){return '<td class="num">'+deg(tempPiece(r,pc,i))+'</td>'}).join('')+'<td>'+esc(r.par||'')+'</td><td>'+esc(r.note||'')+'</td><td class="act"><button class="small" data-a="edit" data-id="'+esc(r.id)+'">Modifier</button> <button class="small danger" data-a="del" data-id="'+esc(r.id)+'">Supprimer</button></td></tr>'});
+    h+='</tbody></table></div><div class="row"><button data-a="csv">'+(ui.csv?'Masquer les données':'Exporter en CSV')+'</button></div>';
+    if(ui.csv)h+='<textarea id="csv" readonly aria-label="Données au format CSV">'+esc(csv(A))+'</textarea><div class="row"><button data-a="copy">Copier</button><span class="hint" id="copymsg">Collez ensuite dans Excel ou Google Sheets.</span></div>';
+  } else h+='<p class="empty">Aucun remplissage noté. À chaque fois que vous remettez des pellets, notez le nombre de sacs et la température des pièces ; la température extérieure se remplit toute seule. Dès deux remplissages, l’application calcule votre consommation par jour, puis la relie à la température au fil des semaines.</p>';
+  h+='</section>';
+
+  if(R.historique&&R.historique.length){
+    h+='<section class="card"><h2>Saisons précédentes</h2><div class="tablewrap"><table><thead><tr><th>Saison</th><th class="num">Sacs</th><th class="num">Jours</th><th class="num">Sac/jour</th><th class="num">Dehors moy.</th></tr></thead><tbody>';
+    R.historique.slice().reverse().forEach(function(x){h+='<tr><td>'+esc(x.label)+'</td><td class="num">'+nf(x.sacs)+'</td><td class="num">'+nf(x.jours)+'</td><td class="num">'+(x.jours?nf(x.sacs/x.jours,2):'—')+'</td><td class="num">'+deg(x.ext)+'</td></tr>'});
+    h+='</tbody></table></div></section>';
+  }
+
+  h+='<section class="card"><h2>Réglages</h2><div class="row">';
+  h+='<label class="f">Qui utilise ce téléphone ?<input type="text" id="r-moi" data-moi="1" placeholder="ex. Benoît" value="'+esc(moi())+'"></label>';
+  h+='<label class="f">Nom de la saison<input type="text" id="r-saison" data-r="saison" value="'+esc(R.saison)+'"></label></div><div class="row">';
+  h+='<label class="f">Poids d’un sac (kg)<input type="number" id="r-poids" data-r="poidsSac" value="'+R.poidsSac+'" step="1" min="1"></label>';
+  h+='<label class="f">Prix d’un sac (€)<input type="number" id="r-prix" data-r="prixSac" value="'+R.prixSac+'" step="0.01" min="0"></label></div>';
+  h+='<h2>Pièces</h2>';
+  pieces().forEach(function(pc){h+='<div class="row"><label class="f wide">Nom de la pièce<input type="text" id="r-pc-'+esc(pc.id)+'" data-pren="'+esc(pc.id)+'" value="'+esc(pc.nom)+'"></label><button class="small danger" data-a="pdel" data-id="'+esc(pc.id)+'"'+(pieces().length<2?' disabled':'')+'>Retirer</button></div>'});
+  h+='<form class="row" id="fp"><label class="f wide">Ajouter une pièce<input type="text" id="r-pnew" name="nom" placeholder="ex. Chambre parents" required></label><button type="submit">Ajouter</button></form>';
+  h+='<p class="hint">Retirer une pièce la masque ; les relevés déjà notés restent dans vos données.</p>';
+  h+='<div class="row"><button data-a="setup1">Changer de commune ('+esc(R.commune)+')</button>'+(!ui.confirmClose?'<button data-a="close1"'+(A.rem.length?'':' disabled')+'>Clore la saison…</button>':'')+'</div>';
+  if(ui.confirmClose)h+='<div class="confirm"><span>Archiver « '+esc(R.saison)+' » ('+sacsTxt(A.total)+') dans les saisons précédentes et démarrer une nouvelle saison ?</span><button class="primary" data-a="close2">Oui, clore</button><button data-a="close0">Annuler</button></div>';
+  h+='<h2>Connexion</h2><p class="hint">Données : dépôt privé <b>'+esc(cfg.owner+'/'+cfg.repo)+'</b>, fichier '+esc(cfg.path)+'.</p>';
+  h+='<div class="row"><button data-a="code">'+(ui.showCode?'Masquer le code':'Connecter un autre téléphone')+'</button><button data-a="conn1">Changer la connexion</button><button data-a="logout" class="danger">Déconnecter ce téléphone</button></div>';
+  if(ui.showCode)h+='<p class="hint">Sur l’autre téléphone, ouvrez l’application, touchez « Vous avez reçu un code de connexion ? » et collez ce code. Il contient votre clé d’accès : envoyez-le seulement à quelqu’un de confiance, par un message privé.</p><textarea id="code" readonly aria-label="Code de connexion">'+esc(codeConnexion())+'</textarea><div class="row"><button data-a="copycode">Copier le code</button><span class="hint" id="codemsg"></span></div>';
+  h+='</section></div>';
+  app.innerHTML=h;restore(keep);
+}
+function lastBy(A){var r=A.rem[A.rem.length-1];return r&&r.par}
+function restore(keep){Object.keys(keep).forEach(function(id){var el=document.getElementById(id);if(el){el.value=keep[id];el.dataset.touched='1'}})}
+function clearTouched(){Array.prototype.forEach.call(document.querySelectorAll('[data-touched]'),function(el){delete el.dataset.touched})}
+app.addEventListener('input',function(e){var id=e.target.id||'';if(/^(f|s|c)-/.test(id))e.target.dataset.touched='1'});
+function moi(){return (lsGet(CFGKEY)||{}).moi||''}
+
+function csv(A){
+  var ps=pieces(),c=function(v){return v==null?'':String(Math.round(v*100)/100).replace('.',',')};
+  var l=['date;sacs;temp_ext_notee;temp_ext_auto;'+ps.map(function(pc){return '"'+pc.nom.replace(/"/g,'')+'"'}).join(';')+';moyenne_maison;par;note'];
+  A.rem.forEach(function(r){var jm=jourMeteo(r.t);l.push([r.t.replace('T',' '),c(r.sacs),c(r.ext),jm?c(jm.moy):''].concat(ps.map(function(pc,i){return c(tempPiece(r,pc,i))})).concat([c(intOf(r)),'"'+String(r.par||'').replace(/"/g,'')+'"','"'+String(r.note||'').replace(/"/g,'""')+'"']).join(';'))});
+  l.push('');l.push('debut;fin;jours;sacs;sacs_par_jour;temp_ext_moy;temp_maison_moy');
+  A.iv.forEach(function(x){l.push([x.from.replace('T',' '),x.to.replace('T',' '),x.days.toFixed(2),x.sacs,x.rate.toFixed(3),x.ext==null?'':x.ext.toFixed(1),x.int==null?'':x.int.toFixed(1)].join(';').replace(/\./g,','))});
+  return l.join('\n');
+}
+function copier(id,msgId){var t=document.getElementById(id),m=document.getElementById(msgId);
+  try{navigator.clipboard.writeText(t.value).then(function(){m.textContent='Copié.'},function(){t.select();m.textContent='Sélectionné : faites Copier.'})}catch(err){t.select();m.textContent='Sélectionné : faites Copier.'}}
+
+/* ---------- actions ---------- */
+function majProfil(msg){data.profil.maj=Date.now();render();enregistrer(msg)}
+app.addEventListener('click',function(e){
+  var b=e.target.closest('button[data-a]');if(!b)return;
+  var a=b.getAttribute('data-a'),id=b.getAttribute('data-id');
+  if(a==='edit'){clearTouched();ui.editId=id;render();window.scrollTo(0,0)}
+  else if(a==='cancel'){clearTouched();ui.editId=null;render()}
+  else if(a==='del'){var r=data.rem.filter(function(x){return x.id===id})[0];data.rem=data.rem.filter(function(x){return x.id!==id});data.supprimes.push(id);render();enregistrer('Suppression du remplissage du '+(r?r.t.replace('T',' '):id))}
+  else if(a==='csv'){ui.csv=!ui.csv;render()}
+  else if(a==='copy')copier('csv','copymsg');
+  else if(a==='copycode')copier('code','codemsg');
+  else if(a==='code'){ui.showCode=!ui.showCode;render()}
+  else if(a==='conn1'){ui.conn=true;ui.err='';render();window.scrollTo(0,0)}
+  else if(a==='conn0'){ui.conn=false;clearTouched();render()}
+  else if(a==='logout'){lsDel(CFGKEY);lsDel(CACHEKEY);cfg=null;data=null;sha=null;mode='connexion';ui={editId:null,confirmClose:false,csv:false,setup:false,err:'',showCode:false};setStatus('','');render()}
+  else if(a==='setup1'){ui.setup=true;ui.err='';render();window.scrollTo(0,0)}
+  else if(a==='setup0'){clearTouched();ui.setup=false;render()}
+  else if(a==='pdel'){var ps=pieces();if(ps.length<2)return;var gone=ps.filter(function(pc){return pc.id===id});data.profil.pieces=ps.filter(function(pc){return pc.id!==id});data.profil.piecesRetirees=(data.profil.piecesRetirees||[]).concat(gone);majProfil('Pièce retirée')}
+  else if(a==='close1'){ui.confirmClose=true;render()}
+  else if(a==='close0'){ui.confirmClose=false;render()}
+  else if(a==='close2'){var A=analyse(),R=data.profil;ui.confirmClose=false;
+    var jours=A.first&&A.last?Math.round((A.last.ms-A.first.ms)/864e5+(A.rate?A.last.sacs/A.rate:1)):0;
+    R.historique=(R.historique||[]).concat([{label:R.saison,sacs:A.total,jours:jours,ext:A.extMoy!=null?Math.round(A.extMoy*10)/10:null}]);
+    var m=R.saison.match(/(\d{4})\D+(\d{4})/);R.saison=m?R.saison.replace(m[0],(+m[1]+1)+'-'+(+m[2]+1)):R.saison+' (suite)';
+    majProfil('Clôture de la saison')}
+});
+app.addEventListener('change',function(e){
+  var el=e.target;
+  if(el.getAttribute('data-moi')){var c=lsGet(CFGKEY)||{};c.moi=el.value.trim();lsSet(CFGKEY,c);return}
+  var pr=el.getAttribute('data-pren');
+  if(pr&&data&&data.profil){var v=el.value.trim();if(!v)return;data.profil.pieces=pieces().map(function(pc){return pc.id===pr?{id:pc.id,nom:v}:pc});majProfil('Pièce renommée');return}
+  var r=el.getAttribute('data-r');
+  if(r&&data&&data.profil){var old=data.profil.saison;
+    if(el.type==='text'){var t=el.value.trim();if(!t)return;data.profil[r]=t}else{var n=num(el.value);if(n==null||n<=0)return;data.profil[r]=n}
+    if(r==='saison'&&old!==data.profil.saison){var now=Date.now();data.rem.forEach(function(x){if((x.saison||old)===old){x.saison=data.profil.saison;x.maj=now}})}
+    majProfil('Réglages')}
+});
+app.addEventListener('submit',function(e){
+  e.preventDefault();var f=e.target;
+  if(f.id==='fc'){connecter({owner:f.owner.value.trim(),repo:f.repo.value.trim(),path:'donnees.json',token:f.token.value.trim()});return}
+  if(f.id==='fk'){try{var o=JSON.parse(b64dec(f.code.value.trim()));connecter({owner:o.o,repo:o.r,path:o.p||'donnees.json',token:o.t})}catch(err){ui.err='Ce code n’est pas valide. Recopiez-le en entier.';render()}return}
+  if(f.id==='fs'){
+    var com=f.commune.value.trim(),cp=f.cp.value.trim().toUpperCase();if(!com||!cp)return;
+    var btn=f.querySelector('button[type=submit]');btn.disabled=true;btn.textContent='Recherche de la commune…';
+    geocoder(com,cp).then(function(g){
+      if(!g){ui.err='Commune introuvable. Vérifiez l’orthographe.';btn.disabled=false;render();return}
+      var p=data.profil?clone(data.profil):clone(DEFPROFIL);
+      p.commune=com;p.cp=cp;p.lat=g.lat;p.lon=g.lon;
+      var po=num(f.poids.value),pv=num(f.prix.value);if(po>0)p.poidsSac=po;if(pv!=null&&pv>=0)p.prixSac=pv;
+      if(f.pieces){var noms=f.pieces.value.split(',').map(function(x){return x.trim()}).filter(Boolean);if(noms.length)p.pieces=noms.map(function(n,i){return {id:'p'+(i+1),nom:n}})}
+      p.maj=Date.now();var chg=!data.profil||data.profil.lat!==p.lat||data.profil.lon!==p.lon;
+      if(chg)data.meteo={};
+      data.profil=p;ui.setup=false;ui.err='';clearTouched();render();enregistrer('Réglages du foyer : '+com);chargerMeteo();
+    }).catch(function(){ui.err='Impossible de chercher la commune (réseau ?). Réessayez.';btn.disabled=false;render()});
+    return;
+  }
+  if(f.id==='fp'){var nom=f.nom.value.trim();if(!nom)return;var mx=0;(data.profil.pieces||[]).concat(data.profil.piecesRetirees||[]).forEach(function(pc){var n=parseInt(String(pc.id).slice(1),10);if(n>mx)mx=n});
+    data.profil.pieces=pieces().concat([{id:'p'+(mx+1),nom:nom}]);clearTouched();majProfil('Pièce ajoutée : '+nom);return}
+  if(f.id!=='fr')return;
+  var t=f.t.value,s=num(f.sacs.value);if(!t||!s||s<=0)return;
+  var temps={},tv=[];Array.prototype.forEach.call(f.querySelectorAll('[data-piece]'),function(el){var v=num(el.value);if(v!=null){temps[el.getAttribute('data-piece')]=v;tv.push(v)}});
+  var editId=ui.editId,old=editId?data.rem.filter(function(x){return x.id===editId})[0]:null;
+  var vals={id:editId||newId(),t:t,sacs:Math.round(s*2)/2,ext:num(f.ext.value),temps:temps,int:tv.length?Math.round(sum(tv)/tv.length*10)/10:null,note:f.note.value.trim(),saison:old&&old.saison?old.saison:P().saison,par:old&&old.par?old.par:moi(),maj:Date.now()};
+  if(old&&old.temps)Object.keys(old.temps).forEach(function(k){if(!(k in vals.temps)&&!pieces().some(function(pc){return pc.id===k}))vals.temps[k]=old.temps[k]});
+  ui.editId=null;clearTouched();
+  data.rem=data.rem.filter(function(x){return x.id!==vals.id}).concat([vals]);
+  render();enregistrer((editId?'Modification':'Remplissage')+' du '+t.replace('T',' ')+(vals.par?' par '+vals.par:''));
+});
+
+/* ---------- démarrage ---------- */
+function connecter(c){
+  if(!c.owner||!c.repo||!c.token){ui.err='Remplissez les trois champs.';render();return}
+  var old=lsGet(CFGKEY)||{};c.moi=old.moi||'';
+  cfg=c;ui.err='';mode='chargement';setStatus('busy','Connexion…');render();
+  ghLire().then(function(r){
+    lsSet(CFGKEY,cfg);data=r.data;sha=r.sha;mode='pret';ui.conn=false;
+    lsSet(CACHEKEY,{cfgId:cfgId(),data:data,sha:sha});setStatus('ok',sha?'Synchronisé avec GitHub':'Connecté : premier enregistrement à venir');render();chargerMeteo();
+  }).catch(function(e){
+    mode='connexion';setStatus('err','Connexion impossible');
+    ui.err=e.status===401?'Clé refusée par GitHub : vérifiez-la ou créez-en une nouvelle.':(e.status===403?'Cette clé n’a pas le droit d’accéder au dépôt (vérifiez « Contents : Read and write »).':(e.repo||e.status===404?'Dépôt introuvable : vérifiez le compte et le nom du dépôt, et que la clé donne accès à ce dépôt.':'Pas de réponse de GitHub. Vérifiez votre connexion internet.'));
+    render();
+  });
+}
+function demarrer(){
+  var c=lsGet(CFGKEY);
+  if(!c||!c.token){mode='connexion';render();return}
+  cfg=c;
+  var cache=lsGet(CACHEKEY);
+  if(cache&&cache.cfgId===cfgId()&&cache.data){data=norm(cache.data);sha=cache.sha;mode='pret';setStatus('busy','Synchronisation…');render()}
+  else{mode='chargement';render()}
+  ghLire().then(function(r){
+    var enAttente=!!(cache&&cache.pending&&cache.cfgId===cfgId()&&mode==='pret'&&data);
+    data=enAttente?(cache.sha===r.sha?data:fusion(r.data,data)):r.data;
+    sha=r.sha;mode='pret';setStatus('ok','Synchronisé avec GitHub');render();
+    if(enAttente)enregistrer('Envoi des saisies faites hors ligne');else lsSet(CACHEKEY,{cfgId:cfgId(),data:data,sha:sha});
+    chargerMeteo();
+  }).catch(function(e){
+    if(mode==='pret'){setStatus('err',e.status===401||e.status===403?'Clé GitHub refusée : vérifiez-la dans Connexion':'Hors ligne : données du téléphone affichées');dirty=true;chargerMeteo();return}
+    mode='connexion';ui.err=e.status===401?'Clé refusée par GitHub : reconnectez-vous.':'Impossible de joindre GitHub. Vérifiez votre connexion internet puis rechargez la page.';render();
+  });
+}
+demarrer();
+})();
+
+</script>
+</body>
+</html>

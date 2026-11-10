@@ -1,8 +1,17 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.5 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.8 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://benoit-1.github.io/suivi-chauffage/">
+<meta property="og:title" content="Suivi pellets : combien de sacs cette semaine ?">
+<meta property="og:description" content="Gratuit, sans compte : notez vos sacs et vos températures, l’appli prévoit votre consommation selon la météo.">
+<meta property="og:image" content="https://benoit-1.github.io/suivi-chauffage/apercu-lien.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:locale" content="fr_FR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="description" content="Gratuit, sans compte : notez vos sacs de pellets et vos températures, l’appli prévoit votre consommation selon la météo.">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>try{var c0=JSON.parse(localStorage.getItem('suivi-pellets-github')||'{}');if(c0&&c0.style==='ios')document.documentElement.setAttribute('data-style','ios')}catch(e){}</script>
@@ -375,7 +384,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.5', VERSION_DATE='9 novembre 2026';
+var VERSION='5.8', VERSION_DATE='10 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1151,7 +1160,10 @@ function prevision(A){
   if(!fin&&s14>0){var parJour=s14/liste.length,j=Math.ceil((reste-acc)/parJour),dt=new Date(parseDT(liste[liste.length-1].d+'T12:00'));dt.setDate(dt.getDate()+j);fin=ymd(dt);var approx=true}
   return {jours:liste,s7:s7,s14:s14,fin:fin,approx:!!approx,n14:liste.length}}
 function vuePrevision(A){
-  var P=prevision(A);if(!P)return '';
+  var P=prevision(A);
+  if(!P){var nCh=(A.ch||[]).length,reste=Math.max(1,2-nCh);
+    return '<section class="card prev-card attente" aria-label="Prévision de consommation"><h2>La semaine à venir</h2>'+
+      '<p class="hint">'+(A.rate==null?'📅 Notez encore <b>'+reste+' chargement'+(reste>1?'s':'')+'</b> (à plus de 6 heures d’intervalle) : l’application saura alors combien de sacs prévoir pour les 7 prochains jours, d’après la météo prévue.':'⏳ Prévisions météo en attente : elles arrivent dès que le réseau répond.')+'</p></section>'}
   var R=F(),sept=P.jours.slice(0,7),mx=Math.max.apply(null,sept.map(function(x){return x.s}).concat([1]));
   var noms=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
   var barres=sept.map(function(x,i){var h=Math.max(4,Math.round(x.s/mx*64)),dd=new Date(parseDT(x.d+'T12:00'));
@@ -1358,6 +1370,17 @@ window.__majCiel=function(c){if(S){S.ciel=c;renderFond()}};
 window.__majFete=function(f){window.__fete=f;Fond.regler();render()};
 demarrer();
 setTimeout(suivrePoele,1500); // v5.4 : lecture du poêle connecté
+// v5.7 : quand on revient sur l'application (iPhone qui la sort de veille), vérifier s'il existe une nouvelle version et se recharger
+var derniereVerif=0;
+function verifierMiseAJour(){
+  if(Date.now()-derniereVerif<10*6e4||!navigator.onLine||location.protocol==='file:')return;derniereVerif=Date.now();
+  fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():''}).then(function(t){
+    var m=/var VERSION='([0-9.]+)'/.exec(t);if(!m||m[1]===VERSION)return;
+    if(enSaisie()){toast('Nouvelle version '+m[1]+' : elle s’installera à la prochaine ouverture');return}
+    location.reload()}).catch(function(){})}
+document.addEventListener('visibilitychange',function(){if(!document.hidden)verifierMiseAJour()});
+window.addEventListener('pageshow',function(e){if(e.persisted)verifierMiseAJour()});
+setTimeout(verifierMiseAJour,4000);
 setTimeout(reveil,500);
 })();
 

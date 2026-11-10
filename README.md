@@ -87,6 +87,10 @@ Dans **Réglages**, carte **Faire connaître l'application** : faites scanner le
 
 Ensuite elle touche **🔥 Commencer**. Ses relevés restent sur son appareil. Une fois installée, l'application s'ouvre même sans réseau (seule la météo attend le retour du réseau).
 
+## Partager sur Facebook
+
+Publiez simplement le lien **https://benoit-1.github.io/suivi-chauffage/** : Facebook affiche automatiquement la grande image d'aperçu (fichier `apercu-lien.png`), et toute l'image est cliquable. Le fichier `apercu-lien.png` doit donc être déposé sur GitHub avec les autres.
+
 ## Compteur d'utilisateurs
 
 L'application peut envoyer un signal anonyme à GoatCounter (gratuit, sans cookie, sans bandeau de consentement). Aucun relevé, aucun nom, aucune commune n'est envoyé. Seuls ces événements sont comptés :
@@ -168,6 +172,9 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.8 | 10 novembre 2026 | Partage sur Facebook, WhatsApp… : publier seulement le lien affiche une grande image d'aperçu cliquable (fichier apercu-lien.png). |
+| 5.7 | 10 novembre 2026 | Mise à jour automatique : quand on revient sur l'application, elle vérifie s'il existe une nouvelle version et se recharge toute seule (fini l'iPhone resté sur une ancienne version). |
+| 5.6 | 9 novembre 2026 | La carte « La semaine à venir » est visible dès le départ, avec un message tant qu'il manque des chargements pour calculer la prévision. |
 | 5.5 | 9 novembre 2026 | La flamme de l'accueil est plus grande et suit la température dehors : petite quand il fait doux, haute quand il fait froid. La palette ne montre plus que les sacs consommés (sans les places vides en pointillés). |
 | 5.4 | 9 novembre 2026 | Poêle connecté Jolly Mec (lecture seule) : état, température de la pièce, puissance, fumées, alarme, via un relais Cloudflare gratuit. Ligne d'état sur l'accueil. |
 | 5.3 | 9 novembre 2026 | Prévision : « La semaine à venir » affiche en grand le nombre de sacs à prévoir pour les 7 prochains jours (et la semaine suivante) ; plus de date de fin de palette. |

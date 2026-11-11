@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.15 | 11 novembre 2026 | Graphiques « Au fil de la saison » et « Sacs par jour selon le froid » redessinés à la taille du téléphone : chiffres et repères lisibles. Les estimations « Par X °C dehors » ne sont plus inventées loin des températures déjà mesurées (« pas encore de mesure »). La prévision de la semaine reste toujours calculée : tant que la courbe selon le froid n'est pas fiable, elle part de votre moyenne réelle corrigée par la température prévue. |
+| 5.14 | 11 novembre 2026 | L'animation du feu se joue à chaque ouverture de l'application, et aussi quand on y revient après plus de 10 minutes. |
 | 5.13 | 11 novembre 2026 | Ouverture avec la vraie vidéo du poêle (fichier `feu.mp4`, à mettre sur GitHub avec les autres) et le vrai bruit des granulés enregistré au remplissage. Le sac dessiné est retiré. Sans toucher, l'application s'ouvre au bout de 3 secondes. |
 | 5.12 | 11 novembre 2026 | Bruit des granulés : à l'ouverture, le sac attend au-dessus du feu ; en touchant l'écran il se vide avec le bruit des granulés (sinon il se vide tout seul, sans bruit). Le bruit joue aussi après un chargement. Réglage « Bruit des granulés » Oui/Non. Le son est une imitation faite par ordinateur. |
 | 5.11 | 11 novembre 2026 | Petite animation à l'ouverture : un sac de pellets se vide dans le feu, puis l'application apparaît (3 secondes, une touche pour passer ; pas affichée si les animations sont désactivées). Les granulés qui tombent dans la flamme après un chargement s'affichent de nouveau. |

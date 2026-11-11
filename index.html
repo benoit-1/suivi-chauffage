@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.13 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.15 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -402,7 +402,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.13', VERSION_DATE='11 novembre 2026';
+var VERSION='5.15', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -709,34 +709,34 @@ function niceTop(v){var s=v>4?1:(v>2?0.5:0.25);return {top:Math.max(s,Math.ceil(
 function scatterSVG(A){
   var pts=A.iv.filter(function(x){return x.ext!=null});
   if(pts.length<2)return '<p class="empty">Le nuage de points apparaît après 3 chargements, dès que la température extérieure est connue.</p>';
-  var W=700,H=280,L=46,Rr=14,T=14,B=34;
+  var W=360,H=240,L=38,Rr=22,T=20,B=28; // v5.15 : dessiné à la taille d'un téléphone, chiffres lisibles
   var mn=Math.min.apply(null,pts.map(function(x){return x.ext})),mx=Math.max.apply(null,pts.map(function(x){return x.ext}));
   var lo=Math.min(-5,Math.floor(mn/5)*5),hi=Math.max(15,Math.ceil(mx/5)*5);
   var yt=niceTop(Math.max.apply(null,pts.map(function(x){return x.rate})));
   var X=function(v){return L+(W-L-Rr)*(v-lo)/(hi-lo)},Y=function(v){return T+(H-T-B)*(1-v/yt.top)};
   var g='<defs><clipPath id="cp"><rect x="'+L+'" y="'+T+'" width="'+(W-L-Rr)+'" height="'+(H-T-B)+'"/></clipPath></defs>';
-  for(var v=0;v<=yt.top+1e-9;v+=yt.step)g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="13" fill="var(--muted)">'+nf(v,yt.step<1?2:0)+'</text>';
-  for(var t=lo;t<=hi;t+=5)g+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--line)" stroke-dasharray="'+(t===0?'0':'2 4')+'"/><text x="'+X(t)+'" y="'+(H-B+17)+'" text-anchor="middle" font-size="13" fill="var(--muted)">'+nf(t)+' °C</text>';
-  g+='<text x="'+L+'" y="'+(T-3)+'" font-size="13" fill="var(--muted)">sacs par jour</text>';
+  for(var v=0;v<=yt.top+1e-9;v+=yt.step)g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="12" fill="var(--muted)">'+nf(v,yt.step<1?2:0)+'</text>';
+  for(var t=lo;t<=hi;t+=5)g+='<line x1="'+X(t)+'" x2="'+X(t)+'" y1="'+T+'" y2="'+(H-B)+'" stroke="var(--line)" stroke-dasharray="'+(t===0?'0':'2 4')+'"/><text x="'+X(t)+'" y="'+(H-B+16)+'" text-anchor="middle" font-size="12" fill="var(--muted)">'+nf(t)+' °C</text>';
+  g+='<text x="'+L+'" y="'+(T-3)+'" font-size="12" fill="var(--muted)">sacs par jour</text>';
   if(A.reg)g+='<line clip-path="url(#cp)" x1="'+X(lo)+'" y1="'+Y(A.reg.a+A.reg.b*lo)+'" x2="'+X(hi)+'" y2="'+Y(A.reg.a+A.reg.b*hi)+'" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.6"/>';
-  pts.forEach(function(x){g+='<circle cx="'+X(x.ext).toFixed(1)+'" cy="'+Y(x.rate).toFixed(1)+'" r="8" fill="var(--accent)" fill-opacity="0.82" stroke="var(--surface)" stroke-width="1.5"><title>'+fds(x.from)+' : '+nf(x.rate,2)+' sac/j à '+deg(x.ext)+'</title></circle>'});
+  pts.forEach(function(x){g+='<circle cx="'+X(x.ext).toFixed(1)+'" cy="'+Y(x.rate).toFixed(1)+'" r="6" fill="var(--accent)" fill-opacity="0.82" stroke="var(--surface)" stroke-width="1.5"><title>'+fds(x.from)+' : '+nf(x.rate,2)+' sac/j à '+deg(x.ext)+'</title></circle>'});
   return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Sacs par jour selon la température extérieure">'+g+'</svg>';
 }
 function timelineSVG(A){
   var iv=A.iv.slice(-30);if(iv.length<2)return '';
-  var W=700,H=240,L=46,Rr=46,T=16,B=30;
+  var W=360,H=220,L=36,Rr=30,T=14,B=26; // v5.15 : taille téléphone
   var yt=niceTop(Math.max.apply(null,iv.map(function(x){return x.rate})));
   var ex=iv.filter(function(x){return x.ext!=null}).map(function(x){return x.ext});
   var tlo=Math.min(-5,Math.floor((ex.length?Math.min.apply(null,ex):0)/5)*5),thi=Math.max(15,Math.ceil((ex.length?Math.max.apply(null,ex):10)/5)*5);
   var Y=function(v){return T+(H-T-B)*(1-v/yt.top)},YT=function(v){return T+(H-T-B)*(1-(v-tlo)/(thi-tlo))};
   var bw=(W-L-Rr)/iv.length,g='';
-  for(var v=0;v<=yt.top+1e-9;v+=yt.step)g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="13" fill="var(--accent)">'+nf(v,yt.step<1?2:0)+'</text>';
-  for(var t=tlo;t<=thi;t+=5)g+='<text x="'+(W-Rr+6)+'" y="'+(YT(t)+4)+'" font-size="13" fill="var(--cold)">'+nf(t)+'°</text>';
-  var every=Math.ceil(iv.length/6),path='';
+  for(var v=0;v<=yt.top+1e-9;v+=yt.step)g+='<line x1="'+L+'" x2="'+(W-Rr)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(L-6)+'" y="'+(Y(v)+4)+'" text-anchor="end" font-size="12" fill="var(--accent)">'+nf(v,yt.step<1?2:0)+'</text>';
+  for(var t=tlo;t<=thi;t+=5)g+='<text x="'+(W-Rr+6)+'" y="'+(YT(t)+4)+'" font-size="12" fill="var(--cold)">'+nf(t)+'°</text>';
+  var every=Math.ceil(iv.length/4),path='';
   iv.forEach(function(x,i){var bx=L+i*bw+bw*0.15,w=bw*0.7,yy=Y(x.rate);
     g+='<rect x="'+bx.toFixed(1)+'" y="'+yy.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+(Y(0)-yy).toFixed(1)+'" rx="3" fill="var(--accent)" opacity="0.75"><title>'+fds(x.from)+' : '+nf(x.rate,2)+' sac/j</title></rect>';
-    if(i%every===0||i===iv.length-1)g+='<text x="'+(bx+w/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="13" fill="var(--muted)">'+fds(x.from)+'</text>';
-    if(x.ext!=null){var cx=(bx+w/2).toFixed(1),cy=YT(x.ext).toFixed(1);path+=(path?' L':'M')+cx+' '+cy;g+='<circle cx="'+cx+'" cy="'+cy+'" r="3.5" fill="var(--cold)"></circle>'}});
+    if(i%every===0||i===iv.length-1)g+='<text x="'+(bx+w/2)+'" y="'+(H-10)+'" text-anchor="middle" font-size="12" fill="var(--muted)">'+fds(x.from)+'</text>';
+    if(x.ext!=null){var cx=(bx+w/2).toFixed(1),cy=YT(x.ext).toFixed(1);path+=(path?' L':'M')+cx+' '+cy;g+='<circle cx="'+cx+'" cy="'+cy+'" r="3" fill="var(--cold)"></circle>'}});
   if(path)g+='<path d="'+path+'" fill="none" stroke="var(--cold)" stroke-width="2"/>';
   return '<div class="legend"><span><i style="background:var(--accent)"></i>Sacs par jour</span><span><i style="background:var(--cold)"></i>Dehors</span></div><div class="chart"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Consommation et température au fil de la saison">'+g+'</svg></div>';
 }
@@ -833,7 +833,8 @@ function vueDetails(){
     '<div class="tile"><span class="lab">Dehors moyen</span><span class="val ext">'+(A.extMoy!=null?nf(A.extMoy,1)+'°':'—')+'</span><span class="note">entre chargements</span></div>'+
     '<div class="tile"><span class="lab">Coût</span><span class="val">'+nf(A.cout)+' €</span><span class="note">'+nf(R.prixSac,2)+' € le sac</span></div></section>';
   h+='<section class="card"><h2>Sacs par jour selon le froid</h2><div class="chart">'+scatterSVG(A)+'</div>';
-  if(A.reg){h+='<div class="kv">';[-5,0,5,10].forEach(function(t){h+='<div><span>Par '+nf(t)+' °C dehors</span><b>'+nf(predict(A.reg,t),2)+' sac/j</b></div>'});h+='<div><span>Chaque degré plus froid</span><b>'+(A.reg.b<0?'+':'')+nf(-A.reg.b,2)+' sac/j</b></div></div>'}
+  if(A.reg){h+='<div class="kv">';var exs=A.iv.filter(function(x){return x.ext!=null}).map(function(x){return x.ext}),tmn=Math.min.apply(null,exs),tmx=Math.max.apply(null,exs);
+    [-5,0,5,10].forEach(function(t){var ok=exs.length&&t>=tmn-4&&t<=tmx+4;h+='<div><span>Par '+nf(t)+' °C dehors</span><b>'+(ok?nf(Math.max(0,predict(A.reg,t)),2)+' sac/j':'<span style="color:var(--muted);font-weight:500">pas encore de mesure</span>')+'</b></div>'});h+='<div><span>Chaque degré plus froid</span><b>'+(A.reg.b<0?'+':'')+nf(-A.reg.b,2)+' sac/j</b></div></div>'}
   h+='</section>';
   if(A.salles.some(function(x){return x.n})){var multi=A.salles.length>1;
     h+='<section class="card"><h2>Températures par pièce</h2><div class="tablewrap"><table><thead><tr><th>Pièce</th><th class="num">Moyenne</th><th class="num">Mini</th><th class="num">Maxi</th><th class="num">Dehors &lt; 5°</th><th class="num">Dehors ≥ 5°</th>'+(multi?'<th class="num">Écart</th>':'')+'</tr></thead><tbody>';
@@ -1154,7 +1155,8 @@ function ecranOuverture(){try{ // v5.13 : la vraie vidéo du poêle de Benoît ;
   var de=document.documentElement;
   if(de.classList.contains('anim-off'))return;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-  if(sessionStorage.getItem('suivi-ouverture'))return;sessionStorage.setItem('suivi-ouverture','1');
+  if(document.querySelector('.ouverture'))return;
+  try{var tt=+localStorage.getItem('suivi-ouverture-t')||0;if(Date.now()-tt<20000)return;localStorage.setItem('suivi-ouverture-t',String(Date.now()))}catch(x){}
   var o=document.createElement('div');o.className='ouverture';o.setAttribute('role','button');o.setAttribute('aria-label','Ouvrir Suivi pellets');
   var g='';for(var i=0;i<46;i++)g+='<i style="--d:'+(0.05+i*0.045).toFixed(2)+'s;--x:'+(Math.random()*70-35).toFixed(0)+'px;--r:'+Math.round(Math.random()*180)+'deg"></i>';
   o.innerHTML='<video class="ov-video" src="feu.mp4" muted autoplay loop playsinline webkit-playsinline preload="auto"></video><div class="ov-voile"></div>'+
@@ -1206,7 +1208,11 @@ function vuePalette(A){
 var PREV={};
 function tauxPour(A,T){ // sacs par jour prévus pour une température moyenne T
   var r=null;
-  if(A.reg&&A.reg.b<0)r=A.reg.a+A.reg.b*T;
+  // v5.15 : la droite « selon le froid » n'est utilisée que si elle est fiable (assez de mesures, assez d'écart de températures, T proche du vécu) ;
+  // sinon on part de votre moyenne réelle, corrigée par l'écart au chauffage (degrés-jours), ce qui ne s'emballe pas
+  var exs=(A.iv||[]).filter(function(x){return x.ext!=null}).map(function(x){return x.ext}),tmn=exs.length?Math.min.apply(null,exs):0,tmx=exs.length?Math.max.apply(null,exs):0;
+  var fiable=A.reg&&A.reg.b<0&&exs.length>=6&&(tmx-tmn)>=5&&T>=tmn-4&&T<=tmx+4;
+  if(fiable)r=A.reg.a+A.reg.b*T;
   else if(A.rate!=null&&A.extMoy!=null&&A.extMoy<17)r=A.rate*Math.max(0,18-T)/Math.max(1,18-A.extMoy);
   else if(A.rate!=null)r=A.rate;
   return r==null?null:Math.max(0,Math.min(4,r))}
@@ -1432,6 +1438,8 @@ document.addEventListener('visibilitychange',function(){if(!document.hidden)reve
 window.addEventListener('hashchange',reveil);
 window.__majCiel=function(c){if(S){S.ciel=c;renderFond()}};
 window.__majFete=function(f){window.__fete=f;Fond.regler();render()};
+// v5.14 : l'animation revient à chaque ouverture, et quand on revient dans l'application après plus de 10 minutes
+var ouvCachee=0;document.addEventListener('visibilitychange',function(){if(document.hidden){ouvCachee=Date.now()}else if(ouvCachee&&Date.now()-ouvCachee>10*60000){ouvCachee=0;ecranOuverture()}});
 demarrer();ecranOuverture();
 setTimeout(suivrePoele,1500); // v5.4 : lecture du poêle connecté
 // v5.7 : quand on revient sur l'application (iPhone qui la sort de veille), vérifier s'il existe une nouvelle version et se recharger

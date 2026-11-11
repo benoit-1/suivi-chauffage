@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.13 | 11 novembre 2026 | Ouverture avec la vraie vidéo du poêle (fichier `feu.mp4`, à mettre sur GitHub avec les autres) et le vrai bruit des granulés enregistré au remplissage. Le sac dessiné est retiré. Sans toucher, l'application s'ouvre au bout de 3 secondes. |
 | 5.12 | 11 novembre 2026 | Bruit des granulés : à l'ouverture, le sac attend au-dessus du feu ; en touchant l'écran il se vide avec le bruit des granulés (sinon il se vide tout seul, sans bruit). Le bruit joue aussi après un chargement. Réglage « Bruit des granulés » Oui/Non. Le son est une imitation faite par ordinateur. |
 | 5.11 | 11 novembre 2026 | Petite animation à l'ouverture : un sac de pellets se vide dans le feu, puis l'application apparaît (3 secondes, une touche pour passer ; pas affichée si les animations sont désactivées). Les granulés qui tombent dans la flamme après un chargement s'affichent de nouveau. |
 | 5.10 | 11 novembre 2026 | Le réglage « Poêle connecté » (Jolly Mec) est masqué tant qu'il n'a pas été testé. Pour l'essayer sur un appareil : ouvrir l'adresse avec `?poele=1` à la fin (et `?poele=0` pour le retirer). |

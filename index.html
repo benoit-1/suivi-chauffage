@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.8 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.10 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -363,6 +363,7 @@ html.anim-off .palette .neuf{animation:none}
 /* v5.5 : flamme plus grande, sa taille suit la température dehors ; elle danse plus fort quand il fait froid */
 .poele.feu{width:calc(76px * var(--fl,1))}
 .t.sacs .flame{display:flex;align-items:flex-end;min-height:100px}
+.num-app{display:block;margin-top:6px;opacity:.7;font-size:13px}
 
 </style>
 </head>
@@ -384,7 +385,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.8', VERSION_DATE='10 novembre 2026';
+var VERSION='5.10', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -481,7 +482,12 @@ var COMPTEUR='suivi-pellets'; // code GoatCounter, ex. 'suivi-pellets' → https
 function statistique(evt){try{if(!COMPTEUR||(cfg&&cfg.stats==='off'))return;var img=new Image();img.referrerPolicy='no-referrer';
   img.src='https://'+COMPTEUR+'.goatcounter.com/count?p=%2F'+encodeURIComponent(evt)+'&t='+encodeURIComponent(evt)+'&e=true&rnd='+Math.random().toString(36).slice(2)}catch(e){}}
 function statsDuJour(){try{if(!localStorage.getItem('suivi-stat-appareil')){localStorage.setItem('suivi-stat-appareil','1');statistique('nouvel-appareil');statistique(estLocal()?'mode-sans-compte':'mode-github')}
-  var j=ymd(new Date());if(localStorage.getItem('suivi-stat-jour')!==j){localStorage.setItem('suivi-stat-jour',j);statistique('appareil-actif-du-jour')}}catch(e){}}
+  var j=ymd(new Date());if(localStorage.getItem('suivi-stat-jour')!==j){localStorage.setItem('suivi-stat-jour',j);statistique('appareil-actif-du-jour')}
+  statsVisite()}catch(e){}}
+// v5.9 : chaque appareil a un numéro au hasard (4 caractères, rien de personnel) ; une visite = une ouverture (au plus 1 par 30 min)
+function numeroAppareil(){try{var n=localStorage.getItem('suivi-stat-id');if(!n){var c='abcdefghijkmnpqrstuvwxyz23456789';n='';for(var i=0;i<4;i++)n+=c[Math.floor(Math.random()*c.length)];localStorage.setItem('suivi-stat-id',n)}return n}catch(e){return ''}}
+function statsVisite(){try{var t=Date.now(),d=+localStorage.getItem('suivi-stat-ouv')||0;if(t-d<30*60000)return;localStorage.setItem('suivi-stat-ouv',String(t));var n=numeroAppareil();if(n)statistique('visite/'+n)}catch(e){}}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&mode==='pret')statsVisite()});
 function estLocal(){return !!(cfg&&cfg.local)}
 function cacher(pending){if(estLocal())return;lsSet(CACHEKEY,{cfgId:cfgId(),data:donnees(),sha:sha,pending:!!pending})}
 function enregistrer(msg){
@@ -848,7 +854,7 @@ function vueReglages(){
     '<div class="f"><span>Animations des fêtes (Noël, Nouvel An, Chandeleur, Saint-Valentin, Pâques, Halloween)</span><div class="seg" role="radiogroup" aria-label="Animations des fêtes">'+
     [['auto','Automatiques'],['off','Désactivées']].map(function(o){var on=((cfg&&cfg.fetes)||'auto')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="fetes" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>'+
     (COMPTEUR?'<div class="f"><span>Statistiques anonymes (nombre d’appareils, sans aucune donnée personnelle ni relevé)</span><div class="seg" role="radiogroup" aria-label="Statistiques anonymes">'+
-      [['on','Oui'],['off','Non']].map(function(o){var on=((cfg&&cfg.stats)||'on')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="stats" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div></div>':'')+
+      [['on','Oui'],['off','Non']].map(function(o){var on=((cfg&&cfg.stats)||'on')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="stats" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div><small class="num-app">Numéro de cet appareil : <b>'+esc(numeroAppareil())+'</b></small></div>':'')+
     '</section>';
   // v3.6 : faire connaître l'application (lien public, sans aucune donnée ni clé)
   var lp=lienPublic(),svgp=qrSVG(lp);
@@ -865,7 +871,7 @@ function vueReglages(){
     '<select data-psrc="'+esc(pc.id)+'" aria-label="Source de la température de '+esc(pc.nom)+'"><option value="saisie"'+(pc.source!=='capteur'?' selected':'')+'>Saisie à la main</option><option value="capteur" disabled>Thermomètre connecté (bientôt)</option><option value="poele" disabled>Sonde du poêle (bientôt)</option></select>'+
     '<button class="x" data-a="pdel" data-id="'+esc(pc.id)+'"'+(pieces().length<2?' disabled':'')+' aria-label="Retirer '+esc(pc.nom)+'">×</button></div>'});
   h+='<form id="fPiece" class="row"><input id="r-pnew" name="nom" placeholder="Ajouter une pièce" required><button type="submit">Ajouter</button></form></section>';
-  h+=vuePoeleReglages();
+  if(POELE_ACTIF)h+=vuePoeleReglages();
   h+='<section class="card"><h2>Pellets</h2><div class="row"><label class="f">Poids d’un sac (kg)<input type="number" data-r="poidsSac" id="r-poids" value="'+R.poidsSac+'" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" step="0.01" data-r="prixSac" id="r-prix" value="'+R.prixSac+'" min="0"></label><label class="f">Sacs par palette<input type="number" data-r="sacsPalette" id="r-palette" value="'+(R.sacsPalette||72)+'" min="1" step="1"></label></div>'+
     '<label class="f">Saison en cours<input type="text" data-r="saison" id="r-saison" value="'+esc(R.saison)+'"></label>'+
     (ui.confirmClose?'<div class="confirm"><span>Archiver « '+esc(R.saison)+' » et commencer une nouvelle saison ?</span><button class="primary" data-a="close2">Oui</button><button data-a="close0">Non</button></div>':'<div class="row"><button data-a="close1">Clore la saison…</button></div>')+'</section>';
@@ -1188,11 +1194,13 @@ function lirePoele(manuel){
      else{ui.poeleErr=(j&&j.message)||'Le poêle n’a pas pu être lu.';ui.poeleMsg=''}
      render();return j})
    .catch(function(){poeleEnCours=false;ui.poeleErr='Relais injoignable : vérifiez son adresse et le réseau.';ui.poeleMsg='';render();return null})}
-function suivrePoele(){if(poeleMinuteur)clearInterval(poeleMinuteur);poeleMinuteur=null;if(!poeleCfg())return;
+// v5.10 : poêle connecté masqué tant qu'il n'est pas testé (ouvrir une fois avec ?poele=1 pour l'activer sur un appareil, ?poele=0 pour le retirer)
+var POELE_ACTIF=(function(){try{var m=location.search.match(/[?&]poele=([01])/);if(m){if(m[1]==='1')localStorage.setItem('suivi-poele-test','1');else localStorage.removeItem('suivi-poele-test')}return localStorage.getItem('suivi-poele-test')==='1'}catch(e){return false}})();
+function suivrePoele(){if(poeleMinuteur)clearInterval(poeleMinuteur);poeleMinuteur=null;if(!POELE_ACTIF||!poeleCfg())return;
   var d=poeleDernier();if(!d||Date.now()-Date.parse(d.lu_le)>4*6e4)lirePoele(false);
   poeleMinuteur=setInterval(function(){if(!document.hidden)lirePoele(false)},5*6e4)}
 document.addEventListener('visibilitychange',function(){if(!document.hidden&&poeleCfg()){var d=poeleDernier();if(!d||Date.now()-Date.parse(d.lu_le)>4*6e4)lirePoele(false)}});
-function lignePoele(){if(!poeleCfg())return '';var d=poeleDernier();
+function lignePoele(){if(!POELE_ACTIF||!poeleCfg())return '';var d=poeleDernier();
   if(!d)return '<p class="poele-ligne">🔌 Poêle connecté · lecture en cours…</p>';
   var bits=[d.etat||'état inconnu'];if(d.temp_piece!=null)bits.push(nf(d.temp_piece,1)+' °C');if(d.puissance!=null)bits.push('puissance '+nf(d.puissance,0));
   var vieux=Date.now()-Date.parse(d.lu_le)>20*6e4;

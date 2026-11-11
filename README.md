@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.10 | 11 novembre 2026 | Le réglage « Poêle connecté » (Jolly Mec) est masqué tant qu'il n'a pas été testé. Pour l'essayer sur un appareil : ouvrir l'adresse avec `?poele=1` à la fin (et `?poele=0` pour le retirer). |
+| 5.9 | 11 novembre 2026 | Compteur par appareil : chaque appareil reçoit un numéro au hasard (4 caractères, rien de personnel), visible dans Réglages. Chaque ouverture (au plus une toutes les 30 minutes) est comptée sous « visite/numéro » dans GoatCounter. |
 | 5.8 | 10 novembre 2026 | Partage sur Facebook, WhatsApp… : publier seulement le lien affiche une grande image d'aperçu cliquable (fichier apercu-lien.png). |
 | 5.7 | 10 novembre 2026 | Mise à jour automatique : quand on revient sur l'application, elle vérifie s'il existe une nouvelle version et se recharge toute seule (fini l'iPhone resté sur une ancienne version). |
 | 5.6 | 9 novembre 2026 | La carte « La semaine à venir » est visible dès le départ, avec un message tant qu'il manque des chargements pour calculer la prévision. |

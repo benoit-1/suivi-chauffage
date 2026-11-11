@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.12 | 11 novembre 2026 | Bruit des granulés : à l'ouverture, le sac attend au-dessus du feu ; en touchant l'écran il se vide avec le bruit des granulés (sinon il se vide tout seul, sans bruit). Le bruit joue aussi après un chargement. Réglage « Bruit des granulés » Oui/Non. Le son est une imitation faite par ordinateur. |
+| 5.11 | 11 novembre 2026 | Petite animation à l'ouverture : un sac de pellets se vide dans le feu, puis l'application apparaît (3 secondes, une touche pour passer ; pas affichée si les animations sont désactivées). Les granulés qui tombent dans la flamme après un chargement s'affichent de nouveau. |
 | 5.10 | 11 novembre 2026 | Le réglage « Poêle connecté » (Jolly Mec) est masqué tant qu'il n'a pas été testé. Pour l'essayer sur un appareil : ouvrir l'adresse avec `?poele=1` à la fin (et `?poele=0` pour le retirer). |
 | 5.9 | 11 novembre 2026 | Compteur par appareil : chaque appareil reçoit un numéro au hasard (4 caractères, rien de personnel), visible dans Réglages. Chaque ouverture (au plus une toutes les 30 minutes) est comptée sous « visite/numéro » dans GoatCounter. |
 | 5.8 | 10 novembre 2026 | Partage sur Facebook, WhatsApp… : publier seulement le lien affiche une grande image d'aperçu cliquable (fichier apercu-lien.png). |

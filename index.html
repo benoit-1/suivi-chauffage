@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.15 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.19 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -382,6 +382,30 @@ html.anim-off .palette .neuf{animation:none}
 @keyframes ovgrain{0%{opacity:1;transform:translate(0,0) rotate(var(--r))}80%{opacity:1}100%{opacity:0;transform:translate(var(--x),54vh) rotate(calc(var(--r) + 200deg))}}
 .ouverture.sans-video{background:radial-gradient(ellipse at 50% 60%,#5a2c10 0%,#1a0f08 60%,#0b0604 100%)}
 
+/* v5.16 : comparaison avec l'an dernier */
+.comp-an .comp-chiffre{font-size:40px;font-weight:800;line-height:1.1;margin:2px 0 6px;color:var(--ink)}
+.comp-an .comp-chiffre.plus{color:#d9611a}
+.comp-an .comp-chiffre.moins{color:#2f8f5b}
+.comp-an p{margin:4px 0}
+
+/* v5.17 : gros bouton « son » bien visible au centre de l'ouverture */
+.ov-bouton{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:0;animation:ovtitre .5s ease .25s forwards;pointer-events:none}
+.ov-rond{width:92px;height:92px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;background:rgba(20,8,2,.45);border:2px solid rgba(255,236,210,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 0 0 0 rgba(255,220,170,.6);animation:ovpouls 1.4s ease-out .8s infinite}
+@keyframes ovpouls{0%{box-shadow:0 0 0 0 rgba(255,220,170,.55)}100%{box-shadow:0 0 0 26px rgba(255,220,170,0)}}
+.ov-txt{color:#fff6ea;font:700 19px/1.25 -apple-system,system-ui,sans-serif;text-align:center;background:rgba(20,8,2,.55);padding:10px 18px;border-radius:16px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.ov-aide{font-size:14px!important;opacity:.85}
+.ouverture.ov-on .ov-bouton{animation:none;opacity:0;transition:opacity .25s}
+
+/* v5.19 : stock et prochain remplissage */
+.remplir{margin:10px 2px 0;padding:10px 14px;border-radius:14px;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.06);font-size:15px}
+.remplir.urgent{background:#fff1e6;color:#a24a10;font-weight:600}
+.stock-card .stock-chiffre{font-size:40px;font-weight:800;line-height:1.1;margin:2px 0 6px}
+.stock-card .stock-chiffre small{font-size:18px;font-weight:600;color:var(--muted)}
+.stock-card p{margin:4px 0}
+.stock-card.alerte{box-shadow:inset 0 0 0 2px #e8833a}
+.stock-alerte{color:#b5530f;font-weight:700}
+.stock-card .lien{background:none;border:0;padding:6px 0 0;color:var(--accent);font-weight:600;font-size:15px;cursor:pointer}
+
 </style>
 </head>
 <body>
@@ -402,7 +426,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.15', VERSION_DATE='11 novembre 2026';
+var VERSION='5.19', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -458,7 +482,7 @@ function migrer(d){
   var o2=vide(),p=d.profil;
   if(p){o2.foyer={nom:p.commune,commune:p.commune,cp:p.cp,lat:p.lat,lon:p.lon,extSource:'auto',
     pieces:(p.pieces&&p.pieces.length?p.pieces:[{id:'p1',nom:'Salon'}]).map(function(x){return {id:x.id,nom:x.nom,source:'saisie'}}),
-    poidsSac:p.poidsSac||15,prixSac:p.prixSac||6.9,sacsPalette:p.sacsPalette||72,saison:p.saison||'Hiver 2026-2027',historique:p.historique||[],maj:p.maj||0}}
+    poidsSac:p.poidsSac||15,prixSac:p.prixSac||6.9,sacsPalette:p.sacsPalette||72,saison:p.saison||'Hiver 2026-2027',historique:p.historique||[],anDernier:p.anDernier||null,maj:p.maj||0}}
   (d.rem||[]).forEach(function(r){
     o2.chargements.push({id:r.id,t:r.t,sacs:r.sacs,par:r.par||'',saison:r.saison,maj:r.maj||0});
     var temps=r.temps?r.temps:(r.int!=null?{p1:r.int}:{});
@@ -490,6 +514,7 @@ function fusion(remote,local){
   ['chargements','releves'].forEach(function(k){var by={};(remote[k]||[]).concat(local[k]||[]).forEach(function(r){var x=by[r.id];if(!x||(r.maj||0)>(x.maj||0))by[r.id]=r});o[k]=Object.keys(by).filter(function(id){return !sup[id]}).map(function(id){return by[id]})});
   o.meteo=Object.assign({},local.meteo,remote.meteo);
   var rf=remote.foyer,lf=local.foyer;o.foyer=!rf?lf:(!lf?rf:((lf.maj||0)>=(rf.maj||0)?lf:rf));
+  if(rf&&lf&&o.foyer){var bs={};(rf.stock||[]).concat(lf.stock||[]).forEach(function(m){var x=bs[m.id];if(!x||(m.maj||0)>(x.maj||0))bs[m.id]=m});o.foyer=Object.assign({},o.foyer,{stock:Object.keys(bs).map(function(id){return bs[id]})})}
   return o;
 }
 function appliquer(d){var act=S&&S.actuelle;S=d;S.actuelle=act}
@@ -792,7 +817,7 @@ function vueAccueil(){
   '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
   '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
   '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'">'+svgPoele()+'</span></div></section>'+
-  lignePoele()+vuePalette(A)+vuePrevision(A)+
+  ligneRemplissage(A)+lignePoele()+vueStock(A)+vuePalette(A)+vuePrevision(A)+vueAnDernier(A)+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
@@ -891,6 +916,7 @@ function vueReglages(){
     '<select data-psrc="'+esc(pc.id)+'" aria-label="Source de la température de '+esc(pc.nom)+'"><option value="saisie"'+(pc.source!=='capteur'?' selected':'')+'>Saisie à la main</option><option value="capteur" disabled>Thermomètre connecté (bientôt)</option><option value="poele" disabled>Sonde du poêle (bientôt)</option></select>'+
     '<button class="x" data-a="pdel" data-id="'+esc(pc.id)+'"'+(pieces().length<2?' disabled':'')+' aria-label="Retirer '+esc(pc.nom)+'">×</button></div>'});
   h+='<form id="fPiece" class="row"><input id="r-pnew" name="nom" placeholder="Ajouter une pièce" required><button type="submit">Ajouter</button></form></section>';
+  if(S&&S.foyer)h+=vueStockReglages()+vueAnDernierReglages();
   if(POELE_ACTIF)h+=vuePoeleReglages();
   h+='<section class="card"><h2>Pellets</h2><div class="row"><label class="f">Poids d’un sac (kg)<input type="number" data-r="poidsSac" id="r-poids" value="'+R.poidsSac+'" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" step="0.01" data-r="prixSac" id="r-prix" value="'+R.prixSac+'" min="0"></label><label class="f">Sacs par palette<input type="number" data-r="sacsPalette" id="r-palette" value="'+(R.sacsPalette||72)+'" min="1" step="1"></label></div>'+
     '<label class="f">Saison en cours<input type="text" data-r="saison" id="r-saison" value="'+esc(R.saison)+'"></label>'+
@@ -1160,17 +1186,109 @@ function ecranOuverture(){try{ // v5.13 : la vraie vidéo du poêle de Benoît ;
   var o=document.createElement('div');o.className='ouverture';o.setAttribute('role','button');o.setAttribute('aria-label','Ouvrir Suivi pellets');
   var g='';for(var i=0;i<46;i++)g+='<i style="--d:'+(0.05+i*0.045).toFixed(2)+'s;--x:'+(Math.random()*70-35).toFixed(0)+'px;--r:'+Math.round(Math.random()*180)+'deg"></i>';
   o.innerHTML='<video class="ov-video" src="feu.mp4" muted autoplay loop playsinline webkit-playsinline preload="auto"></video><div class="ov-voile"></div>'+
-    '<div class="ov-grains">'+g+'</div><div class="ov-titre">Suivi pellets</div><div class="ov-aide">'+(sonActif()?'Touchez pour remettre des pellets 🔊':'Touchez pour remettre des pellets')+'</div>';
+    '<div class="ov-grains">'+g+'</div><div class="ov-titre">Suivi pellets</div>'+
+    '<div class="ov-bouton"><span class="ov-rond">'+(sonActif()?'🔊':'🔥')+'</span><span class="ov-txt">'+'Touchez l’écran pour<br>ouvrir l’application'+'</span></div>'+
+    (sonActif()?'<div class="ov-aide">🔊 Montez le son pour entendre les pellets</div>':'');
   document.body.appendChild(o);
   var v=o.querySelector('video');try{v.muted=true;var pp=v.play();if(pp&&pp.catch)pp.catch(function(){})}catch(x){}
   v.addEventListener('error',function(){o.classList.add('sans-video')});
   var verse=false,tFin=null,tAuto;
   function fin(){clearTimeout(tAuto);clearTimeout(tFin);if(!o.parentNode)return;o.classList.add('part');setTimeout(function(){if(o.parentNode)o.remove()},500)}
   function verser(){if(verse){fin();return}verse=true;clearTimeout(tAuto);o.classList.add('ov-on');jouerPellets();tFin=setTimeout(fin,3300)}
-  tAuto=setTimeout(fin,3200);
+  // v5.18 : plus d'ouverture automatique : le feu reste jusqu'à ce qu'on touche l'écran (idée de Benoît : tout le monde entend le son)
   o.addEventListener('click',verser);
 }catch(e){}}
 
+
+// v5.19 : stock de sacs et prochain remplissage (idées de Benoît)
+function stockMv(){return (S&&S.foyer&&S.foyer.stock)||[]}
+function stockEtat(){var mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?-1:(a.t>b.t?1:0)});if(!mv.length)return null;
+  var k=-1;mv.forEach(function(m,i){if(m.type==='inv')k=i});
+  var base=k>=0?mv[k].sacs:0,t0=k>=0?mv[k].t:mv[0].t,ach=0,eur=0;
+  mv.forEach(function(m,i){if(i>k&&m.type==='achat')ach+=m.sacs});
+  mv.forEach(function(m){if(m.type==='achat'&&m.prix)eur+=m.prix});
+  var conso=sum(S.chargements.filter(function(c){return k>=0?c.t>t0:c.t>=t0}).map(function(c){return c.sacs}));
+  return {reste:base+ach-conso,depuis:t0,conso:conso,eur:eur}}
+function finStock(A,reste){if(reste<=0)return {date:ymd(new Date()),jours:0};
+  var auj=ymd(new Date()),jours=Object.keys(PREV).sort().filter(function(d){return d>=auj}),acc=0,n=0,last=auj;
+  for(var i=0;i<jours.length;i++){var s=tauxPour(A,PREV[jours[i]].moy);if(s==null)break;acc+=s;n++;last=jours[i];if(acc>=reste)return {date:jours[i],jours:i}}
+  var pj=n?acc/n:A.rate;if(!pj)return null;var j=Math.ceil((reste-acc)/pj),dt=new Date(last+'T12:00:00');dt.setDate(dt.getDate()+j);
+  return {date:ymd(dt),jours:Math.round((dt-new Date())/864e5),approx:true}}
+function vueStock(A){var E=stockEtat();
+  if(!E)return '<button class="det" data-go="reglages">📦 Suivre mon stock de sacs</button>';
+  var r=Math.round(E.reste*2)/2,fs=A.rate!=null||Object.keys(PREV).length?finStock(A,E.reste):null,alerte=r<=10||(fs&&fs.jours!=null&&fs.jours<=14);
+  var h='<section class="card stock-card'+(alerte?' alerte':'')+'"><h2>📦 Mon stock</h2>';
+  if(r<=0)h+='<div class="stock-chiffre">0 <small>sac</small></div><p>D’après vos notes, le stock est épuisé. Si ce n’est pas le cas, corrigez-le dans les Réglages.</p>';
+  else{h+='<div class="stock-chiffre">'+nfs(r)+' <small>sac'+(r>=2?'s':'')+'</small></div>';
+    if(fs&&fs.jours>90)h+='<p>De quoi tenir <b>plus de 3 mois</b> au rythme actuel.</p>';
+    else if(fs)h+='<p>De quoi tenir jusqu’au <b>'+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')+'</b>'+(fs.jours!=null&&fs.jours>=0?' (environ '+fs.jours+' jour'+(fs.jours>1?'s':'')+')':'')+', selon la météo prévue.</p>';
+    if(alerte)h+='<p class="stock-alerte">⚠️ Pensez à recommander des pellets.</p>'}
+  return h+'<button type="button" class="lien" data-go="reglages">+ Noter un achat ou corriger le stock</button></section>'}
+function vueStockReglages(){var E=stockEtat(),mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,6);
+  var h='<section class="card"><h2>📦 Mon stock de sacs</h2>'+(E?'<p>Stock actuel : <b>'+nfs(Math.max(0,Math.round(E.reste*2)/2))+' sac'+(E.reste>=2?'s':'')+'</b>'+(E.eur?' · achats notés : '+nf(E.eur)+' €':'')+'</p>':'<p class="hint">Indiquez combien de sacs vous avez en réserve : chaque chargement les décomptera, et l’application vous dira jusqu’à quand ils tiennent.</p>')+
+    '<form id="fInv" class="stack"><label class="f">J’ai actuellement en réserve (sacs)<input name="sacs" type="number" inputmode="decimal" min="0" max="5000" step="0.5" required></label><button class="primary" type="submit">'+(E?'Corriger le stock':'Commencer le suivi')+'</button></form>'+
+    '<form id="fAchat" class="stack"><label class="f">Achat : nombre de sacs<input name="sacs" type="number" inputmode="decimal" min="0.5" max="5000" step="0.5" required placeholder="'+(F().sacsPalette||72)+' pour une palette"></label>'+
+    '<label class="f">Date de livraison<input name="date" type="date" required value="'+ymd(new Date())+'"></label>'+
+    '<label class="f">Prix payé en tout (€, facultatif)<input name="prix" type="number" inputmode="decimal" min="0" step="0.01"></label><button type="submit">Ajouter l’achat</button></form>';
+  if(mv.length){h+='<ul class="list">';mv.forEach(function(m){h+='<li><span>'+(m.type==='inv'?'Stock compté : <b>'+nfs(m.sacs)+'</b>':'Achat : <b>+'+nfs(m.sacs)+'</b>'+(m.prix?' · '+nf(m.prix)+' €':''))+' · '+fds(m.t)+'</span><button type="button" class="x" data-a="stockDel" data-id="'+esc(m.id)+'" aria-label="Supprimer">×</button></li>'});h+='</ul>'}
+  return h+'</section>'}
+function prochainRemplissage(A){var ch=chargementsSaison();if(!ch.length||A.rate==null)return null;
+  var i=ch.length-1,s=ch[i].sacs;while(i>0&&parseDT(ch[ch.length-1].t)-parseDT(ch[i-1].t)<6*36e5){i--;s+=ch[i].sacs}
+  var ms=parseDT(ch[i].t),rem=s;
+  for(var k=0;k<40&&rem>1e-6;k++){var d=new Date(ms),jour=ymd(d),m=PREV[jour]||(S.meteo&&S.meteo[jour]),T=m&&m.moy!=null?m.moy:A.extMoy;
+    var r=(T!=null?tauxPour(A,T):null)||A.rate;if(!r)return null;
+    var minuit=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),use=r*(minuit-ms)/864e5;
+    if(use>=rem){ms+=rem/r*864e5;rem=0}else{rem-=use;ms=minuit}}
+  return rem>1e-6?null:ms}
+function ligneRemplissage(A){var ms=prochainRemplissage(A);if(ms==null)return '';
+  var d=new Date(Math.round(ms/36e5)*36e5),now=new Date(),j0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),jd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()-j0)/864e5);
+  var jourTxt=jd===0?'aujourd’hui':(jd===1?'demain':(jd===-1?'hier':(jd>1&&jd<7?d.toLocaleDateString('fr-FR',{weekday:'long'}):'le '+fD.format(d))));
+  var hTxt=d.getHours()+' h';
+  if(ms<Date.now())return '<p class="remplir urgent">⏱ Le remplissage était prévu '+jourTxt+' vers '+hTxt+' : c’est le moment de recharger.</p>';
+  return '<p class="remplir">⏱ Prochain remplissage prévu <b>'+jourTxt+' vers '+hTxt+'</b></p>'}
+
+// v5.16 : comparaison avec l'hiver dernier (idée de Benoît) : « vous êtes à 2 sacs de plus que l'an dernier à la même date »
+var AN={cle:'',jours:null,enCours:false};
+function nfs(x){return nf(x,Math.abs(x%1)>1e-9?1:0)}
+function anDernier(){var x=S&&S.foyer&&S.foyer.anDernier;return x&&x.sacs>0&&x.debut&&x.fin&&x.fin>x.debut?x:null}
+function meteoAnDernier(){var x=anDernier(),R=S&&S.foyer;if(!x||!R||R.lat==null)return;
+  var lim=ymd(new Date(Date.now()-6*864e5)),fin=x.fin<lim?x.fin:lim;if(fin<=x.debut)return;
+  var cle=R.lat+','+R.lon+','+x.debut+','+fin;
+  if(AN.cle===cle&&(AN.jours||AN.enCours))return;
+  try{var c=JSON.parse(localStorage.getItem('suivi-meteo-an')||'null');if(c&&c.cle===cle&&c.jours){AN.cle=cle;AN.jours=c.jours;return}}catch(e){}
+  AN.cle=cle;AN.jours=null;AN.enCours=true;
+  fetch('https://archive-api.open-meteo.com/v1/archive?latitude='+R.lat+'&longitude='+R.lon+'&daily=temperature_2m_mean&timezone=Europe%2FParis&start_date='+x.debut+'&end_date='+fin)
+   .then(function(r){return r.ok?r.json():null}).then(function(j){AN.enCours=false;if(!j||!j.daily||!j.daily.time)return;var jr={};
+     j.daily.time.forEach(function(d,i){var v=j.daily.temperature_2m_mean[i];if(typeof v==='number')jr[d]=Math.round(v*10)/10});
+     AN.jours=jr;try{localStorage.setItem('suivi-meteo-an',JSON.stringify({cle:cle,jours:jr}))}catch(e){};render()})
+   .catch(function(){AN.enCours=false})}
+function moinsUnAn(d){var s=(+d.slice(0,4)-1)+d.slice(4);return s.slice(5,10)==='02-29'?s.slice(0,8)+'28':s}
+function comparaisonAn(A){var x=anDernier();if(!x||!AN.jours)return null;
+  var ch=chargementsSaison();if(!ch.length)return null;
+  var d0=ch.map(function(c){return c.t.slice(0,10)}).sort()[0],auj=ymd(new Date()),a0=moinsUnAn(d0),a1=moinsUnAn(auj);
+  var tot=0,fen=0,tl=[];
+  Object.keys(AN.jours).forEach(function(d){var t=AN.jours[d],dd=Math.max(0,18-t);tot+=dd;if(d>=a0&&d<=a1){fen+=dd;tl.push(t)}});
+  if(!tot)return null;
+  var tc=[];for(var dt=new Date(d0+'T12:00:00');ymd(dt)<=auj;dt.setDate(dt.getDate()+1)){var m=S.meteo[ymd(dt)];if(m&&m.moy!=null)tc.push(m.moy)}
+  return {depuis:d0,cette:A.total,an:x.sacs*fen/tot,tCette:tc.length?avg(tc):null,tAn:tl.length?avg(tl):null}}
+function vueAnDernier(A){var x=anDernier();
+  if(!x)return '<button class="det" data-go="reglages">📅 Comparer avec l’hiver dernier</button>';
+  meteoAnDernier();var c=comparaisonAn(A);
+  if(!c)return '<section class="card"><h2>Par rapport à l’an dernier</h2><p class="hint">'+(AN.enCours?'Recherche de la météo de l’hiver dernier…':'La comparaison apparaît après votre premier chargement.')+'</p></section>';
+  var d=Math.round((c.cette-c.an)*2)/2,ad=Math.abs(d),s=ad>=2?'s':'';
+  var gros=ad<0.5?'Pareil':(d>0?'+':'−')+nfs(ad)+' sac'+s;
+  var phrase=ad<0.5?'Vous en êtes au même point que l’an dernier à la même date.':'Vous êtes à '+nfs(ad)+' sac'+s+' de '+(d>0?'plus':'moins')+' que l’an dernier à la même date.';
+  var met='';if(c.tCette!=null&&c.tAn!=null){var e=c.tCette-c.tAn;met=Math.abs(e)<0.5?' Il fait à peu près le même temps.':' Il fait '+nf(Math.abs(e),1)+' °C plus '+(e<0?'froid':'doux')+' que l’an dernier.'}
+  var an=Math.round(c.an*2)/2;
+  return '<section class="card comp-an"><h2>Par rapport à l’an dernier</h2><div class="comp-chiffre'+(d>=0.5?' plus':(d<=-0.5?' moins':''))+'">'+gros+'</div><p>'+phrase+met+'</p>'+
+    '<p class="hint small">Depuis le '+fds(c.depuis+'T12:00')+' : '+nfs(c.cette)+' sac'+(c.cette>=2?'s':'')+' cette année, environ '+nfs(an)+' l’an dernier sur les mêmes jours (d’après vos '+nfs(x.sacs)+' sacs de l’hiver dernier, répartis selon le froid de chaque jour).</p></section>'}
+function vueAnDernierReglages(){var x=(S.foyer&&S.foyer.anDernier)||{},y=+((S.foyer&&S.foyer.saison||'').match(/(\d{4})/)||[0,new Date().getFullYear()])[1];
+  var d1=x.debut||((y-1)+'-10-15'),d2=x.fin||(y+'-04-15');
+  return '<section class="card"><h2>📅 L’hiver dernier</h2><p class="hint">Combien de sacs avez-vous brûlés l’hiver dernier ? L’application vous dira si vous êtes en avance ou en retard cette année, en tenant compte du froid de chaque jour. Une estimation suffit (une palette = '+(F().sacsPalette||72)+' sacs).</p>'+
+    '<form id="fAn" class="stack"><label class="f">Sacs sur tout l’hiver dernier<input name="sacs" type="number" inputmode="decimal" min="1" max="3000" step="0.5" required value="'+(x.sacs?esc(String(x.sacs)):'')+'"></label>'+
+    '<label class="f">Début de chauffe<input name="debut" type="date" required value="'+esc(d1)+'"></label>'+
+    '<label class="f">Fin de chauffe<input name="fin" type="date" required value="'+esc(d2)+'"></label>'+
+    '<button class="primary" type="submit">Enregistrer</button>'+(x.sacs?'<button type="button" data-a="anOff">Effacer</button>':'')+'</form></section>'}
 
 // v5.1 : la palette se remplit d'un sac à chaque sac consommé (idée de Benoît)
 function svgPalette(n,N,neufs){
@@ -1334,6 +1452,8 @@ app.addEventListener('click',function(ev){
   if(a==='poeleLire'){lirePoele(true);return}
   if(a==='poeleEdit'){ui.poeleEdit=true;render();return}
   if(a==='poeleAnnule'){ui.poeleEdit=false;render();return}
+  if(a==='stockDel'){var sid=b.getAttribute('data-id');(S.foyer.stock||[]).forEach(function(m){if(m.id===sid){m.suppr=true;m.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Stock : suppression');render();return}
+  if(a==='anOff'){if(S.foyer){delete S.foyer.anDernier;S.foyer.maj=Date.now();sauver('Hiver dernier effacé')}render();toast('Hiver dernier effacé');return}
   if(a==='poeleOff'){delete cfg.poele;lsSet(CFGKEY,cfg);lsDel(POELE_CLE);ui.poeleMsg='Poêle déconnecté de cet appareil.';ui.poeleErr='';suivrePoele();render();return}
   if(a==='style'){cfg.style=b.getAttribute('data-n');lsSet(CFGKEY,cfg);appliquerStyle();render();toast('Style : '+b.textContent);return}
   if(a==='anim'){cfg.anim=b.getAttribute('data-n');lsSet(CFGKEY,cfg);Fond.regler();render();toast('Animation : '+b.textContent);return}
@@ -1378,6 +1498,11 @@ app.addEventListener('submit',function(ev){
   ev.preventDefault();var f=ev.target;
   if(f.id==='fPoele'){var rel=f.relais.value.trim().replace(/\/+$/,''),em=f.email.value.trim(),md=f.mdp.value;if(!/^https:\/\//.test(rel)){ui.poeleErr='L’adresse du relais doit commencer par https://';render();return}
     cfg.poele={relais:rel,email:em,mdp:md};lsSet(CFGKEY,cfg);ui.poeleEdit=false;ui.poeleErr='';lirePoele(true).then(function(){suivrePoele()});return}
+  if(f.id==='fInv'||f.id==='fAchat'){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='fAchat'&&!(n>0))){toast('Indiquez un nombre de sacs');return}
+    var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
+    S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return}
+  if(f.id==='fAn'){var n=num(f.sacs.value),a1=f.debut.value,a2=f.fin.value;if(!(n>0)||!a1||!a2||a2<=a1){toast('Vérifiez le nombre de sacs et les dates');return}
+    S.foyer.anDernier={sacs:n,debut:a1,fin:a2};S.foyer.maj=Date.now();AN.cle='';sauver('Hiver dernier : '+nfs(n)+' sacs');aller('accueil');toast('Hiver dernier enregistré');return}
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
     if(parseDT(t)>Date.now()+15*6e4){toast('Cette heure est dans le futur : vérifiez la date');return}
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));

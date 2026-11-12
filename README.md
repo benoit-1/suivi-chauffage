@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.27 | 12 novembre 2026 | La flamme de la tuile « Sacs consommés » utilise la même vraie vidéo de flammes que l'écran d'ouverture (taille toujours selon le froid dehors, grossit après un chargement). Si la vidéo ne peut pas se lire ou si les animations sont coupées, l'ancien dessin s'affiche. |
 | 5.26 | 12 novembre 2026 | Petite fenêtre du stock : on peut la refermer en la glissant vers le bas avec le doigt, comme sur iPhone ; meilleure prise en charge de VoiceOver et du clavier (Échap ferme, le curseur reste dans la fenêtre puis revient où il était). Aucun autre changement. |
 | 5.25 | 12 novembre 2026 | Stock sur l'accueil réduit à une seule ligne « 📦 Stock : 45 sacs · de quoi tenir jusqu'au … › » ; en la touchant, la petite fenêtre s'ouvre avec le détail, les derniers achats et les boutons Nouvel achat / Corriger. |
 | 5.24 | 12 novembre 2026 | Stock : « Nouvel achat » et « Corriger » ouvrent une petite fenêtre qui monte du bas de l'écran (façon iPhone : Annuler / titre / Ajouter), avec raccourcis 1 palette, ½ palette, 10 sacs. La partie stock des Réglages est plus compacte. |

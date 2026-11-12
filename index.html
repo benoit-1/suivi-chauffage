@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.26 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.27 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -450,6 +450,20 @@ html.anim-off .palette .neuf{animation:none}
 .feuille .poignee{cursor:grab;touch-action:none}
 .feuille-barre{touch-action:none}
 
+/* v5.27 : la flamme de « Sacs consommés » utilise la même vraie vidéo que l'ouverture ; le dessin reste en secours */
+.t.sacs .flame{position:relative}
+.fv-boite{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);width:calc(104px * var(--fl,1));height:calc(124px * var(--fl,1));pointer-events:none;opacity:0;mix-blend-mode:screen;transition:opacity .6s ease,width .6s ease,height .6s ease;
+  -webkit-mask-image:radial-gradient(ellipse 52% 58% at 50% 72%,#000 55%,transparent 100%);mask-image:radial-gradient(ellipse 52% 58% at 50% 72%,#000 55%,transparent 100%)}
+.fv{width:100%;height:100%;object-fit:cover;object-position:50% 100%;display:block;filter:saturate(1.3) brightness(1.25)}
+html.fv-ok .fv-boite{opacity:1}
+html.fv-ok .t.sacs .poele{opacity:0}
+.t.sacs .poele{transition:opacity .6s ease,width .6s ease}
+.t.sacs .flame:has(.poele.boost) .fv-boite{animation:fvboost 2.3s ease-out}
+@keyframes fvboost{0%{transform:translateX(-50%) scale(1)}25%{transform:translateX(-50%) scale(1.35)}100%{transform:translateX(-50%) scale(1)}}
+html.anim-off .fv-boite{display:none}
+html.anim-off .t.sacs .poele{opacity:1!important}
+html.fv-ok .t.sacs .flame{mix-blend-mode:screen}
+
 </style>
 </head>
 <body>
@@ -470,7 +484,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.26', VERSION_DATE='11 novembre 2026';
+var VERSION='5.27', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -864,7 +878,7 @@ function vueAccueil(){
   '<section class="big2" aria-label="Températures">'+
   '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
   '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'">'+svgPoele()+'</span></div></section>'+
+  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'"><span class="fv-boite"><video class="fv" src="feu.mp4?v=2" muted autoplay loop playsinline webkit-playsinline preload="auto"></video></span>'+svgPoele()+'</span></div></section>'+
   ligneRemplissage(A)+lignePoele()+vueStock(A)+vuePalette(A)+vuePrevision(A)+vueAnDernier(A)+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
@@ -1503,7 +1517,10 @@ function render(){appliquerStyle();garderConnexionDansAdresse();
   if(mode==='connexion')e='bienvenue';else if(mode==='chargement'||!S)e='attente';else if(!S.foyer)e='foyer';
   if(e==='attente'){app.innerHTML=vueChargementDonnees();Fond.montrer(true,null);return}
   var v={bienvenue:vueBienvenue,foyer:vueFoyer,accueil:vueAccueil,temperatures:vueTemperatures,chargement:vueChargement,details:vueDetails,reglages:vueReglages}[e]||vueAccueil;
+  var vieuxFv=app.querySelector('video.fv'); // v5.27 : la vraie flamme vidéo continue sans à-coup d'un affichage à l'autre
   app.innerHTML=v();
+  try{var neufFv=app.querySelector('video.fv');if(neufFv){if(vieuxFv&&!vieuxFv.error&&vieuxFv.readyState>1){neufFv.parentNode.replaceChild(vieuxFv,neufFv);var pv=vieuxFv.play();if(pv&&pv.catch)pv.catch(function(){})}
+    else{neufFv.muted=true;neufFv.addEventListener('playing',function(){document.documentElement.classList.add('fv-ok')});neufFv.addEventListener('error',function(){document.documentElement.classList.remove('fv-ok')});var pn=neufFv.play();if(pn&&pn.catch)pn.catch(function(){})}}}catch(x){}
   Object.keys(garde).forEach(function(id){var el=document.getElementById(id);if(el){el.value=garde[id];el.dataset.tape='1'}});
   if(foc){var fe=document.getElementById(foc);if(fe&&fe.focus)try{fe.focus({preventScroll:true})}catch(x){}}
   var dh=null;try{dh=(e==='accueil'&&S&&S.foyer)?dehorsMaintenant().v:null}catch(err){}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.29 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.31 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -475,6 +475,18 @@ html.fv-ok .t.sacs .flame{mix-blend-mode:screen}
 
 .fp-qr{margin-bottom:16px}
 
+/* v5.30 : choix B de Benoît : la vraie flamme en fond de toute la tuile « Sacs consommés » (seulement quand la vidéo tourne ; sinon l'ancien dessin) */
+html.fv-ok:not(.anim-off) .t.sacs{position:relative;overflow:hidden;background:#0b0604;min-height:132px}
+html.fv-ok:not(.anim-off) .t.sacs>*{position:relative;z-index:1}
+html.fv-ok:not(.anim-off) .t.sacs .flame{position:absolute!important;inset:0;z-index:0;mix-blend-mode:normal;animation:none!important;min-height:0;display:block}
+html.fv-ok:not(.anim-off) .t.sacs .fv-boite{left:0;right:0;top:0;bottom:0;width:auto;height:auto;transform:none;mix-blend-mode:normal;
+  -webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.8) 40%,#000 65%);mask-image:linear-gradient(90deg,rgba(0,0,0,.35) 0%,rgba(0,0,0,.8) 40%,#000 65%);
+  opacity:min(1,calc(.45 + .45 * var(--fl,1)))}
+html.fv-ok:not(.anim-off) .t.sacs .fv{object-fit:cover;object-position:70% 100%;filter:saturate(1.15)}
+html.fv-ok:not(.anim-off) .t.sacs>:not(.flame){text-shadow:0 1px 10px rgba(0,0,0,.75)}
+html.fv-ok:not(.anim-off) .t.sacs .flame:has(.poele.boost) .fv-boite{animation:fvbrille 2.3s ease-out}
+@keyframes fvbrille{0%{filter:none}25%{filter:brightness(1.6)}100%{filter:none}}
+
 </style>
 </head>
 <body>
@@ -495,7 +507,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.29', VERSION_DATE='11 novembre 2026';
+var VERSION='5.31', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -592,7 +604,13 @@ var LOCALKEY='suivi-pellets-local';
 var COMPTEUR='suivi-pellets'; // code GoatCounter, ex. 'suivi-pellets' → https://suivi-pellets.goatcounter.com
 function statistique(evt){try{if(!COMPTEUR||(cfg&&cfg.stats==='off'))return;var img=new Image();img.referrerPolicy='no-referrer';
   img.src='https://'+COMPTEUR+'.goatcounter.com/count?p=%2F'+encodeURIComponent(evt)+'&t='+encodeURIComponent(evt)+'&e=true&rnd='+Math.random().toString(36).slice(2)}catch(e){}}
-function statsDuJour(){try{if(!localStorage.getItem('suivi-stat-appareil')){localStorage.setItem('suivi-stat-appareil','1');statistique('nouvel-appareil');statistique(estLocal()?'mode-sans-compte':'mode-github')}
+
+// v5.31 : d'où viennent les nouveaux utilisateurs (QR montré de la main à la main, lien envoyé, Facebook, ou adresse tapée)
+(function(){try{var q=location.search||'';if(!q)return;var m=q.match(/[?&]via=(qr|lien)\b/),src=m?m[1]:(/[?&](fb=|fbclid=)/.test(q)?'facebook':null);
+  if(src&&!localStorage.getItem('suivi-stat-appareil')&&!localStorage.getItem('suivi-via'))localStorage.setItem('suivi-via',src);
+  if(!/[?&]connexion=/.test(q)&&history.replaceState){var n=q.replace(/[?&](via|fb|fbclid)=[^&]*/g,'').replace(/^&/,'?');if(n==='?')n='';if(n!==q)history.replaceState(null,'',location.pathname+n+location.hash)}}catch(e){}})();
+function sourceArrivee(){try{return localStorage.getItem('suivi-via')||'direct'}catch(e){return 'direct'}}
+function statsDuJour(){try{if(!localStorage.getItem('suivi-stat-appareil')){localStorage.setItem('suivi-stat-appareil','1');statistique('nouvel-appareil');statistique(estLocal()?'mode-sans-compte':'mode-github');statistique('arrivee/'+sourceArrivee())}
   var j=ymd(new Date());if(localStorage.getItem('suivi-stat-jour')!==j){localStorage.setItem('suivi-stat-jour',j);statistique('appareil-actif-du-jour')}
   statsVisite()}catch(e){}}
 // v5.9 : chaque appareil a un numéro au hasard (4 caractères, rien de personnel) ; une visite = une ouverture (au plus 1 par 30 min)
@@ -889,7 +907,7 @@ function vueAccueil(){
   '<section class="big2" aria-label="Températures">'+
   '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
   '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'"><span class="fv-boite"><video class="fv" src="feu.mp4?v=2" muted autoplay loop playsinline webkit-playsinline preload="auto"></video></span>'+svgPoele()+'</span></div></section>'+
+  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'"><span class="fv-boite"><video class="fv" src="feu-tuile.mp4?v=1" muted autoplay loop playsinline webkit-playsinline preload="auto"></video></span>'+svgPoele()+'</span></div></section>'+
   ligneRemplissage(A)+lignePoele()+vueStock(A)+vuePalette(A)+vuePrevision(A)+vueAnDernier(A)+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
@@ -976,7 +994,7 @@ function vueReglages(){
       [['on','Oui'],['off','Non']].map(function(o){var on=((cfg&&cfg.stats)||'on')===o[0];return '<button type="button" role="radio" aria-checked="'+on+'" data-a="stats" data-n="'+o[0]+'" class="'+(on?'on':'')+'">'+o[1]+'</button>'}).join('')+'</div><small class="num-app">Numéro de cet appareil : <b>'+esc(numeroAppareil())+'</b></small>'+(!estLocal()?'<form id="fSurnom" class="surnom"><label class="f">Nom de cet appareil dans le compteur (facultatif)<input name="n" maxlength="20" placeholder="ex. papa" value="'+esc((cfg&&cfg.surnom)||'')+'"></label><button type="submit">OK</button></form>':'')+'</div>':'')+
     '</section>';
   // v3.6 : faire connaître l'application (lien public, sans aucune donnée ni clé)
-  var lp=lienPublic(),svgp=qrSVG(lp);
+  var lp=lienPublic()+'?via=lien',svgp=qrSVG(lienPublic()+'?via=qr');
   h+='<section class="card"><h2>📣 Faire connaître l’application</h2><p class="hint">Pour un proche qui veut suivre <b>ses</b> pellets chez lui. Ce lien ne donne accès à aucune de vos données : il démarre avec un carnet vide, rangé sur son téléphone.</p>'+
     '<div class="invite">'+(svgp?'<div class="qr">'+svgp+'</div>':'')+'<div class="invtxt"><p class="hint"><b>À côté de vous :</b> il vise ce QR code avec l’appareil photo.</p><p class="hint"><b>À distance :</b> envoyez-lui le lien.</p>'+
     '<div class="row">'+(navigator.share?'<button data-a="sharepublic" class="primary">Envoyer le lien…</button>':'')+'<button data-a="copypublic">Copier le lien</button></div></div></div>'+
@@ -1340,11 +1358,11 @@ function infoStock(A){var E=stockEtat();if(!E)return null;var r=Math.round(E.res
   return {E:E,r:r,fs:fs,alerte:r<=10||!!(fs&&fs.jours!=null&&fs.jours<=14)}}
 function texteDuree(fs){if(!fs)return '';if(fs.jours>90)return 'plus de 3 mois';return 'jusqu’au '+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')}
 // v5.28 : petit QR en bas de l'accueil pour faire connaître l'application (adresse publique, jamais la clé familiale)
-function lignePartage(){var lp=lienPublic(),q=qrSVG(lp);
+function lignePartage(){var lp=lienPublic(),q=qrSVG(lp+'?via=qr');
   return '<button type="button" class="ligne-stock ligne-partage" data-a="feuillePartage"><span class="lp-qr" aria-hidden="true">'+q+'</span>'+
     '<span class="ls-txt"><b>Obtenir cette application</b></span><span class="ls-chev" aria-hidden="true">›</span></button>'}
-function ouvrirFeuillePartage(){fermerFeuille();var lp=lienPublic();
-  var c='<div class="fp-qr">'+qrSVG(lp)+'</div>'+
+function ouvrirFeuillePartage(){fermerFeuille();var lp=lienPublic()+'?via=lien';
+  var c='<div class="fp-qr">'+qrSVG(lienPublic()+'?via=qr')+'</div>'+
     (navigator.share?'<button type="button" class="fp-btn" data-f="share">Envoyer le lien…</button>':'<button type="button" class="fp-btn" data-f="copie">Copier le lien</button>');
   var o=document.createElement('div');o.className='feuille-fond';
   o.innerHTML='<div class="feuille" role="dialog" aria-modal="true"><div class="poignee" aria-hidden="true"></div><div class="feuille-barre"><span></span><b>Obtenir cette application</b><button type="button" class="f-ok f-fermer">OK</button></div><div class="feuille-corps">'+c+'</div></div>';
@@ -1610,7 +1628,7 @@ app.addEventListener('click',function(ev){
   else if(a==='copycsv')copier('csv');
   else if(a==='copylien')copier('lien');
   else if(a==='avance'){ui.avance=true;render()}
-  else if(a==='sharepublic'){statistique('partage');try{navigator.share({title:'Suivi pellets',text:'Une petite application gratuite pour suivre sa consommation de pellets selon le froid :',url:lienPublic()}).catch(function(){})}catch(e){copier('lienpublic')}}
+  else if(a==='sharepublic'){statistique('partage');try{navigator.share({title:'Suivi pellets',text:'Une petite application gratuite pour suivre sa consommation de pellets selon le froid :',url:lienPublic()+'?via=lien'}).catch(function(){})}catch(e){copier('lienpublic')}}
   else if(a==='copypublic'){statistique('partage');copier('lienpublic')}
   else if(a==='share'){try{navigator.share({title:'Suivi pellets',text:'Rejoins notre suivi des pellets :',url:document.getElementById('lien').value}).catch(function(){})}catch(e){copier('lien')}}
   else if(a==='invite'){ui.invite=!ui.invite;render()}

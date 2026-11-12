@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.31 | 12 novembre 2026 | D'où viennent les nouveaux utilisateurs : le QR de l'application contient « ?via=qr », le lien envoyé « ?via=lien », Facebook est reconnu (?fb=1 ou fbclid). À la première ouverture, l'appareil envoie « arrivee/qr », « arrivee/lien », « arrivee/facebook » ou « arrivee/direct ». La marque est retirée de l'adresse aussitôt. |
+| 5.30 | 12 novembre 2026 | Tuile « Sacs consommés » : la vraie flamme remplit toute la tuile (nouvelle vidéo `feu-tuile.mp4`, cadrée en largeur), plus ou moins vive selon le froid dehors, avec un éclat après un chargement. Sans vidéo (mode économie d'énergie, animations coupées) : l'ancien affichage violet avec la flamme dessinée. |
 | 5.29 | 12 novembre 2026 | La ligne du bas de l'accueil s'intitule simplement « Obtenir cette application », et sa fenêtre ne montre que le grand QR (plus le bouton pour envoyer le lien). |
 | 5.28 | 12 novembre 2026 | En bas de l'accueil, une ligne « Faire connaître l'application » avec un mini QR ; en la touchant, une petite fenêtre montre le grand QR (adresse publique uniquement, jamais la clé familiale) et un bouton pour envoyer le lien. |
 | 5.27 | 12 novembre 2026 | La flamme de la tuile « Sacs consommés » utilise la même vraie vidéo de flammes que l'écran d'ouverture (taille toujours selon le froid dehors, grossit après un chargement). Si la vidéo ne peut pas se lire ou si les animations sont coupées, l'ancien dessin s'affiche. |

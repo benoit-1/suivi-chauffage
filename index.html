@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.23 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.24 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -410,6 +410,27 @@ html.anim-off .palette .neuf{animation:none}
 .card.cible{animation:cible 1.6s ease}@keyframes cible{0%,60%{box-shadow:0 0 0 3px var(--accent,#d9611a)}100%{box-shadow:none}}
 #stock,#hiver-dernier{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 12px)}
 
+/* v5.24 : feuille façon iPhone (HIG : poignée, barre Annuler / titre / action) */
+.feuille-fond{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0);display:flex;align-items:flex-end;justify-content:center;transition:background .28s ease}
+.feuille-fond.ouverte{background:rgba(0,0,0,.35)}
+.feuille{width:100%;max-width:520px;background:var(--surface);color:var(--ink);border-radius:14px 14px 0 0;padding:6px 16px calc(env(safe-area-inset-bottom,0px) + 18px);box-shadow:0 -8px 30px rgba(0,0,0,.18);transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);margin:0}
+.feuille-fond.ouverte .feuille{transform:none}
+.poignee{width:36px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 6px}
+.feuille-barre{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;min-height:44px;margin-bottom:6px}
+.feuille-barre b{font-size:17px;font-weight:600}
+.feuille-barre button{background:none;border:0;color:var(--accent);font-size:17px;min-height:44px;padding:0 4px;cursor:pointer}
+.feuille-barre .f-annuler{justify-self:start}
+.feuille-barre .f-ok{justify-self:end;font-weight:600}
+.feuille-corps .f{display:block;margin:10px 0}
+.feuille-corps input{font-size:17px}
+.feuille .opt{color:var(--muted);font-weight:400;font-size:13px}
+.puces{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 6px}
+.puces button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:8px 12px;font-size:15px;min-height:36px;cursor:pointer}
+.deux-btn{display:flex;gap:8px;margin-top:10px}
+.deux-btn button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--accent);font-weight:600;font-size:15px;cursor:pointer}
+.stock-ligne{font-size:17px;margin:4px 0}
+@media (prefers-reduced-motion:reduce){.feuille,.feuille-fond{transition:none}}
+
 </style>
 </head>
 <body>
@@ -430,7 +451,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.23', VERSION_DATE='11 novembre 2026';
+var VERSION='5.24', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1222,8 +1243,31 @@ function finStock(A,reste){if(reste<=0)return {date:ymd(new Date()),jours:0};
   for(var i=0;i<jours.length;i++){var s=tauxPour(A,PREV[jours[i]].moy);if(s==null)break;acc+=s;n++;last=jours[i];if(acc>=reste)return {date:jours[i],jours:i}}
   var pj=n?acc/n:A.rate;if(!pj)return null;var j=Math.ceil((reste-acc)/pj),dt=new Date(last+'T12:00:00');dt.setDate(dt.getDate()+j);
   return {date:ymd(dt),jours:Math.round((dt-new Date())/864e5),approx:true}}
+// v5.24 : petite fenêtre (« feuille » façon iPhone) pour le stock, au lieu de tout l'écran des Réglages
+function enregistrerStock(f){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='fAchat'&&!(n>0))){toast('Indiquez un nombre de sacs');return false}
+  var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
+  S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return true}
+function fermerFeuille(){var o=document.querySelector('.feuille-fond');if(!o)return;o.classList.remove('ouverte');setTimeout(function(){if(o.parentNode)o.remove()},280)}
+function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEtat(),P=F().sacsPalette||72;
+  var corps=achat?
+    '<label class="f">Nombre de sacs<input name="sacs" type="number" inputmode="decimal" min="0.5" max="5000" step="0.5" required></label>'+
+    '<div class="puces"><button type="button" data-v="'+P+'">1 palette ('+P+')</button><button type="button" data-v="'+(P/2)+'">½ palette ('+nfs(P/2)+')</button><button type="button" data-v="10">10 sacs</button></div>'+
+    '<label class="f">Date de livraison<input name="date" type="date" required value="'+ymd(new Date())+'"></label>'+
+    '<label class="f">Prix payé en tout (€) <span class="opt">facultatif</span><input name="prix" type="number" inputmode="decimal" min="0" step="0.01"></label>'
+   :'<label class="f">Combien de sacs avez-vous en réserve ?<input name="sacs" type="number" inputmode="decimal" min="0" max="5000" step="0.5" required'+(E?' placeholder="'+nfs(Math.max(0,Math.round(E.reste*2)/2))+' d’après l’application"':'')+'></label>'+
+    '<p class="hint small">Chaque chargement sera ensuite décompté tout seul.</p>';
+  var o=document.createElement('div');o.className='feuille-fond';
+  o.innerHTML='<form class="feuille" id="'+(achat?'fAchat':'fInv')+'" role="dialog" aria-modal="true" aria-label="'+(achat?'Nouvel achat':'Mon stock')+'"><div class="poignee" aria-hidden="true"></div>'+
+    '<div class="feuille-barre"><button type="button" class="f-annuler">Annuler</button><b>'+(achat?'Nouvel achat':'Mon stock')+'</b><button type="submit" class="f-ok">'+(achat?'Ajouter':'OK')+'</button></div>'+
+    '<div class="feuille-corps">'+corps+'</div></form>';
+  document.body.appendChild(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
+  var f=o.querySelector('form');
+  o.addEventListener('click',function(ev){if(ev.target===o||ev.target.closest('.f-annuler')){fermerFeuille();return}
+    var pc=ev.target.closest('[data-v]');if(pc){f.sacs.value=pc.getAttribute('data-v');f.sacs.focus()}});
+  f.addEventListener('submit',function(ev){ev.preventDefault();if(enregistrerStock(f))fermerFeuille()});
+  setTimeout(function(){try{f.sacs.focus()}catch(e){}},300)}
 function vueStock(A){var E=stockEtat();
-  if(!E)return '<button class="det" data-go="reglages" data-cible="stock">📦 Suivre mon stock de sacs</button>';
+  if(!E)return '<button class="det" data-a="feuilleInv">📦 Suivre mon stock de sacs</button>';
   var r=Math.round(E.reste*2)/2,fs=A.rate!=null||Object.keys(PREV).length?finStock(A,E.reste):null,alerte=r<=10||(fs&&fs.jours!=null&&fs.jours<=14);
   var h='<section class="card stock-card'+(alerte?' alerte':'')+'"><h2>📦 Mon stock</h2>';
   if(r<=0)h+='<div class="stock-chiffre">0 <small>sac</small></div><p>D’après vos notes, le stock est épuisé. Si ce n’est pas le cas, corrigez-le dans les Réglages.</p>';
@@ -1231,13 +1275,10 @@ function vueStock(A){var E=stockEtat();
     if(fs&&fs.jours>90)h+='<p>De quoi tenir <b>plus de 3 mois</b> au rythme actuel.</p>';
     else if(fs)h+='<p>De quoi tenir jusqu’au <b>'+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')+'</b>'+(fs.jours!=null&&fs.jours>=0?' (environ '+fs.jours+' jour'+(fs.jours>1?'s':'')+')':'')+', selon la météo prévue.</p>';
     if(alerte)h+='<p class="stock-alerte">⚠️ Pensez à recommander des pellets.</p>'}
-  return h+'<button type="button" class="lien" data-go="reglages" data-cible="stock">+ Noter un achat ou corriger le stock</button></section>'}
-function vueStockReglages(){var E=stockEtat(),mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,6);
-  var h='<section class="card" id="stock"><h2>📦 Mon stock de sacs</h2>'+(E?'<p>Stock actuel : <b>'+nfs(Math.max(0,Math.round(E.reste*2)/2))+' sac'+(E.reste>=2?'s':'')+'</b>'+(E.eur?' · achats notés : '+nf(E.eur)+' €':'')+'</p>':'<p class="hint">Indiquez combien de sacs vous avez en réserve : chaque chargement les décomptera, et l’application vous dira jusqu’à quand ils tiennent.</p>')+
-    '<form id="fInv" class="stack"><label class="f">J’ai actuellement en réserve (sacs)<input name="sacs" type="number" inputmode="decimal" min="0" max="5000" step="0.5" required></label><button class="primary" type="submit">'+(E?'Corriger le stock':'Commencer le suivi')+'</button></form>'+
-    '<form id="fAchat" class="stack"><label class="f">Achat : nombre de sacs<input name="sacs" type="number" inputmode="decimal" min="0.5" max="5000" step="0.5" required placeholder="'+(F().sacsPalette||72)+' pour une palette"></label>'+
-    '<label class="f">Date de livraison<input name="date" type="date" required value="'+ymd(new Date())+'"></label>'+
-    '<label class="f">Prix payé en tout (€, facultatif)<input name="prix" type="number" inputmode="decimal" min="0" step="0.01"></label><button type="submit">Ajouter l’achat</button></form>';
+  return h+'<div class="deux-btn"><button type="button" data-a="feuilleAchat">+ Nouvel achat</button><button type="button" data-a="feuilleInv">Corriger</button></div></section>'}
+function vueStockReglages(){var E=stockEtat(),mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,5);
+  var h='<section class="card" id="stock"><h2>📦 Mon stock de sacs</h2>'+(E?'<p class="stock-ligne">Il vous reste <b>'+nfs(Math.max(0,Math.round(E.reste*2)/2))+' sac'+(E.reste>=2?'s':'')+'</b>'+(E.eur?' · achats notés : '+nf(E.eur)+' €':'')+'</p>':'<p class="hint">Indiquez combien de sacs vous avez en réserve : chaque chargement les décomptera.</p>')+
+    '<div class="deux-btn"><button type="button" data-a="feuilleInv">'+(E?'Corriger le stock':'Indiquer mon stock')+'</button><button type="button" data-a="feuilleAchat">+ Nouvel achat</button></div>';
   if(mv.length){h+='<ul class="list">';mv.forEach(function(m){h+='<li><span>'+(m.type==='inv'?'Stock compté : <b>'+nfs(m.sacs)+'</b>':'Achat : <b>+'+nfs(m.sacs)+'</b>'+(m.prix?' · '+nf(m.prix)+' €':''))+' · '+fds(m.t)+'</span><button type="button" class="x" data-a="stockDel" data-id="'+esc(m.id)+'" aria-label="Supprimer">×</button></li>'});h+='</ul>'}
   return h+'</section>'}
 function prochainRemplissage(A){var ch=chargementsSaison();if(!ch.length||A.rate==null)return null;
@@ -1460,6 +1501,7 @@ app.addEventListener('click',function(ev){
   if(a==='poeleLire'){lirePoele(true);return}
   if(a==='poeleEdit'){ui.poeleEdit=true;render();return}
   if(a==='poeleAnnule'){ui.poeleEdit=false;render();return}
+  if(a==='feuilleInv'||a==='feuilleAchat'){ouvrirFeuille(a==='feuilleAchat'?'achat':'inv');return}
   if(a==='stockDel'){var sid=b.getAttribute('data-id');(S.foyer.stock||[]).forEach(function(m){if(m.id===sid){m.suppr=true;m.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Stock : suppression');render();return}
   if(a==='anOff'){if(S.foyer){delete S.foyer.anDernier;S.foyer.maj=Date.now();sauver('Hiver dernier effacé')}render();toast('Hiver dernier effacé');return}
   if(a==='poeleOff'){delete cfg.poele;lsSet(CFGKEY,cfg);lsDel(POELE_CLE);ui.poeleMsg='Poêle déconnecté de cet appareil.';ui.poeleErr='';suivrePoele();render();return}
@@ -1508,9 +1550,7 @@ app.addEventListener('submit',function(ev){
     cfg.poele={relais:rel,email:em,mdp:md};lsSet(CFGKEY,cfg);ui.poeleEdit=false;ui.poeleErr='';lirePoele(true).then(function(){suivrePoele()});return}
   if(f.id==='fSurnom'){var sn=(f.n.value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,20);
     cfg.surnom=sn;lsSet(CFGKEY,cfg);try{localStorage.removeItem('suivi-stat-ouv')}catch(e){}statsVisite();render();toast(sn?'Cet appareil s’appellera « '+sn+' » dans le compteur':'Nom retiré');return}
-  if(f.id==='fInv'||f.id==='fAchat'){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='fAchat'&&!(n>0))){toast('Indiquez un nombre de sacs');return}
-    var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
-    S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return}
+  if(f.id==='fInv'||f.id==='fAchat'){enregistrerStock(f);return}
   if(f.id==='fAn'){var n=num(f.sacs.value),a1=f.debut.value,a2=f.fin.value;if(!(n>0)||!a1||!a2||a2<=a1){toast('Vérifiez le nombre de sacs et les dates');return}
     S.foyer.anDernier={sacs:n,debut:a1,fin:a2};S.foyer.maj=Date.now();AN.cle='';sauver('Hiver dernier : '+nfs(n)+' sacs');aller('accueil');toast('Hiver dernier enregistré');return}
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();

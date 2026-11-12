@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.24 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.25 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -431,6 +431,21 @@ html.anim-off .palette .neuf{animation:none}
 .stock-ligne{font-size:17px;margin:4px 0}
 @media (prefers-reduced-motion:reduce){.feuille,.feuille-fond{transition:none}}
 
+/* v5.25 : stock en une ligne (façon réglage iPhone), détail dans la petite fenêtre */
+.ligne-stock{display:flex;align-items:center;gap:12px;width:100%;margin:10px 0 0;padding:10px 14px;min-height:56px;border:0;border-radius:14px;background:var(--surface);color:var(--ink);text-align:left;box-shadow:0 1px 3px rgba(0,0,0,.06);cursor:pointer;font:inherit}
+.ligne-stock .ls-ic{font-size:22px}
+.ligne-stock .ls-txt{flex:1;display:flex;flex-direction:column}
+.ligne-stock .ls-txt b{font-size:17px;font-weight:600}
+.ligne-stock .ls-txt small{font-size:14px;color:var(--muted)}
+.ligne-stock .ls-chev{font-size:24px;color:var(--muted);line-height:1}
+.ligne-stock.alerte{box-shadow:inset 0 0 0 2px #e8833a}
+.ligne-stock.alerte small{color:#b5530f;font-weight:600}
+.ligne-stock:active{opacity:.7}
+.fd-chiffre{font-size:40px;font-weight:800;line-height:1.1;margin:0 0 4px}
+.fd-chiffre small{font-size:18px;font-weight:600;color:var(--muted)}
+.feuille-corps p{margin:4px 0}
+.fd-liste{margin-top:12px}
+
 </style>
 </head>
 <body>
@@ -451,7 +466,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.24', VERSION_DATE='11 novembre 2026';
+var VERSION='5.25', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1248,6 +1263,17 @@ function enregistrerStock(f){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='f
   var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
   S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return true}
 function fermerFeuille(){var o=document.querySelector('.feuille-fond');if(!o)return;o.classList.remove('ouverte');setTimeout(function(){if(o.parentNode)o.remove()},280)}
+function ouvrirFeuilleDetail(){fermerFeuille();var I=infoStock(analyse());if(!I){ouvrirFeuille('inv');return}
+  var mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,4);
+  var c='<div class="fd-chiffre">'+nfs(Math.max(0,I.r))+' <small>sac'+(I.r>=2?'s':'')+'</small></div>'+
+    (I.r<=0?'<p>D’après vos notes, le stock est épuisé.</p>':(I.fs?'<p>De quoi tenir <b>'+texteDuree(I.fs)+'</b>'+(I.fs.jours!=null&&I.fs.jours<=90&&I.fs.jours>=0?' (environ '+I.fs.jours+' jour'+(I.fs.jours>1?'s':'')+')':'')+', selon la météo prévue.</p>':''))+
+    (I.alerte?'<p class="stock-alerte">⚠️ Pensez à recommander des pellets.</p>':'')+
+    '<div class="deux-btn"><button type="button" data-f="achat">+ Nouvel achat</button><button type="button" data-f="inv">Corriger</button></div>';
+  if(mv.length){c+='<ul class="list fd-liste">';mv.forEach(function(m){c+='<li><span>'+(m.type==='inv'?'Stock compté : <b>'+nfs(m.sacs)+'</b>':'Achat : <b>+'+nfs(m.sacs)+'</b>'+(m.prix?' · '+nf(m.prix)+' €':''))+' · '+fds(m.t)+'</span></li>'});c+='</ul>'}
+  var o=document.createElement('div');o.className='feuille-fond';
+  o.innerHTML='<div class="feuille" role="dialog" aria-modal="true" aria-label="Mon stock"><div class="poignee" aria-hidden="true"></div><div class="feuille-barre"><span></span><b>Mon stock</b><button type="button" class="f-ok f-fermer">OK</button></div><div class="feuille-corps">'+c+'</div></div>';
+  document.body.appendChild(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
+  o.addEventListener('click',function(ev){if(ev.target===o||ev.target.closest('.f-fermer')){fermerFeuille();return}var b=ev.target.closest('[data-f]');if(b)ouvrirFeuille(b.getAttribute('data-f'))})}
 function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEtat(),P=F().sacsPalette||72;
   var corps=achat?
     '<label class="f">Nombre de sacs<input name="sacs" type="number" inputmode="decimal" min="0.5" max="5000" step="0.5" required></label>'+
@@ -1266,16 +1292,14 @@ function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEta
     var pc=ev.target.closest('[data-v]');if(pc){f.sacs.value=pc.getAttribute('data-v');f.sacs.focus()}});
   f.addEventListener('submit',function(ev){ev.preventDefault();if(enregistrerStock(f))fermerFeuille()});
   setTimeout(function(){try{f.sacs.focus()}catch(e){}},300)}
-function vueStock(A){var E=stockEtat();
-  if(!E)return '<button class="det" data-a="feuilleInv">📦 Suivre mon stock de sacs</button>';
-  var r=Math.round(E.reste*2)/2,fs=A.rate!=null||Object.keys(PREV).length?finStock(A,E.reste):null,alerte=r<=10||(fs&&fs.jours!=null&&fs.jours<=14);
-  var h='<section class="card stock-card'+(alerte?' alerte':'')+'"><h2>📦 Mon stock</h2>';
-  if(r<=0)h+='<div class="stock-chiffre">0 <small>sac</small></div><p>D’après vos notes, le stock est épuisé. Si ce n’est pas le cas, corrigez-le dans les Réglages.</p>';
-  else{h+='<div class="stock-chiffre">'+nfs(r)+' <small>sac'+(r>=2?'s':'')+'</small></div>';
-    if(fs&&fs.jours>90)h+='<p>De quoi tenir <b>plus de 3 mois</b> au rythme actuel.</p>';
-    else if(fs)h+='<p>De quoi tenir jusqu’au <b>'+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')+'</b>'+(fs.jours!=null&&fs.jours>=0?' (environ '+fs.jours+' jour'+(fs.jours>1?'s':'')+')':'')+', selon la météo prévue.</p>';
-    if(alerte)h+='<p class="stock-alerte">⚠️ Pensez à recommander des pellets.</p>'}
-  return h+'<div class="deux-btn"><button type="button" data-a="feuilleAchat">+ Nouvel achat</button><button type="button" data-a="feuilleInv">Corriger</button></div></section>'}
+function infoStock(A){var E=stockEtat();if(!E)return null;var r=Math.round(E.reste*2)/2,fs=(A.rate!=null||Object.keys(PREV).length)?finStock(A,E.reste):null;
+  return {E:E,r:r,fs:fs,alerte:r<=10||!!(fs&&fs.jours!=null&&fs.jours<=14)}}
+function texteDuree(fs){if(!fs)return '';if(fs.jours>90)return 'plus de 3 mois';return 'jusqu’au '+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')}
+function vueStock(A){var I=infoStock(A); // v5.25 : une seule ligne compacte, on touche pour le détail
+  if(!I)return '<button class="det" data-a="feuilleInv">📦 Suivre mon stock de sacs</button>';
+  var sous=I.r<=0?'stock épuisé':(I.alerte?'pensez à recommander':(I.fs?'de quoi tenir '+texteDuree(I.fs):''));
+  return '<button type="button" class="ligne-stock'+(I.alerte?' alerte':'')+'" data-a="feuilleStock"><span class="ls-ic" aria-hidden="true">'+(I.alerte?'⚠️':'📦')+'</span>'+
+    '<span class="ls-txt"><b>Stock : '+nfs(Math.max(0,I.r))+' sac'+(I.r>=2?'s':'')+'</b><small>'+sous+'</small></span><span class="ls-chev" aria-hidden="true">›</span></button>'}
 function vueStockReglages(){var E=stockEtat(),mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,5);
   var h='<section class="card" id="stock"><h2>📦 Mon stock de sacs</h2>'+(E?'<p class="stock-ligne">Il vous reste <b>'+nfs(Math.max(0,Math.round(E.reste*2)/2))+' sac'+(E.reste>=2?'s':'')+'</b>'+(E.eur?' · achats notés : '+nf(E.eur)+' €':'')+'</p>':'<p class="hint">Indiquez combien de sacs vous avez en réserve : chaque chargement les décomptera.</p>')+
     '<div class="deux-btn"><button type="button" data-a="feuilleInv">'+(E?'Corriger le stock':'Indiquer mon stock')+'</button><button type="button" data-a="feuilleAchat">+ Nouvel achat</button></div>';
@@ -1501,6 +1525,7 @@ app.addEventListener('click',function(ev){
   if(a==='poeleLire'){lirePoele(true);return}
   if(a==='poeleEdit'){ui.poeleEdit=true;render();return}
   if(a==='poeleAnnule'){ui.poeleEdit=false;render();return}
+  if(a==='feuilleStock'){ouvrirFeuilleDetail();return}
   if(a==='feuilleInv'||a==='feuilleAchat'){ouvrirFeuille(a==='feuilleAchat'?'achat':'inv');return}
   if(a==='stockDel'){var sid=b.getAttribute('data-id');(S.foyer.stock||[]).forEach(function(m){if(m.id===sid){m.suppr=true;m.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Stock : suppression');render();return}
   if(a==='anOff'){if(S.foyer){delete S.foyer.anDernier;S.foyer.maj=Date.now();sauver('Hiver dernier effacé')}render();toast('Hiver dernier effacé');return}

@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.25 | 12 novembre 2026 | Stock sur l'accueil réduit à une seule ligne « 📦 Stock : 45 sacs · de quoi tenir jusqu'au … › » ; en la touchant, la petite fenêtre s'ouvre avec le détail, les derniers achats et les boutons Nouvel achat / Corriger. |
 | 5.24 | 12 novembre 2026 | Stock : « Nouvel achat » et « Corriger » ouvrent une petite fenêtre qui monte du bas de l'écran (façon iPhone : Annuler / titre / Ajouter), avec raccourcis 1 palette, ½ palette, 10 sacs. La partie stock des Réglages est plus compacte. |
 | 5.23 | 12 novembre 2026 | Les boutons « Suivre mon stock », « Noter un achat » et « Comparer avec l'hiver dernier » mènent directement à la bonne partie des Réglages, avec le curseur dans la case. |
 | 5.22 | 12 novembre 2026 | Nouvelle image d'aperçu Facebook (`apercu-lien-2.png`) sans la mention « Gratuit · sans compte · données sur votre téléphone » ; description du lien raccourcie. |

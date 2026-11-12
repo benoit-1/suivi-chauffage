@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.27 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.29 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -464,6 +464,17 @@ html.anim-off .fv-boite{display:none}
 html.anim-off .t.sacs .poele{opacity:1!important}
 html.fv-ok .t.sacs .flame{mix-blend-mode:screen}
 
+/* v5.28 : ligne « Faire connaître l'application » avec mini QR */
+.ligne-partage{margin-top:14px}
+.lp-qr{width:44px;height:44px;flex:0 0 44px;background:#fff;border-radius:8px;padding:3px;box-sizing:border-box;display:block}
+.lp-qr svg{width:100%;height:100%;display:block}
+.fp-qr{width:220px;height:220px;margin:6px auto 10px;background:#fff;border-radius:16px;padding:10px;box-sizing:border-box}
+.fp-qr svg{width:100%;height:100%;display:block}
+.fp-txt{text-align:center;color:var(--muted);font-size:15px;margin:0 8px 12px}
+.fp-btn{display:block;width:100%;min-height:50px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:17px;cursor:pointer}
+
+.fp-qr{margin-bottom:16px}
+
 </style>
 </head>
 <body>
@@ -484,7 +495,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.27', VERSION_DATE='11 novembre 2026';
+var VERSION='5.29', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -884,6 +895,7 @@ function vueAccueil(){
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
   if(A.rate!=null)h+='<p class="last">En moyenne <b>'+nf(A.rate,2)+' sac par jour</b> cette saison</p>';
+  h+=lignePartage();
   if(estLocal()){var ds=cfg.sauvegarde,nb=S.chargements.length+S.releves.length;if(nb>=10&&(!ds||Date.now()-parseDT(ds)>30*864e5))h+='<button class="det rappel" data-go="reglages">💾 Pensez à sauvegarder vos relevés</button>'}
   if(feteDuJour())h+='<p class="last fete-msg">'+FETES[feteDuJour()].ico+' '+FETES[feteDuJour()].msg+'</p>';
   h+='<button class="det" data-go="details">📊 Voir tous les détails →</button></div>';
@@ -1327,6 +1339,20 @@ function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEta
 function infoStock(A){var E=stockEtat();if(!E)return null;var r=Math.round(E.reste*2)/2,fs=(A.rate!=null||Object.keys(PREV).length)?finStock(A,E.reste):null;
   return {E:E,r:r,fs:fs,alerte:r<=10||!!(fs&&fs.jours!=null&&fs.jours<=14)}}
 function texteDuree(fs){if(!fs)return '';if(fs.jours>90)return 'plus de 3 mois';return 'jusqu’au '+(fs.approx?'≈ ':'')+fds(fs.date+'T12:00')}
+// v5.28 : petit QR en bas de l'accueil pour faire connaître l'application (adresse publique, jamais la clé familiale)
+function lignePartage(){var lp=lienPublic(),q=qrSVG(lp);
+  return '<button type="button" class="ligne-stock ligne-partage" data-a="feuillePartage"><span class="lp-qr" aria-hidden="true">'+q+'</span>'+
+    '<span class="ls-txt"><b>Obtenir cette application</b></span><span class="ls-chev" aria-hidden="true">›</span></button>'}
+function ouvrirFeuillePartage(){fermerFeuille();var lp=lienPublic();
+  var c='<div class="fp-qr">'+qrSVG(lp)+'</div>'+
+    (navigator.share?'<button type="button" class="fp-btn" data-f="share">Envoyer le lien…</button>':'<button type="button" class="fp-btn" data-f="copie">Copier le lien</button>');
+  var o=document.createElement('div');o.className='feuille-fond';
+  o.innerHTML='<div class="feuille" role="dialog" aria-modal="true"><div class="poignee" aria-hidden="true"></div><div class="feuille-barre"><span></span><b>Obtenir cette application</b><button type="button" class="f-ok f-fermer">OK</button></div><div class="feuille-corps">'+c+'</div></div>';
+  document.body.appendChild(o);ameliorerFeuille(o);requestAnimationFrame(function(){o.classList.add('ouverte')});statistique('partage-qr');
+  o.addEventListener('click',function(ev){if(ev.target===o||ev.target.closest('.f-fermer')){fermerFeuille();return}var b=ev.target.closest('[data-f]');if(!b)return;
+    statistique('partage');
+    if(b.getAttribute('data-f')==='share'){try{navigator.share({title:'Suivi pellets',text:'Pour savoir combien de sacs de pellets prévoir selon la météo :',url:lp}).catch(function(){})}catch(e){}}
+    else{try{navigator.clipboard.writeText(lp).then(function(){toast('Lien copié')},function(){toast(lp)})}catch(e){toast(lp)}}})}
 function vueStock(A){var I=infoStock(A); // v5.25 : une seule ligne compacte, on touche pour le détail
   if(!I)return '<button class="det" data-a="feuilleInv">📦 Suivre mon stock de sacs</button>';
   var sous=I.r<=0?'stock épuisé':(I.alerte?'pensez à recommander':(I.fs?'de quoi tenir '+texteDuree(I.fs):''));
@@ -1561,6 +1587,7 @@ app.addEventListener('click',function(ev){
   if(a==='poeleEdit'){ui.poeleEdit=true;render();return}
   if(a==='poeleAnnule'){ui.poeleEdit=false;render();return}
   if(a==='feuilleStock'){ouvrirFeuilleDetail();return}
+  if(a==='feuillePartage'){ouvrirFeuillePartage();return}
   if(a==='feuilleInv'||a==='feuilleAchat'){ouvrirFeuille(a==='feuilleAchat'?'achat':'inv');return}
   if(a==='stockDel'){var sid=b.getAttribute('data-id');(S.foyer.stock||[]).forEach(function(m){if(m.id===sid){m.suppr=true;m.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Stock : suppression');render();return}
   if(a==='anOff'){if(S.foyer){delete S.foyer.anDernier;S.foyer.maj=Date.now();sauver('Hiver dernier effacé')}render();toast('Hiver dernier effacé');return}

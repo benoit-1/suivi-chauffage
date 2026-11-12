@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.29 | 12 novembre 2026 | La ligne du bas de l'accueil s'intitule simplement « Obtenir cette application », et sa fenêtre ne montre que le grand QR (plus le bouton pour envoyer le lien). |
+| 5.28 | 12 novembre 2026 | En bas de l'accueil, une ligne « Faire connaître l'application » avec un mini QR ; en la touchant, une petite fenêtre montre le grand QR (adresse publique uniquement, jamais la clé familiale) et un bouton pour envoyer le lien. |
 | 5.27 | 12 novembre 2026 | La flamme de la tuile « Sacs consommés » utilise la même vraie vidéo de flammes que l'écran d'ouverture (taille toujours selon le froid dehors, grossit après un chargement). Si la vidéo ne peut pas se lire ou si les animations sont coupées, l'ancien dessin s'affiche. |
 | 5.26 | 12 novembre 2026 | Petite fenêtre du stock : on peut la refermer en la glissant vers le bas avec le doigt, comme sur iPhone ; meilleure prise en charge de VoiceOver et du clavier (Échap ferme, le curseur reste dans la fenêtre puis revient où il était). Aucun autre changement. |
 | 5.25 | 12 novembre 2026 | Stock sur l'accueil réduit à une seule ligne « 📦 Stock : 45 sacs · de quoi tenir jusqu'au … › » ; en la touchant, la petite fenêtre s'ouvre avec le détail, les derniers achats et les boutons Nouvel achat / Corriger. |

@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.23 | 12 novembre 2026 | Les boutons « Suivre mon stock », « Noter un achat » et « Comparer avec l'hiver dernier » mènent directement à la bonne partie des Réglages, avec le curseur dans la case. |
 | 5.22 | 12 novembre 2026 | Nouvelle image d'aperçu Facebook (`apercu-lien-2.png`) sans la mention « Gratuit · sans compte · données sur votre téléphone » ; description du lien raccourcie. |
 | 5.21 | 12 novembre 2026 | Compteur : pour les appareils de la famille (mode GitHub), on peut donner un nom à l'appareil dans Réglages (ex. « papa ») ; les visites apparaissent alors dans GoatCounter sous « visite/9mv3-papa ». Les autres utilisateurs restent anonymes. |
 | 5.20 | 12 novembre 2026 | Nouvelle vidéo de flammes à l'ouverture (`feu.mp4`, vidéo Pixabay n° 21531, licence de contenu Pixabay : utilisation gratuite). |

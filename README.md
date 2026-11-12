@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.20 | 12 novembre 2026 | Nouvelle vidéo de flammes à l'ouverture (`feu.mp4`, vidéo Pixabay n° 21531, licence de contenu Pixabay : utilisation gratuite). |
 | 5.19 | 11 novembre 2026 | Stock de sacs : dans Réglages, « J'ai actuellement X sacs » et « Ajouter un achat » ; chaque chargement décompte ; l'accueil affiche le stock et jusqu'à quand il tient selon la météo, avec « Pensez à recommander » sous 10 sacs ou 2 semaines. Prochain remplissage : « Prochain remplissage prévu demain vers 8 h » d'après le dernier chargement et le froid prévu. |
 | 5.18 | 11 novembre 2026 | Ouverture : le feu reste affiché tant qu'on ne touche pas l'écran (« Touchez l'écran pour ouvrir l'application ») ; le toucher fait tomber les pellets avec le son, puis l'application s'ouvre (un second toucher l'ouvre tout de suite). |
 | 5.17 | 11 novembre 2026 | Ouverture : gros bouton 🔊 qui pulse au centre, « Touchez pour entendre les pellets tomber », pour que chacun sache qu'il y a du son ; 5 secondes pour toucher avant l'ouverture automatique. |

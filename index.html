@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.19 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.20 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -426,7 +426,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.19', VERSION_DATE='11 novembre 2026';
+var VERSION='5.20', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1185,7 +1185,7 @@ function ecranOuverture(){try{ // v5.13 : la vraie vidéo du poêle de Benoît ;
   try{var tt=+localStorage.getItem('suivi-ouverture-t')||0;if(Date.now()-tt<20000)return;localStorage.setItem('suivi-ouverture-t',String(Date.now()))}catch(x){}
   var o=document.createElement('div');o.className='ouverture';o.setAttribute('role','button');o.setAttribute('aria-label','Ouvrir Suivi pellets');
   var g='';for(var i=0;i<46;i++)g+='<i style="--d:'+(0.05+i*0.045).toFixed(2)+'s;--x:'+(Math.random()*70-35).toFixed(0)+'px;--r:'+Math.round(Math.random()*180)+'deg"></i>';
-  o.innerHTML='<video class="ov-video" src="feu.mp4" muted autoplay loop playsinline webkit-playsinline preload="auto"></video><div class="ov-voile"></div>'+
+  o.innerHTML='<video class="ov-video" src="feu.mp4?v=2" muted autoplay loop playsinline webkit-playsinline preload="auto"></video><div class="ov-voile"></div>'+
     '<div class="ov-grains">'+g+'</div><div class="ov-titre">Suivi pellets</div>'+
     '<div class="ov-bouton"><span class="ov-rond">'+(sonActif()?'🔊':'🔥')+'</span><span class="ov-txt">'+'Touchez l’écran pour<br>ouvrir l’application'+'</span></div>'+
     (sonActif()?'<div class="ov-aide">🔊 Montez le son pour entendre les pellets</div>':'');

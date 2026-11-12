@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.25 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.26 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -446,6 +446,10 @@ html.anim-off .palette .neuf{animation:none}
 .feuille-corps p{margin:4px 0}
 .fd-liste{margin-top:12px}
 
+/* v5.26 : la petite barre grise invite à glisser */
+.feuille .poignee{cursor:grab;touch-action:none}
+.feuille-barre{touch-action:none}
+
 </style>
 </head>
 <body>
@@ -466,7 +470,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.25', VERSION_DATE='11 novembre 2026';
+var VERSION='5.26', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1262,7 +1266,20 @@ function finStock(A,reste){if(reste<=0)return {date:ymd(new Date()),jours:0};
 function enregistrerStock(f){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='fAchat'&&!(n>0))){toast('Indiquez un nombre de sacs');return false}
   var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
   S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return true}
-function fermerFeuille(){var o=document.querySelector('.feuille-fond');if(!o)return;o.classList.remove('ouverte');setTimeout(function(){if(o.parentNode)o.remove()},280)}
+function fermerFeuille(){var o=document.querySelector('.feuille-fond');if(!o)return;var fl=o.querySelector('.feuille');if(fl)fl.style.transform='';o.classList.remove('ouverte');
+  var av=o._avant;setTimeout(function(){if(o.parentNode)o.remove();try{if(av&&av.focus&&document.body.contains(av))av.focus({preventScroll:true})}catch(e){}},280)}
+// v5.26 : comme sur iPhone, on referme la petite fenêtre en la glissant vers le bas ; clavier : Échap ferme, Tab reste dans la fenêtre (VoiceOver)
+function ameliorerFeuille(o){try{var fl=o.querySelector('.feuille');if(!fl)return;o._avant=document.activeElement;
+  var y0=null,dy=0,t0=0;
+  fl.addEventListener('touchstart',function(e){var t=e.target;if(t.closest('input,select,textarea'))return;var c=fl.querySelector('.feuille-corps');if(c&&c.scrollTop>0&&!t.closest('.poignee,.feuille-barre'))return;y0=e.touches[0].clientY;dy=0;t0=Date.now();fl.style.transition='none'},{passive:true});
+  fl.addEventListener('touchmove',function(e){if(y0==null)return;dy=Math.max(0,e.touches[0].clientY-y0);fl.style.transform=dy?'translateY('+dy+'px)':''},{passive:true});
+  function fin(){if(y0==null)return;fl.style.transition='';var v=dy/Math.max(1,Date.now()-t0);y0=null;if(dy>110||(dy>40&&v>0.6))fermerFeuille();else fl.style.transform=''}
+  fl.addEventListener('touchend',fin);fl.addEventListener('touchcancel',fin);
+  o.addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();fermerFeuille();return}
+    if(e.key==='Tab'){var f=[].slice.call(fl.querySelectorAll('button,input,select,textarea,[tabindex]')).filter(function(x){return !x.disabled&&x.offsetParent!==null});if(!f.length)return;
+      var a=f[0],z=f[f.length-1];if(e.shiftKey&&document.activeElement===a){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
+  var titre=fl.querySelector('.feuille-barre b');if(titre){titre.id='feuille-titre';fl.setAttribute('aria-labelledby','feuille-titre');fl.removeAttribute('aria-label')}
+  var poi=fl.querySelector('.poignee');if(poi)poi.setAttribute('aria-hidden','true')}catch(e){}}
 function ouvrirFeuilleDetail(){fermerFeuille();var I=infoStock(analyse());if(!I){ouvrirFeuille('inv');return}
   var mv=stockMv().filter(function(m){return !m.suppr}).slice().sort(function(a,b){return a.t<b.t?1:-1}).slice(0,4);
   var c='<div class="fd-chiffre">'+nfs(Math.max(0,I.r))+' <small>sac'+(I.r>=2?'s':'')+'</small></div>'+
@@ -1272,7 +1289,8 @@ function ouvrirFeuilleDetail(){fermerFeuille();var I=infoStock(analyse());if(!I)
   if(mv.length){c+='<ul class="list fd-liste">';mv.forEach(function(m){c+='<li><span>'+(m.type==='inv'?'Stock compté : <b>'+nfs(m.sacs)+'</b>':'Achat : <b>+'+nfs(m.sacs)+'</b>'+(m.prix?' · '+nf(m.prix)+' €':''))+' · '+fds(m.t)+'</span></li>'});c+='</ul>'}
   var o=document.createElement('div');o.className='feuille-fond';
   o.innerHTML='<div class="feuille" role="dialog" aria-modal="true" aria-label="Mon stock"><div class="poignee" aria-hidden="true"></div><div class="feuille-barre"><span></span><b>Mon stock</b><button type="button" class="f-ok f-fermer">OK</button></div><div class="feuille-corps">'+c+'</div></div>';
-  document.body.appendChild(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
+  document.body.appendChild(o);ameliorerFeuille(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
+  var fe=o.querySelector('.f-fermer');setTimeout(function(){try{fe.focus({preventScroll:true})}catch(e){}},300);
   o.addEventListener('click',function(ev){if(ev.target===o||ev.target.closest('.f-fermer')){fermerFeuille();return}var b=ev.target.closest('[data-f]');if(b)ouvrirFeuille(b.getAttribute('data-f'))})}
 function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEtat(),P=F().sacsPalette||72;
   var corps=achat?
@@ -1286,7 +1304,7 @@ function ouvrirFeuille(type){fermerFeuille();var achat=type==='achat',E=stockEta
   o.innerHTML='<form class="feuille" id="'+(achat?'fAchat':'fInv')+'" role="dialog" aria-modal="true" aria-label="'+(achat?'Nouvel achat':'Mon stock')+'"><div class="poignee" aria-hidden="true"></div>'+
     '<div class="feuille-barre"><button type="button" class="f-annuler">Annuler</button><b>'+(achat?'Nouvel achat':'Mon stock')+'</b><button type="submit" class="f-ok">'+(achat?'Ajouter':'OK')+'</button></div>'+
     '<div class="feuille-corps">'+corps+'</div></form>';
-  document.body.appendChild(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
+  document.body.appendChild(o);ameliorerFeuille(o);requestAnimationFrame(function(){o.classList.add('ouverte')});
   var f=o.querySelector('form');
   o.addEventListener('click',function(ev){if(ev.target===o||ev.target.closest('.f-annuler')){fermerFeuille();return}
     var pc=ev.target.closest('[data-v]');if(pc){f.sacs.value=pc.getAttribute('data-v');f.sacs.focus()}});

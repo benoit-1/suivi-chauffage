@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.32 | 12 novembre 2026 | Écran d'ouverture : le haut-parleur 🔊 (bouton central et ligne « Montez le son ») est retiré ; il reste « Touchez l'écran pour ouvrir l'application ». Le bruit des pellets joue toujours au toucher. |
 | 5.31 | 12 novembre 2026 | D'où viennent les nouveaux utilisateurs : le QR de l'application contient « ?via=qr », le lien envoyé « ?via=lien », Facebook est reconnu (?fb=1 ou fbclid). À la première ouverture, l'appareil envoie « arrivee/qr », « arrivee/lien », « arrivee/facebook » ou « arrivee/direct ». La marque est retirée de l'adresse aussitôt. |
 | 5.30 | 12 novembre 2026 | Tuile « Sacs consommés » : la vraie flamme remplit toute la tuile (nouvelle vidéo `feu-tuile.mp4`, cadrée en largeur), plus ou moins vive selon le froid dehors, avec un éclat après un chargement. Sans vidéo (mode économie d'énergie, animations coupées) : l'ancien affichage violet avec la flamme dessinée. |
 | 5.29 | 12 novembre 2026 | La ligne du bas de l'accueil s'intitule simplement « Obtenir cette application », et sa fenêtre ne montre que le grand QR (plus le bouton pour envoyer le lien). |

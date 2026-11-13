@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.41 | 13 novembre 2026 | Écran des flammes : l'application s'ouvre seule au bout de 2 secondes ; un toucher pendant ces 2 secondes fait tomber les pellets avec le bruit (environ 2,6 s), puis l'application s'ouvre. |
+| 5.40 | 13 novembre 2026 | Corrige la perte des saisies quand on installe l'application sur l'écran d'accueil d'un iPhone après avoir commencé dans Safari (Apple sépare la mémoire de Safari et celle de l'icône). Dans Safari, l'adresse transporte une copie des saisies ; l'icône les reprend à sa première ouverture. |
 | 5.39 | 13 novembre 2026 | Premiers pas : les étapes « Noter un chargement » sont cliquables et ouvrent directement l'écran Chargement pellets. |
 | 5.38 | 13 novembre 2026 | Visite guidée : corrige l'écran qui restait figé et assombri sur ordinateur (la bulle partait hors de l'écran pendant le défilement). Position recalculée après le défilement, bulle toujours dans l'écran, bouton « Passer la visite ✕ » toujours visible en haut à droite, touche Échap. |
 | 5.37 | 13 novembre 2026 | Écran de bienvenue : grand bouton « 📲 Installer sur mon écran d'accueil » en premier, au-dessus de « Commencer ». Sur Android il installe directement ; sur iPhone et Mac (Apple ne permet pas l'installation automatique) il ouvre un guide animé en 3 étapes avec le dessin des boutons à toucher. |

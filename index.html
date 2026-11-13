@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.39 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.41 du 9 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -586,7 +586,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.39', VERSION_DATE='11 novembre 2026';
+var VERSION='5.41', VERSION_DATE='11 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -699,7 +699,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 function estLocal(){return !!(cfg&&cfg.local)}
 function cacher(pending){if(estLocal())return;lsSet(CACHEKEY,{cfgId:cfgId(),data:donnees(),sha:sha,pending:!!pending})}
 function enregistrer(msg){
-  if(estLocal()){try{localStorage.setItem(LOCALKEY,JSON.stringify(donnees()));setStatus('ok','Enregistré sur cet appareil')}catch(e){setStatus('err','Mémoire pleine : faites une sauvegarde')}return Promise.resolve()}
+  if(estLocal()){try{localStorage.setItem(LOCALKEY,JSON.stringify(donnees()));setStatus('ok','Enregistré sur cet appareil');garderSaisiesDansAdresse()}catch(e){setStatus('err','Mémoire pleine : faites une sauvegarde')}return Promise.resolve()}
   cacher(true);
   if(enCours){attente=msg;return Promise.resolve()}
   enCours=true;essais=0;setStatus('busy','Enregistrement…');
@@ -749,7 +749,7 @@ function guideInstall(){fermerFeuille();var ios=estIOS(),mac=!ios&&/Macintosh/.t
      ['2','Choisissez <b>Installer l’application</b> ou <b>Ajouter à l’écran d’accueil</b>',''],
      ['3','Confirmez avec <b>Installer</b>','<span class="gi-ajout">Installer</span>']];
   var c='<ol class="gi-liste">'+et.map(function(e,i){return '<li style="--i:'+i+'"><span class="gi-num">'+e[0]+'</span><span class="gi-txt">'+e[1]+(e[2]?'<span class="gi-dessin">'+e[2]+'</span>':'')+'</span></li>'}).join('')+'</ol>'+
-    '<p class="hint">Ensuite, ouvrez Suivi pellets avec sa nouvelle icône 🔥, comme une vraie application.</p>';
+    '<p class="hint">Ensuite, ouvrez Suivi pellets avec sa nouvelle icône 🔥, comme une vraie application.'+(estLocal()&&S&&S.foyer?' <b>Vos saisies déjà faites seront reprises automatiquement.</b>':'')+'</p>';
   var o=document.createElement('div');o.className='feuille-fond';
   o.innerHTML='<div class="feuille" role="dialog" aria-modal="true"><div class="poignee" aria-hidden="true"></div><div class="feuille-barre"><span></span><b>Installer l’application</b><button type="button" class="f-ok f-fermer">OK</button></div><div class="feuille-corps">'+c+'</div></div>'+
     (ios?'<div class="gi-fleche" aria-hidden="true">'+SVG_PARTAGE+'<span>↓</span></div>':'');
@@ -769,6 +769,20 @@ function ecranHash(){var h=(location.hash||'').replace('#','').split('&')[0];ret
 function garderConnexionDansAdresse(){try{if(estInstallee()||!cfg||!cfg.token||cfg.local)return;
   var cible=location.pathname+'?connexion='+encodeURIComponent(codeConnexion())+'#'+ecranHash();
   if(location.pathname+location.search+location.hash!==cible)history.replaceState(null,'',cible)}catch(e){}}
+
+// v5.40 : sur iPhone/Mac, Safari et l'icône de l'écran d'accueil ont chacun leur propre mémoire.
+// Tant qu'on est dans Safari (sans compte), l'adresse transporte une copie des saisies (?transfert=…) ;
+// « Sur l'écran d'accueil » garde cette adresse, et l'icône reprend les saisies à sa première ouverture.
+function estApple(){try{return navigator.vendor==='Apple Computer, Inc.'}catch(e){return false}}
+function b64u(t){return btoa(unescape(encodeURIComponent(t))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+function deb64u(t){t=t.replace(/-/g,'+').replace(/_/g,'/');while(t.length%4)t+='=';return decodeURIComponent(escape(atob(t)))}
+function garderSaisiesDansAdresse(){try{if(!estLocal()||estInstallee()||!estApple()||!history.replaceState||!S)return;
+  var q=(location.search||'').replace(/[?&]transfert=[^&]*/g,'').replace(/^&/,'?');if(q==='?')q='';
+  if(S.foyer||(S.chargements&&S.chargements.length)){var d={version:2,foyer:S.foyer,chargements:S.chargements,releves:S.releves,supprimes:S.supprimes||[],meteo:{}};
+    q=(q?q+'&':'?')+'transfert='+b64u(JSON.stringify(d))}
+  var cible=location.pathname+q+location.hash;if(location.pathname+location.search+location.hash!==cible)history.replaceState(null,'',cible)}catch(e){}}
+function lireTransfert(){try{var m=/[?&]transfert=([^&#]+)/.exec(location.search||'');if(!m)return null;var d=JSON.parse(deb64u(m[1]));return d&&d.version?d:null}catch(e){return null}}
+function aDesSaisiesLocales(){try{var d=JSON.parse(localStorage.getItem(LOCALKEY)||'null');return !!(d&&(d.foyer||(d.chargements&&d.chargements.length)))}catch(e){return false}}
 
 /* météo Open-Meteo */
 function agreger(j){
@@ -821,13 +835,16 @@ function connecter(c){
 }
 function demarrerLocal(){
   mode='pret';var d=null;try{d=JSON.parse(localStorage.getItem(LOCALKEY)||'null')}catch(e){}
-  appliquer(d?migrer(d):vide());setStatus('ok','Enregistré sur cet appareil');statsDuJour();
+  appliquer(d?migrer(d):vide());setStatus('ok','Enregistré sur cet appareil');statsDuJour();garderSaisiesDansAdresse();
   try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
   render();if(S.foyer)Meteo.actualiser().then(function(chg){if(chg)sauver();renderFond()});
 }
 function commencerLocal(){var old=lsGet(CFGKEY)||{};cfg={local:true,moi:old.moi||'',anim:old.anim,fetes:old.fetes};lsSet(CFGKEY,cfg);demarrerLocal()}
 function demarrer(){
   var inv=lireInvitation(),c0=lsGet(CFGKEY);
+  var tr=inv?null:lireTransfert();
+  if(tr&&(!c0||c0.local)&&!aDesSaisiesLocales()){try{localStorage.setItem(LOCALKEY,JSON.stringify(tr));c0=Object.assign({},c0||{},{local:true});lsSet(CFGKEY,c0);
+    lsPut('suivi-visite-vue','1');setTimeout(function(){toast('✅ Vos saisies ont été reprises dans l’application')},1500);statistique('transfert-ecran-accueil')}catch(e){}}
   if(inv&&!(c0&&c0.owner===inv.owner&&c0.repo===inv.repo&&c0.token===inv.token&&c0.path===inv.path)){lsDel(CACHEKEY);connecter(inv);return}
   if(c0&&c0.local&&!inv){cfg=c0;demarrerLocal();return}
   if(!c0||!c0.token){mode='connexion';render();return}
@@ -1383,15 +1400,16 @@ function ecranOuverture(){try{ // v5.13 : la vraie vidéo du poêle de Benoît ;
   var g='';for(var i=0;i<46;i++)g+='<i style="--d:'+(0.05+i*0.045).toFixed(2)+'s;--x:'+(Math.random()*70-35).toFixed(0)+'px;--r:'+Math.round(Math.random()*180)+'deg"></i>';
   o.innerHTML='<video class="ov-video" src="feu.mp4?v=2" muted autoplay loop playsinline webkit-playsinline preload="auto"></video><div class="ov-voile"></div>'+
     '<div class="ov-grains">'+g+'</div><div class="ov-titre">Suivi pellets</div>'+
-    '<div class="ov-bouton"><span class="ov-txt">'+'Touchez l’écran pour<br>ouvrir l’application'+'</span></div>'+
+    '<div class="ov-bouton"><span class="ov-txt">'+'Touchez l’écran pour<br>remettre des pellets'+'</span></div>'+
     ''; // v5.32 : plus de haut-parleur à l'écran ; le bruit des pellets joue toujours quand on touche
   document.body.appendChild(o);
   var v=o.querySelector('video');try{v.muted=true;var pp=v.play();if(pp&&pp.catch)pp.catch(function(){})}catch(x){}
   v.addEventListener('error',function(){o.classList.add('sans-video')});
   var verse=false,tFin=null,tAuto;
   function fin(){clearTimeout(tAuto);clearTimeout(tFin);if(!o.parentNode)return;o.classList.add('part');setTimeout(function(){if(o.parentNode)o.remove()},500)}
-  function verser(){if(verse){fin();return}verse=true;clearTimeout(tAuto);o.classList.add('ov-on');jouerPellets();tFin=setTimeout(fin,3300)}
-  // v5.18 : plus d'ouverture automatique : le feu reste jusqu'à ce qu'on touche l'écran (idée de Benoît : tout le monde entend le son)
+  function verser(){if(verse){fin();return}verse=true;clearTimeout(tAuto);o.classList.add('ov-on');jouerPellets();tFin=setTimeout(fin,2600)}
+  // v5.41 : l'application s'ouvre seule après 2 s (conseils : écran d'accueil court) ; un toucher avant donne les pellets et le bruit
+  tAuto=setTimeout(fin,2000);
   o.addEventListener('click',verser);
 }catch(e){}}
 

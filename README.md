@@ -172,6 +172,13 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.39 | 13 novembre 2026 | Premiers pas : les étapes « Noter un chargement » sont cliquables et ouvrent directement l'écran Chargement pellets. |
+| 5.38 | 13 novembre 2026 | Visite guidée : corrige l'écran qui restait figé et assombri sur ordinateur (la bulle partait hors de l'écran pendant le défilement). Position recalculée après le défilement, bulle toujours dans l'écran, bouton « Passer la visite ✕ » toujours visible en haut à droite, touche Échap. |
+| 5.37 | 13 novembre 2026 | Écran de bienvenue : grand bouton « 📲 Installer sur mon écran d'accueil » en premier, au-dessus de « Commencer ». Sur Android il installe directement ; sur iPhone et Mac (Apple ne permet pas l'installation automatique) il ouvre un guide animé en 3 étapes avec le dessin des boutons à toucher. |
+| 5.36 | 13 novembre 2026 | Création du foyer : exemple sous la case des pièces (« Salon, Chambre Pierre, Chambre maman »). |
+| 5.35 | 13 novembre 2026 | Après l'enregistrement d'un chargement ou de températures, un écran de confirmation reste 1,8 seconde (touchez pour passer) avant de revenir à l'accueil ; les petits messages restent 4,5 secondes au lieu de 2,6. |
+| 5.34 | 13 novembre 2026 | Écran de bienvenue : la phrase « Gratuit, sans compte : vos relevés restent sur cet appareil » sous « Commencer » est retirée. |
+| 5.33 | 13 novembre 2026 | Nouveaux utilisateurs : visite guidée animée à la création du foyer (4 étapes, une main montre où toucher ; « Passer » possible, à revoir depuis les Réglages) ; carte « Premiers pas » avec barre de progression et félicitations (« Bravo ! Plus que 2 étapes… ») ; fête « Votre application est prête » au 2e chargement. Rien ne change pour les utilisateurs qui ont déjà 2 chargements. |
 | 5.32 | 12 novembre 2026 | Écran d'ouverture : le haut-parleur 🔊 (bouton central et ligne « Montez le son ») est retiré ; il reste « Touchez l'écran pour ouvrir l'application ». Le bruit des pellets joue toujours au toucher. |
 | 5.31 | 12 novembre 2026 | D'où viennent les nouveaux utilisateurs : le QR de l'application contient « ?via=qr », le lien envoyé « ?via=lien », Facebook est reconnu (?fb=1 ou fbclid). À la première ouverture, l'appareil envoie « arrivee/qr », « arrivee/lien », « arrivee/facebook » ou « arrivee/direct ». La marque est retirée de l'adresse aussitôt. |
 | 5.30 | 12 novembre 2026 | Tuile « Sacs consommés » : la vraie flamme remplit toute la tuile (nouvelle vidéo `feu-tuile.mp4`, cadrée en largeur), plus ou moins vive selon le froid dehors, avec un éclat après un chargement. Sans vidéo (mode économie d'énergie, animations coupées) : l'ancien affichage violet avec la flamme dessinée. |

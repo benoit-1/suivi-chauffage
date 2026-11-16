@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.43 | 16 novembre 2026 | Nouveau design de l'accueil : logo flamme, « Mis à jour à … », Dehors et Maison avec icônes, poêle dessiné dans « Sacs consommés », tuile « Votre stock » avec barre et jours restants, « Prévision cette semaine » en barres, boutons côte à côte, barre Accueil / Historique / Statistiques en bas. Le reste (remplissage, palette, hiver dernier, QR) se trouve sous les boutons. |
+| 5.42 | 16 novembre 2026 | Corrections : le prénom de la personne est bien enregistré avec un achat de sacs ; un prix de 0 € est gardé (sacs offerts) ; dates de version harmonisées. |
 | 5.41 | 13 novembre 2026 | Écran des flammes : l'application s'ouvre seule au bout de 2 secondes ; un toucher pendant ces 2 secondes fait tomber les pellets avec le bruit (environ 2,6 s), puis l'application s'ouvre. |
 | 5.40 | 13 novembre 2026 | Corrige la perte des saisies quand on installe l'application sur l'écran d'accueil d'un iPhone après avoir commencé dans Safari (Apple sépare la mémoire de Safari et celle de l'icône). Dans Safari, l'adresse transporte une copie des saisies ; l'icône les reprend à sa première ouverture. |
 | 5.39 | 13 novembre 2026 | Premiers pas : les étapes « Noter un chargement » sont cliquables et ouvrent directement l'écran Chargement pellets. |

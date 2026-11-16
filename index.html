@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.41 du 9 novembre 2026 -->
+<!-- Suivi pellets, version 5.43 du 16 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -566,6 +566,139 @@ html.fv-ok:not(.anim-off) .t.sacs .flame:has(.poele.boost) .fv-boite{animation:f
 .pp-liste li .pp-go b{font-size:22px;line-height:1}
 .pp-liste li .pp-go:active{opacity:.6}
 
+/* ===== v5.43 : nouveau design de l'accueil ===== */
+.top2 h1{display:flex;align-items:center;gap:10px}
+.logo-app{width:40px;height:40px;border-radius:11px;flex:none;box-shadow:0 2px 6px rgba(20,30,50,.12)}
+.top2 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:2px 0;margin-top:6px}
+.top2 .meta .sub{margin:0;display:flex;align-items:center;gap:5px}
+.top2 .meta .sky{margin:0}
+.top2 .meta .sync{margin:0}
+.top2 .meta{flex-direction:column;align-items:flex-start;gap:2px}
+/* tuiles Dehors / Maison avec icône */
+.big2 .t.ext,.big2 .t.int{display:grid;grid-template-columns:34px minmax(0,1fr);column-gap:8px;align-content:start;border:1px solid color-mix(in srgb,currentColor 18%,transparent)}
+.big2 .t-ic{grid-row:1/3;align-self:center;width:34px;height:44px;display:block}
+.big2 .t-ic svg{width:100%;height:100%;display:block}
+.big2 .t.ext .l,.big2 .t.int .l{grid-column:2;font-weight:700;color:var(--ink)}
+.big2 .t.ext .v,.big2 .t.int .v{grid-column:2;font-size:2.35rem}
+.big2 .t.ext .n,.big2 .t.int .n{grid-column:1/3;margin-top:4px}
+/* sacs + stock côte à côte */
+.big2.avec-stock .t.sacs{grid-column:auto;flex-direction:column;align-items:flex-start;justify-content:space-between;min-height:170px}
+.big2.avec-stock .t.sacs .row-b{flex-direction:column;align-items:flex-start;gap:0}
+.big2.avec-stock .t.sacs .v{font-size:3.4rem}
+.big2.avec-stock .t.sacs .flame{min-height:0}
+.t.stk{font:inherit;text-align:left;cursor:pointer;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:0 2px 10px rgba(20,30,50,.06);justify-content:flex-start;gap:6px;min-height:170px}
+.t.stk .l{font-weight:700}
+.t.stk .v{font-size:2.6rem}
+.t.stk .v small{font-size:1.3rem;font-weight:700}
+.stk-barre{display:block;height:10px;border-radius:99px;background:var(--line);overflow:hidden;margin:4px 0 2px}
+.stk-barre i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),color-mix(in srgb,var(--accent) 70%,#ffb347))}
+.t.stk .n{font-size:.86rem;font-weight:600;line-height:1.3;color:var(--ink)}
+.t.stk .n em{font-weight:400;color:var(--muted)}
+.t.stk.alerte{border:2px solid var(--accent)}
+.t.stk.alerte .n b{color:var(--warm)}
+.t.stk:active{transform:scale(.98)}
+/* prévision */
+.pv-tete{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.pv-tete h2{display:flex;align-items:center;gap:8px;margin:0}
+.pv-ic{width:26px;height:26px;display:inline-block;flex:none}
+.pv-ic svg{width:100%;height:100%;display:block}
+.pv-badge{background:var(--cold-soft);color:var(--cold);font-weight:700;border-radius:99px;padding:6px 12px;font-size:.95rem;white-space:nowrap}
+.pv-sous{color:var(--muted);font-size:.86rem;margin:6px 0 4px}
+.prev-card .pv-b{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 80%,#ffb347),var(--accent));border-radius:7px 7px 3px 3px}
+/* boutons d'action côte à côte */
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.acts .act{min-height:78px;padding:12px;gap:10px;border-radius:16px}
+.acts .act .s{display:none}
+.acts .act b{font-size:1.02rem;line-height:1.2;display:block}
+.acts .act .ic{width:38px;height:38px;background:none;border-radius:0}
+.acts .act .ic svg{width:100%;height:100%;display:block}
+.acts .a1{color:var(--cold)}
+.acts .a2{--ic-fond:var(--accent)}
+/* barre d'onglets en bas */
+.ob-espace{height:calc(78px + env(safe-area-inset-bottom))}
+.onglets-bas{position:fixed;left:0;right:0;bottom:0;z-index:20;display:grid;grid-template-columns:repeat(3,1fr);background:color-mix(in srgb,var(--surface) 92%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom));box-shadow:0 -4px 18px rgba(20,30,50,.06)}
+.ob{position:relative;background:none;border:none;font:inherit;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0 8px;font-size:.78rem;font-weight:600;min-height:52px;cursor:pointer}
+.ob+.ob{border-left:1px solid var(--line)}
+.ob svg{width:25px;height:25px;display:block}
+.ob.on{color:var(--accent)}
+.ob.on::after{content:"";position:absolute;bottom:0;left:22%;right:22%;height:3px;border-radius:3px;background:var(--accent)}
+@media (min-width:700px){.onglets-bas{left:50%;right:auto;width:520px;transform:translateX(-50%);border:1px solid var(--line);border-bottom:none;border-radius:18px 18px 0 0}}
+.big2 .t.ext .l,.big2 .t.int .l{justify-content:flex-start;text-align:left}
+.top2 .meta{font-size:.82rem}.top2 .meta .sub,.top2 .meta .sync{font-size:.82rem;white-space:nowrap}
+/* v5.43 b : plus proche de la maquette */
+.top2 h1{font-size:1.9rem;gap:12px}
+.top2 .logo-app{width:52px;height:52px;border-radius:0;box-shadow:none}
+.top2 .meta{flex-direction:row!important;flex-wrap:wrap;align-items:center;gap:2px 0!important;margin-top:8px}
+.top2 .meta .sync:not(:empty){border-left:1.5px solid var(--line);margin-left:10px;padding-left:10px}
+.big2 .t.ext,.big2 .t.int{grid-template-columns:44px minmax(0,1fr)!important;column-gap:10px;padding:16px 14px;align-content:center;min-height:118px}
+.big2 .t-ic{width:44px!important;height:56px!important}
+.big2 .t.ext .n,.big2 .t.int .n{display:none}
+.big2 .t.ext .l .sky{display:none}
+.big2 .t.ext .l,.big2 .t.int .l{font-size:1.05rem}
+.big2 .t.ext .v,.big2 .t.int .v{font-size:2.5rem}
+.big2 .t.ext{background:color-mix(in srgb,var(--cold-soft) 85%,var(--surface))}
+/* tuile sacs : poêle dessiné */
+html .big2 .t.sacs.s2{position:relative;overflow:hidden;background:linear-gradient(140deg,#2a3346,#1b2232 60%,#151a26)!important;color:#fff;display:block;min-height:180px;padding:16px}
+html .big2:not(.avec-stock) .t.sacs.s2{min-height:150px}
+.t.sacs.s2>div:first-child{position:relative;z-index:2}
+.t.sacs.s2 .l{font-size:1.05rem;font-weight:700}
+.t.sacs.s2 .row-b{display:flex;flex-direction:column;align-items:flex-start;gap:0}
+.t.sacs.s2 .v{font-size:3.6rem;line-height:1}
+.t.sacs.s2 .n{font-size:.88rem;opacity:.9;margin-top:4px}
+.poele2{position:absolute;right:-6px;bottom:4px;width:92px;height:124px;z-index:1;pointer-events:none}
+.big2:not(.avec-stock) .poele2{right:18px}
+.p2-corps{width:100%;height:100%;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
+.p2-fen{position:absolute;left:22.5%;top:33%;width:55%;height:35%;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;border-radius:4px}
+.p2-fen .poele{opacity:1!important;width:calc(100% * min(1, var(--fl,1)))!important;height:auto;margin-bottom:-4px}
+/* tuile stock : sac dessiné */
+.t.stk{position:relative;min-height:180px}
+.stk-sac{position:absolute;right:8px;top:8px;width:40px;opacity:.95}
+.stk-sac svg{width:100%;height:auto;display:block}
+.t.stk .l{padding-right:42px}
+/* prévision façon maquette */
+.prev-card .pv-sous,.prev-card .hint,.prev-card .pv-t{display:none}
+.prev-card .pv-tete h2{font-size:1.15rem}
+.prev-card .pv-graph{margin-top:14px;border-bottom:1.5px solid var(--line);padding-bottom:0}
+.prev-card .pv-s{font-weight:700;color:var(--ink)}
+.prev-card .pv-d{font-weight:600;color:var(--ink);font-size:.85rem}
+.prev-card .pv-b{width:78%;max-width:40px;border-radius:5px 5px 0 0}
+/* boutons */
+.acts .act{min-height:86px}
+.acts .act b{font-size:1.12rem}
+.acts .act .ic{width:44px;height:44px}
+.acts .act{min-width:0;overflow:hidden}
+.acts .act>span:last-child{min-width:0}
+.acts .act b{overflow-wrap:anywhere;hyphens:auto}
+.top2 .meta,.top2 .meta .sub,.top2 .meta .sync{font-size:.76rem}
+.top2 .meta .sky{font-size:.9rem}
+.t.sacs.s2 .l{font-size:.98rem;white-space:nowrap}
+.poele2{width:80px;height:108px}
+.big2 .t.ext,.big2 .t.int{grid-template-columns:36px minmax(0,1fr)!important;column-gap:8px;padding:14px 12px}
+.big2 .t-ic{width:36px!important;height:48px!important}
+.big2 .t.ext .v,.big2 .t.int .v{font-size:2.25rem;white-space:nowrap}
+.big2 .t.ext .v small,.big2 .t.int .v small{font-size:1rem}
+.prev-card .pv-tete{flex-wrap:nowrap}
+.prev-card .pv-tete h2{font-size:1.02rem;gap:6px;min-width:0}
+.prev-card .pv-ic{width:22px;height:22px}
+.pv-badge{font-size:.82rem;padding:5px 10px}
+.acts .act{padding:12px 10px;gap:8px}
+.acts .act .ic{width:32px;height:32px}
+.acts .act b{font-size:1rem;overflow-wrap:normal;hyphens:none}
+.prev-card .pv-tete h2{white-space:nowrap}
+.top2>div:first-child{flex:1;min-width:0}
+header.top2{flex-wrap:wrap;align-items:center}
+header.top2 .meta{flex:1 0 100%;margin-top:6px}
+.maj-ic{width:15px;height:15px;display:inline-block;flex:none;color:var(--ink)}
+.maj-ic svg{width:100%;height:100%;display:block}
+.top2 .meta .sync{color:var(--ink)}
+.top2 .meta .sub{color:var(--ink)}
+.prev-card .pv-tete{gap:6px}
+.prev-card .pv-tete h2{font-size:.98rem}
+.prev-card .pv-ic{width:20px;height:20px}
+.pv-badge{font-size:.76rem;padding:4px 9px}
+.poele2{width:70px;height:95px;right:-2px;bottom:2px}
+.t.sacs.s2 .n{text-shadow:0 1px 6px rgba(0,0,0,.6)}
+
 </style>
 </head>
 <body>
@@ -586,7 +719,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.41', VERSION_DATE='11 novembre 2026';
+var VERSION='5.43', VERSION_DATE='16 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -978,8 +1111,8 @@ function qrSVG(txt){try{var q=qrcode(0,'L');q.addData(txt);q.make();return q.cre
    ================================================================== */
 var app=document.getElementById('app');
 var statut={cls:'',txt:''};
-function statusHTML(){return statut.txt?'<span class="dot '+statut.cls+'"></span>'+esc(statut.txt):''}
-function setStatus(c,t){statut={cls:c,txt:t};var el=document.getElementById('status');if(el)el.innerHTML=statusHTML()}
+function statusHTML(){if(statut.cls==='ok'&&statut.t){var d=new Date(statut.t);return '<span class="maj-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M19 8.5A7.5 7.5 0 0 0 5.2 9M5 15.5A7.5 7.5 0 0 0 18.8 15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M19.5 4v4.8h-4.8M4.5 20v-4.8h4.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span title="'+esc(statut.txt)+'">Mis à jour à '+p2(d.getHours())+':'+p2(d.getMinutes())+'</span>'}return statut.txt?'<span class="dot '+statut.cls+'"></span>'+esc(statut.txt):''}
+function setStatus(c,t){statut={cls:c,txt:t,t:Date.now()};var el=document.getElementById('status');if(el)el.innerHTML=statusHTML()}
 function ecran(){return ecranHash()}
 // v5.23 : aller directement à une partie des Réglages (ex. le stock) et placer le curseur dans la première case
 function allerA(id){var n=0;(function essai(){var el=document.getElementById(id);if(!el){if(n++<20)setTimeout(essai,50);return}
@@ -1019,24 +1152,56 @@ function vueFoyer(){
   '<button class="primary big" type="submit">Créer le foyer</button></form></section>'+
   (estLocal()?'<section class="card"><h2>J’ai déjà une sauvegarde</h2><p class="hint">Nouveau téléphone, ou relevés venant d’un autre appareil : choisissez le fichier de sauvegarde.</p><label class="filebtn2">📂 Restaurer un fichier de relevés<input type="file" id="f-import" accept=".json,application/json"></label></section>':'<p class="hint">Ces réglages sont communs à tout le foyer. Vous pourrez inviter la famille ensuite, depuis les Réglages.</p>')+'</div>';
 }
+
+
+function dateLongue(t){var d=new Date(parseDT(t)),m=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];return (d.getDate()===1?'1er':d.getDate())+' '+m[d.getMonth()]}
+function svgLogo(){return '<svg class="logo-app" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="lgF" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff7a1a"/><stop offset="1" stop-color="#ff4d0d"/></linearGradient><linearGradient id="lgC" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff3c4"/><stop offset="1" stop-color="#ffb347"/></linearGradient></defs>'+
+  '<path d="M32 4c3 9 13 14 13 27 0 9-6 15-13 15s-14-6-14-15c0-6 3-10 6-13 0 5 2 8 5 9-2-8 1-16 3-23Z" fill="url(#lgF)"/>'+
+  '<path d="M32 22c2 6 7 9 7 16 0 5-3 8-7 8s-7-3-7-8c0-4 2-6 4-8 0 3 1 4 2 5 0-5 0-9 1-13Z" fill="url(#lgC)"/>'+
+  '<g transform="rotate(-18 32 52)"><rect x="8" y="46" width="46" height="10" rx="5" fill="#a0612a"/><circle cx="51" cy="51" r="5" fill="#e3b178" stroke="#a0612a" stroke-width="1.5"/></g>'+
+  '<g transform="rotate(18 32 52)"><rect x="10" y="46" width="46" height="10" rx="5" fill="#8a5022"/><circle cx="13" cy="51" r="5" fill="#e3b178" stroke="#8a5022" stroke-width="1.5"/></g></svg>'}
+function dessinPoele(fl){var g='';for(var i=0;i<26;i++){var x=4+((i*37)%112),y=150+((i*13)%9),r=(i*53)%180;g+='<rect x="'+x+'" y="'+y+'" width="9" height="3.6" rx="1.8" transform="rotate('+r+' '+(x+4.5)+' '+(y+1.8)+')" fill="'+(i%3?'#d9a35b':'#c08840')+'"/>'}
+  return '<span class="poele2" aria-hidden="true"><svg class="p2-corps" viewBox="0 0 120 162"><defs><linearGradient id="p2g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b414c"/><stop offset=".5" stop-color="#555c69"/><stop offset="1" stop-color="#2e333b"/></linearGradient></defs>'+
+  '<rect x="80" y="0" width="13" height="24" fill="#4a505b"/><rect x="77" y="0" width="19" height="4" rx="1.5" fill="#5d6470"/>'+
+  '<rect x="16" y="24" width="88" height="120" rx="7" fill="url(#p2g)"/><rect x="11" y="20" width="98" height="8" rx="3" fill="#626976"/>'+
+  '<path d="M36 34h48M36 39h48M36 44h48" stroke="#22262d" stroke-width="2" stroke-linecap="round"/>'+
+  '<rect x="27" y="53" width="66" height="58" rx="6" fill="#120c0a" stroke="#6b7280" stroke-width="3"/>'+
+  '<rect x="28" y="120" width="64" height="16" rx="3" fill="#353a43"/><rect x="52" y="126" width="16" height="3" rx="1.5" fill="#6b7280"/>'+
+  '<rect x="20" y="143" width="10" height="5" fill="#22262d"/><rect x="90" y="143" width="10" height="5" fill="#22262d"/>'+g+'</svg>'+
+  '<span class="p2-fen" style="--fl:'+fl.toFixed(2)+'">'+svgPoele()+'</span></span>'}
+// v5.43 : nouveau design de l'accueil (icônes, tuile stock, barre d'onglets en bas)
+var IC={
+ thermo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="17" r="2.2" fill="currentColor"/><path d="M12 9v7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16.5 6h2M16.5 9h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ maison:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9.5h4.5v-5h4v5h4.5V10" fill="currentColor"/></svg>',
+ cal:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M7.5 13h2M11 13h2M14.5 13h2M7.5 16.5h2M11 16.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+ sac:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10l-1.2 2.2c2.4 2 3.7 5 3.7 8.3 0 3.6-3 5.5-7.5 5.5S4.5 18.6 4.5 15c0-3.3 1.3-6.3 3.7-8.3Z" fill="currentColor"/><path d="M14.8 11.2c-3.4.2-5.4 2-5.6 5.3 3.1-.1 5.1-1.9 5.6-5.3Z" fill="var(--ic-fond,#fff)"/></svg>',
+ maisonO:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4Z" fill="currentColor"/></svg>',
+ histo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3.5 4.5v3.8h3.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.3l3 1.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+ stats:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="8.5" width="4" height="11.5" rx="1" fill="currentColor"/><rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>'};
+function barreOnglets(actif){function b(k,go,cible,ic,txt){return '<button type="button" class="ob'+(actif===k?' on':'')+'" data-go="'+go+'"'+(cible?' data-cible="'+cible+'"':'')+' data-tab="'+k+'"'+(actif===k?' aria-current="page"':'')+'>'+ic+'<span>'+txt+'</span></button>'}
+  return '<div class="ob-espace" aria-hidden="true"></div><nav class="onglets-bas" aria-label="Navigation">'+b('accueil','accueil','',IC.maisonO,'Accueil')+b('histo','details','journal',IC.histo,'Historique')+b('stats','details','',IC.stats,'Statistiques')+'</nav>'}
+function tuileStock(A){var I=infoStock(A);if(!I)return '';var ref=Math.max(I.r,(I.E.reste||0)+(I.E.conso||0),1),pc=Math.max(0,Math.min(100,Math.round(I.r/ref*100)));
+  var j=I.fs&&I.fs.jours!=null?I.fs.jours:null,bas=I.r<=0?'Stock épuisé':(j==null?'':(j>90?'Plus de 3 mois de réserve':'Environ '+j+' jour'+(j>1?'s':'')+' restant'+(j>1?'s':'')));
+  return '<button type="button" class="t stk'+(I.alerte?' alerte':'')+'" data-a="feuilleStock"><span class="stk-sac" aria-hidden="true">'+svgSac()+'</span><span class="l">Votre stock</span><span class="v">'+nfs(Math.max(0,I.r))+'<small> sac'+(I.r>=2?'s':'')+'</small></span>'+
+    '<span class="stk-barre" aria-hidden="true"><i style="width:'+pc+'%"></i></span><span class="n">'+bas+(I.alerte&&I.r>0?'<br><b>Pensez à recommander</b>':(bas&&j!=null&&j<=90?'<br><em>(estimation)</em>':''))+'</span></button>'}
 function vueAccueil(){
   var A=analyse(),fl=flamme(A),d=dehorsMaintenant();fl.k=tailleFlamme(d&&d.v);var dr=A.dernierReleve,ni=dr?Object.keys(dr.temps||{}).length:0,mai=dr?intOf(dr):null;
   var h='<div class="wrap">'+
-  '<header class="top"><div><h1>Suivi pellets'+(feteDuJour()?' <span class="fete" title="'+FETES[feteDuJour()].nom+'">'+FETES[feteDuJour()].ico+'</span>':'')+'</h1><p class="sub">'+esc(F().commune)+' · '+esc(F().saison)+'</p><p class="sync" id="status">'+statusHTML()+'</p></div><button class="gear" data-go="reglages" aria-label="Réglages">⚙︎</button></header>'+
+  '<header class="top top2"><div><h1>'+svgLogo()+'Suivi pellets'+(feteDuJour()?' <span class="fete" title="'+FETES[feteDuJour()].nom+'">'+FETES[feteDuJour()].ico+'</span>':'')+'</h1></div><button class="gear" data-go="reglages" aria-label="Réglages">⚙︎</button><div class="meta"><p class="sub"><span class="sky">'+cielIcone()+'</span>Météo · '+esc(F().commune)+'</p><p class="sync" id="status">'+statusHTML()+'</p></div></header>'+
   (ui.viaInvitation&&!estInstallee()&&(/iPhone|iPad|iPod/.test(navigator.userAgent)||(/Macintosh/.test(navigator.userAgent)&&'ontouchend' in document))?'<section class="card install"><h2>📲 Installez-la maintenant</h2><p class="hint">Touchez <b>Partager</b> puis <b>Sur l’écran d’accueil</b>, puis <b>Ajouter</b>, <b>avant</b> de quitter cette page : l’icône gardera la connexion.</p></section>':'')+
-  '<section class="big2" aria-label="Températures">'+
-  '<div class="t ext"><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
-  '<div class="t int"><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+fds(A.first.t):'cette saison')+'</span></div>'+(fl.txt?'<span class="n flt">'+fl.txt+'</span>':'')+'</div><span class="flame" aria-hidden="true" style="--fl:'+fl.k.toFixed(2)+'"><span class="fv-boite"><video class="fv" src="feu-tuile.mp4?v=1" muted autoplay loop playsinline webkit-playsinline preload="auto"></video></span>'+svgPoele()+'</span></div></section>'+
-  vuePremiersPas(A)+ligneRemplissage(A)+lignePoele()+vueStock(A)+vuePalette(A)+vuePrevision(A)+vueAnDernier(A)+
-  '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">🌡️</span><span><b>Prendre les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
-  '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+svgTas()+'</span><span><b>Chargement pellets</b><span class="s">noter les sacs versés</span></span></button></section>';
+  '<section class="big2'+(tuileStock(A)?' avec-stock':'')+'" aria-label="Températures">'+
+  '<div class="t ext"><span class="t-ic">'+IC.thermo+'</span><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
+  '<div class="t int"><span class="t-ic">'+IC.maison+'</span><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
+  '<div class="t sacs s2"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+dateLongue(A.first.t):'cette saison')+'</span></div></div>'+dessinPoele(fl.k)+'</div>'+tuileStock(A)+'</section>'+
+  vuePremiersPas(A)+vuePrevision(A)+
+  '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">'+IC.thermo+'</span><span><b>Relever les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
+  '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+IC.sac+'</span><span><b>Ajouter un chargement</b><span class="s">noter les sacs versés</span></span></button></section>'+ligneRemplissage(A)+lignePoele()+(tuileStock(A)?'':vueStock(A))+vuePalette(A)+vueAnDernier(A);
   if(A.last)h+='<p class="last">Dernier chargement : '+quand(A.last.t)+(A.last.par?' par '+esc(A.last.par):'')+'</p>';
   if(A.rate!=null)h+='<p class="last">En moyenne <b>'+nf(A.rate,2)+' sac par jour</b> cette saison</p>';
   h+=lignePartage();
   if(estLocal()){var ds=cfg.sauvegarde,nb=S.chargements.length+S.releves.length;if(nb>=10&&(!ds||Date.now()-parseDT(ds)>30*864e5))h+='<button class="det rappel" data-go="reglages">💾 Pensez à sauvegarder vos relevés</button>'}
   if(feteDuJour())h+='<p class="last fete-msg">'+FETES[feteDuJour()].ico+' '+FETES[feteDuJour()].msg+'</p>';
-  h+='<button class="det" data-go="details">📊 Voir tous les détails →</button></div>';
+  h+='</div>'+barreOnglets('accueil');
   return h;
 }
 function vueTemperatures(){
@@ -1088,14 +1253,14 @@ function vueDetails(){
   if(jours.length){h+='<section class="card"><h2>Météo à '+esc(R.commune)+'</h2><div class="tablewrap"><table><thead><tr><th>Jour</th><th class="num">Mini</th><th class="num">Maxi</th><th class="num">Moyenne</th></tr></thead><tbody>';
     jours.forEach(function(k){var m=S.meteo[k];h+='<tr><td>'+fds(k)+'</td><td class="num">'+deg(m.min)+'</td><td class="num">'+deg(m.max)+'</td><td class="num ext">'+deg(m.moy)+'</td></tr>'});
     h+='</tbody></table></div><p class="hint">Données météo : Open-Meteo.com</p></section>'}
-  h+='<section class="card"><h2>Journal</h2><div class="seg"><button data-a="onglet" data-o="chargements" class="'+(ui.onglet==='chargements'?'on':'')+'">Chargements ('+A.ch.length+')</button><button data-a="onglet" data-o="releves" class="'+(ui.onglet==='releves'?'on':'')+'">Températures ('+A.rel.length+')</button></div>';
+  h+='<section class="card" id="journal"><h2>Journal</h2><div class="seg"><button data-a="onglet" data-o="chargements" class="'+(ui.onglet==='chargements'?'on':'')+'">Chargements ('+A.ch.length+')</button><button data-a="onglet" data-o="releves" class="'+(ui.onglet==='releves'?'on':'')+'">Températures ('+A.rel.length+')</button></div>';
   if(ui.onglet==='chargements'){h+='<ul class="list">';A.ch.slice().reverse().slice(0,40).forEach(function(c){h+='<li><span><b>'+sacsTxt(c.sacs)+'</b> · '+fdt(c.t)+(c.par?' · '+esc(c.par):'')+'</span><button class="x" data-a="del" data-k="chargements" data-id="'+esc(c.id)+'" aria-label="Supprimer">×</button></li>'});h+='</ul>'}
   else{h+='<ul class="list">';A.rel.slice().reverse().slice(0,40).forEach(function(r){var v=intOf(r);h+='<li><span><b>'+deg(v)+'</b> maison'+(r.ext!=null?' · '+deg(r.ext)+' dehors':'')+' · '+fdt(r.t)+(r.par?' · '+esc(r.par):'')+'</span><button class="x" data-a="del" data-k="releves" data-id="'+esc(r.id)+'" aria-label="Supprimer">×</button></li>'});h+='</ul>'}
   h+='<div class="row"><button data-a="csv">'+(ui.csv?'Masquer':'Exporter pour Excel (CSV)')+'</button></div>';
   if(ui.csv)h+='<textarea id="csv" readonly aria-label="Données CSV">'+esc(csv(A))+'</textarea><div class="row"><button data-a="copycsv">Copier</button><span class="hint" id="csvmsg"></span></div>';
   h+='</section>';
   if(R.historique&&R.historique.length){h+='<section class="card"><h2>Saisons précédentes</h2><ul class="list">';R.historique.slice().reverse().forEach(function(x){h+='<li><span><b>'+esc(x.label)+'</b> · '+nf(x.sacs)+' sacs · '+(x.jours?nf(x.sacs/x.jours,2)+' sac/j':'')+(x.ext!=null?' · '+deg(x.ext)+' dehors':'')+'</span></li>'});h+='</ul></section>'}
-  return h+'</div>';
+  return h+'</div>'+barreOnglets(ui.tab==='histo'?'histo':'stats');
 }
 function vueReglages(){
   var R=F(),src=R.extSource||'auto',h='<div class="wrap">'+entete('Réglages',true);
@@ -1430,7 +1595,7 @@ function finStock(A,reste){if(reste<=0)return {date:ymd(new Date()),jours:0};
   return {date:ymd(dt),jours:Math.round((dt-new Date())/864e5),approx:true}}
 // v5.24 : petite fenêtre (« feuille » façon iPhone) pour le stock, au lieu de tout l'écran des Réglages
 function enregistrerStock(f){var n=num(f.sacs.value);if(n==null||n<0||(f.id==='fAchat'&&!(n>0))){toast('Indiquez un nombre de sacs');return false}
-  var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value)||null,par:cfg&&cfg.prenom||'',maj:Date.now()};
+  var mvt=f.id==='fInv'?{id:newId(),type:'inv',t:nowDT(),sacs:n,maj:Date.now()}:{id:newId(),type:'achat',t:(!f.date.value||f.date.value===ymd(new Date()))?nowDT():f.date.value+'T12:00',sacs:n,prix:num(f.prix.value),par:moi(),maj:Date.now()};
   S.foyer.stock=(S.foyer.stock||[]).concat([mvt]);S.foyer.maj=Date.now();sauver(f.id==='fInv'?'Stock : '+nfs(n)+' sacs':'Achat : '+nfs(n)+' sacs');render();toast(f.id==='fInv'?'Stock enregistré':'Achat ajouté');return true}
 function fermerFeuille(){var o=document.querySelector('.feuille-fond');if(!o)return;var fl=o.querySelector('.feuille');if(fl)fl.style.transform='';o.classList.remove('ouverte');
   var av=o._avant;setTimeout(function(){if(o.parentNode)o.remove();try{if(av&&av.focus&&document.body.contains(av))av.focus({preventScroll:true})}catch(e){}},280)}
@@ -1669,12 +1834,12 @@ function vuePrevision(A){
     return '<section class="card prev-card attente" aria-label="Prévision de consommation"><h2>La semaine à venir</h2>'+
       '<p class="hint">'+(A.rate==null?'📅 Notez encore <b>'+reste+' chargement'+(reste>1?'s':'')+'</b> (à plus de 6 heures d’intervalle) : l’application saura alors combien de sacs prévoir pour les 7 prochains jours, d’après la météo prévue.':'⏳ Prévisions météo en attente : elles arrivent dès que le réseau répond.')+'</p></section>'}
   var R=F(),sept=P.jours.slice(0,7),mx=Math.max.apply(null,sept.map(function(x){return x.s}).concat([1]));
-  var noms=['dim.','lun.','mar.','mer.','jeu.','ven.','sam.'];
+  var noms=['Dim','Lun','Mar','Mer','Jeu','Ven','Sam'];
   var barres=sept.map(function(x,i){var h=Math.max(4,Math.round(x.s/mx*64)),dd=new Date(parseDT(x.d+'T12:00'));
-    return '<div class="pv-j"><span class="pv-s">'+nf(x.s,1)+'</span><span class="pv-b" style="height:'+h+'px;--t:'+Math.max(0,Math.min(1,(12-x.t)/14)).toFixed(2)+'"></span><span class="pv-t">'+(Math.round(x.t)||0)+'°</span><span class="pv-d">'+(i===0?'auj.':noms[dd.getDay()])+'</span></div>'}).join('');
+    return '<div class="pv-j"><span class="pv-s">'+nf(x.s,1)+'</span><span class="pv-b" style="height:'+h+'px;--t:'+Math.max(0,Math.min(1,(12-x.t)/14)).toFixed(2)+'"></span><span class="pv-t">'+(Math.round(x.t)||0)+'°</span><span class="pv-d">'+noms[dd.getDay()]+'</span></div>'}).join('');
   var aPrevoir=Math.ceil(P.s7-0.15);
-  return '<section class="card prev-card" aria-label="Prévision de consommation"><h2>La semaine à venir</h2>'+
-    '<div class="pv-main"><span>À prévoir</span><b>'+aPrevoir+'</b><span>sac'+(aPrevoir>1?'s':'')+' pour les 7 prochains jours · ≈ '+nf(aPrevoir*R.prixSac,0)+' €</span></div>'+
+  return '<section class="card prev-card" aria-label="Prévision de consommation"><div class="pv-tete"><h2><span class="pv-ic">'+IC.cal+'</span>Prévision cette semaine</h2><span class="pv-badge">≈ '+aPrevoir+' sac'+(aPrevoir>1?'s':'')+' estimé'+(aPrevoir>1?'s':'')+'</span></div>'+
+    '<p class="pv-sous">'+aPrevoir+' sac'+(aPrevoir>1?'s':'')+' à prévoir pour les 7 prochains jours · ≈ '+nf(aPrevoir*R.prixSac,0)+' €</p>'+
     '<div class="pv-graph">'+barres+'</div>'+
     (P.n14>7?'<p class="hint">Et la semaine suivante : ≈ '+Math.ceil(P.s14-P.s7-0.15)+' sacs.</p>':'')+
     '<p class="hint small">Calcul : météo prévue à '+esc(R.commune||'')+' × votre consommation selon le froid'+(A.reg&&A.reg.b<0?'':' (encore approximative : elle s’affine à chaque chargement)')+'.</p></section>'}
@@ -1767,7 +1932,7 @@ function lienPublic(){return location.origin+location.pathname}
 function copier(id){var t=document.getElementById(id);try{navigator.clipboard.writeText(t.value).then(function(){toast('Copié')},function(){t.select();toast('Sélectionné : faites Copier')})}catch(e){t.select();toast('Sélectionné : faites Copier')}}
 
 app.addEventListener('click',function(ev){
-  var go=ev.target.closest('[data-go]');if(go){ev.preventDefault();aller(go.getAttribute('data-go'));var ci=go.getAttribute('data-cible');if(ci)allerA(ci);return}
+  var go=ev.target.closest('[data-go]');if(go){ev.preventDefault();ui.tab=go.getAttribute('data-tab')||'';aller(go.getAttribute('data-go'));var ci=go.getAttribute('data-cible');if(ci)allerA(ci);return}
   var b=ev.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
   if(a==='ptedit'){ui.partageEdit=true;ui.autre=null;render();return}
   if(a==='ptannule'){ui.partageEdit=false;render();return}

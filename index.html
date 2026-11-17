@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.48 du 17 novembre 2026 -->
+<!-- Suivi pellets, version 5.49 du 17 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -754,6 +754,22 @@ body:has(.onglets-bas) .ob-espace{height:8px}
 @media (max-width:359px){.palette{max-width:170px}}
 /* v5.48 : marge sous la ligne de version sans :has (anciens iPhone) */
 #version.ver{margin-bottom:calc(96px + env(safe-area-inset-bottom))!important;position:relative;z-index:0}
+/* v5.49 : rappel « pas de chargement noté » et arrêts du poêle */
+.remplir.rappel,.remplir.arret-l{display:block;padding:14px 16px}
+.remplir.rappel p,.remplir.arret-l p{margin:0 0 10px;line-height:1.4}
+.remplir.rappel{background:color-mix(in srgb,var(--accent) 12%,var(--surface));border:1.5px solid color-mix(in srgb,var(--accent) 45%,transparent);color:var(--ink)}
+.remplir.arret-l{background:var(--cold-soft);border:1.5px solid color-mix(in srgb,var(--cold) 35%,transparent);color:var(--ink)}
+.rappel-btns{display:flex;flex-wrap:wrap;gap:8px}
+.rappel-btns button,.btn-relance{font:inherit;font-weight:700;font-size:.92rem;border-radius:12px;padding:10px 14px;border:1.5px solid var(--accent);background:var(--surface);color:var(--warm);cursor:pointer;min-height:44px}
+.rappel-btns button:first-child{background:var(--accent);color:#fff}
+.rappel-btns button.discret{border-color:var(--line);color:var(--muted);font-weight:600}
+.btn-relance{background:var(--accent);color:#fff}
+.arrets-l{list-style:none;margin:6px 0 10px;padding:0}
+.arrets-l li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.arrets-l .lien{background:none;border:none;color:var(--warm);font:inherit;font-size:.85rem;text-decoration:underline;cursor:pointer;padding:6px}
+.btn-arret{font:inherit;font-weight:700;width:100%;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.arrets-l .lien{padding:6px}
+#toast{bottom:calc(92px + env(safe-area-inset-bottom));z-index:30}
 
 </style>
 </head>
@@ -775,7 +791,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.48', VERSION_DATE='17 novembre 2026';
+var VERSION='5.49', VERSION_DATE='17 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -863,7 +879,8 @@ function fusion(remote,local){
   ['chargements','releves'].forEach(function(k){var by={};(remote[k]||[]).concat(local[k]||[]).forEach(function(r){var x=by[r.id];if(!x||(r.maj||0)>(x.maj||0))by[r.id]=r});o[k]=Object.keys(by).filter(function(id){return !sup[id]}).map(function(id){return by[id]})});
   o.meteo=Object.assign({},local.meteo,remote.meteo);
   var rf=remote.foyer,lf=local.foyer;o.foyer=!rf?lf:(!lf?rf:((lf.maj||0)>=(rf.maj||0)?lf:rf));
-  if(rf&&lf&&o.foyer){var bs={};(rf.stock||[]).concat(lf.stock||[]).forEach(function(m){var x=bs[m.id];if(!x||(m.maj||0)>(x.maj||0))bs[m.id]=m});o.foyer=Object.assign({},o.foyer,{stock:Object.keys(bs).map(function(id){return bs[id]})})}
+  if(rf&&lf&&o.foyer){var bs={};(rf.stock||[]).concat(lf.stock||[]).forEach(function(m){var x=bs[m.id];if(!x||(m.maj||0)>(x.maj||0))bs[m.id]=m});o.foyer=Object.assign({},o.foyer,{stock:Object.keys(bs).map(function(id){return bs[id]})});
+    if(rf.arrets||lf.arrets){var ba={};(rf.arrets||[]).concat(lf.arrets||[]).forEach(function(m){var x=ba[m.id];if(!x||(m.maj||0)>(x.maj||0))ba[m.id]=m});o.foyer.arrets=Object.keys(ba).map(function(id){return ba[id]})}}
   return o;
 }
 function appliquer(d){var act=S&&S.actuelle;S=d;S.actuelle=act}
@@ -1071,12 +1088,18 @@ function autoExt(a,b){var tot=0,w=0,cur=a;
   return w>0&&w>=(b-a)*0.5?tot/w:null}
 function relevesSaison(){var s=F().saison;return S.releves.filter(function(r){return (r.saison||s)===s}).sort(function(a,b){return parseDT(a.t)-parseDT(b.t)})}
 function chargementsSaison(){var s=F().saison;return S.chargements.filter(function(r){return (r.saison||s)===s}).sort(function(a,b){return parseDT(a.t)-parseDT(b.t)})}
+// v5.49 : arrêts du poêle (panne, absence) : ces périodes ne comptent pas dans la consommation
+function quandTxt(t){var d=new Date(parseDT(t)),now=new Date(),j0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),jd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()-j0)/864e5);
+  return (jd===0?'aujourd’hui':jd===-1?'hier':jd>-7&&jd<0?d.toLocaleDateString('fr-FR',{weekday:'long'}):'le '+fD.format(d))+' '+d.getHours()+' h'}
+function arrets(){var f=S&&S.foyer;return ((f&&f.arrets)||[]).filter(function(x){return !x.sup&&x.du})}
+function arretEnCours(){var a=arrets().filter(function(x){return !x.au});return a.length?a[a.length-1]:null}
+function joursArret(a,b){var t=0;arrets().forEach(function(x){var d=parseDT(x.du),f=x.au?parseDT(x.au):Date.now();var lo=Math.max(a,d),hi=Math.min(b,f);if(hi>lo)t+=hi-lo});return t/864e5}
 function analyse(){
   var R=F(),src=R.extSource||'auto',rel=relevesSaison(),ch=chargementsSaison();
   var g=[];ch.forEach(function(c){var ms=parseDT(c.t),l=g[g.length-1];if(l&&ms-l.ms<6*36e5)l.sacs+=c.sacs;else g.push({ms:ms,t:c.t,sacs:c.sacs,par:c.par})});
   var relMs=rel.map(function(r){return {ms:parseDT(r.t),r:r}});
   var iv=[];
-  for(var i=0;i<g.length-1;i++){var a=g[i].ms,b=g[i+1].ms,days=(b-a)/864e5;
+  for(var i=0;i<g.length-1;i++){var a=g[i].ms,b=g[i+1].ms,days=(b-a)/864e5-joursArret(a,b);if(days<0.1)continue;
     var dedans=relMs.filter(function(x){return x.ms>=a-36e5&&x.ms<=b+36e5});
     if(!dedans.length)dedans=relMs.filter(function(x){return Math.abs(x.ms-a)<12*36e5||Math.abs(x.ms-b)<12*36e5});
     var ints=dedans.map(function(x){return intOf(x.r)}).filter(function(v){return v!=null});
@@ -1347,6 +1370,10 @@ function vueReglages(){
   h+='<section class="card"><h2>Pellets</h2><div class="row"><label class="f">Poids d’un sac (kg)<input type="number" data-r="poidsSac" id="r-poids" value="'+R.poidsSac+'" min="1"></label><label class="f">Prix d’un sac (€)<input type="number" step="0.01" data-r="prixSac" id="r-prix" value="'+R.prixSac+'" min="0"></label><label class="f">Sacs par palette<input type="number" data-r="sacsPalette" id="r-palette" value="'+(R.sacsPalette||72)+'" min="1" step="1"></label></div>'+
     '<label class="f">Saison en cours<input type="text" data-r="saison" id="r-saison" value="'+esc(R.saison)+'"></label>'+
     (ui.confirmClose?'<div class="confirm"><span>Archiver « '+esc(R.saison)+' » et commencer une nouvelle saison ?</span><button class="primary" data-a="close2">Oui</button><button data-a="close0">Non</button></div>':'<div class="row"><button data-a="close1">Clore la saison…</button></div>')+'</section>';
+  var arL=arrets().slice().reverse();
+  h+='<section class="card"><h2>⏸ Arrêts du poêle</h2><p class="hint">Panne, absence… Ces périodes ne comptent pas dans la consommation ni dans les prévisions.</p>'+
+    (arL.length?'<ul class="arrets-l">'+arL.map(function(x){return '<li><span>'+quandTxt(x.du)+(x.au?' → '+quandTxt(x.au):' → <b>en cours</b>')+'</span><button type="button" class="lien" data-a="arretSup" data-id="'+esc(x.id)+'" aria-label="Supprimer cet arrêt">Supprimer</button></li>'}).join('')+'</ul>':'<p class="hint">Aucun arrêt noté.</p>')+
+    (arretEnCours()?'':'<button type="button" class="btn-arret" data-a="arret">⏸ Le poêle est arrêté maintenant</button>')+'</section>';
   h+='<section class="card"><h2>Foyer</h2><div class="row"><span class="hint" style="flex:1">'+esc(R.commune)+' ('+esc(R.cp)+')</span><button data-a="commune">Changer de commune</button></div>'+(ui.commune?'<form id="fCommune" class="stack"><label class="f">Commune<input id="rc-commune" name="commune" value="'+esc(R.commune)+'" required></label><label class="f">Code postal<input id="rc-cp" name="cp" value="'+esc(R.cp)+'" required inputmode="numeric"></label><button class="primary" type="submit">Enregistrer la commune</button></form>':'')+'<h2>Qui note</h2><ul class="list">';
   var noms={};S.chargements.concat(S.releves).forEach(function(r){if(r.par)noms[r.par]=(noms[r.par]||0)+1});
   Object.keys(noms).sort(function(a,b){return noms[b]-noms[a]}).forEach(function(n){h+='<li><span><b>'+esc(n)+'</b>'+(n===moi()?' (ce téléphone)':'')+' · '+noms[n]+' saisie'+(noms[n]>1?'s':'')+'</span></li>'});
@@ -1764,15 +1791,20 @@ function vueStockReglages(){var E=stockEtat(),mv=stockMv().filter(function(m){re
     '<div class="deux-btn"><button type="button" data-a="feuilleInv">'+(E?'Corriger le stock':'Indiquer mon stock')+'</button><button type="button" data-a="feuilleAchat">+ Nouvel achat</button></div>';
   if(mv.length){h+='<ul class="list">';mv.forEach(function(m){h+='<li><span>'+(m.type==='inv'?'Stock compté : <b>'+nfs(m.sacs)+'</b>':'Achat : <b>+'+nfs(m.sacs)+'</b>'+(m.prix?' · '+nf(m.prix)+' €':''))+' · '+fds(m.t)+'</span><button type="button" class="x" data-a="stockDel" data-id="'+esc(m.id)+'" aria-label="Supprimer">×</button></li>'});h+='</ul>'}
   return h+'</section>'}
-function prochainRemplissage(A){var ch=chargementsSaison();if(!ch.length||A.rate==null)return null;
+function prochainRemplissage(A){var ch=chargementsSaison();if(!ch.length||A.rate==null||arretEnCours())return null;
   var i=ch.length-1,s=ch[i].sacs;while(i>0&&parseDT(ch[ch.length-1].t)-parseDT(ch[i-1].t)<6*36e5){i--;s+=ch[i].sacs}
   var ms=parseDT(ch[i].t),rem=s;
   for(var k=0;k<40&&rem>1e-6;k++){var d=new Date(ms),jour=ymd(d),m=PREV[jour]||(S.meteo&&S.meteo[jour]),T=m&&m.moy!=null?m.moy:A.extMoy;
     var r=(T!=null?tauxPour(A,T):null)||A.rate;if(!r)return null;
     var minuit=new Date(d.getFullYear(),d.getMonth(),d.getDate()+1).getTime(),use=r*(minuit-ms)/864e5;
     if(use>=rem){ms+=rem/r*864e5;rem=0}else{rem-=use;ms=minuit}}
-  return rem>1e-6?null:ms}
-function ligneRemplissage(A){var ms=prochainRemplissage(A);if(ms==null)return '';
+  return rem>1e-6?null:ms+joursArret(parseDT(ch[i].t),Date.now())*864e5}
+function ligneRemplissage(A){var ae=arretEnCours();
+  if(ae)return '<div class="remplir arret-l"><p>⏸ <b>Poêle à l’arrêt</b> depuis '+quandTxt(ae.du)+'. Ces jours ne comptent pas dans vos calculs.</p><button type="button" class="btn-relance" data-a="relance">🔥 Le poêle est relancé</button></div>';
+  var ms=prochainRemplissage(A);if(ms==null)return '';
+  if(Date.now()-ms>6*36e5&&lsBrut('suivi-rappel-ok')!==String(Math.round(ms/36e5))){var der=A.last?quandTxt(A.last.t):'';
+    return '<div class="remplir rappel"><p>🤔 <b>Pas de chargement noté'+(der?' depuis '+der:'')+'.</b> Il aurait fallu recharger vers '+quandTxt(dtStr(new Date(ms)))+'. Que s’est-il passé ?</p>'+
+      '<div class="rappel-btns"><button type="button" data-go="chargement">J’ai oublié de le noter</button><button type="button" data-a="arret" data-ms="'+Math.round(ms)+'">Le poêle était arrêté</button><button type="button" class="discret" data-a="rappelOk" data-h="'+Math.round(ms/36e5)+'">Tout va bien</button></div></div>'}
   var d=new Date(Math.round(ms/36e5)*36e5),now=new Date(),j0=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime(),jd=Math.round((new Date(d.getFullYear(),d.getMonth(),d.getDate()).getTime()-j0)/864e5);
   var jourTxt=jd===0?'aujourd’hui':(jd===1?'demain':(jd===-1?'hier':(jd>1&&jd<7?d.toLocaleDateString('fr-FR',{weekday:'long'}):'le '+fD.format(d))));
   var hTxt=d.getHours()+' h';
@@ -1997,6 +2029,10 @@ app.addEventListener('click',function(ev){
   if(a==='visite'){aller('accueil');setTimeout(function(){lancerVisite(0)},500);return}
   if(a==='ppOff'){lsPut('suivi-premiers-pas','off');render();return}
   if(a==='feuilleStock'){ouvrirFeuilleDetail();return}
+  if(a==='arret'){var msA=+b.getAttribute('data-ms')||Date.now();S.foyer.arrets=(S.foyer.arrets||[]).concat([{id:newId(),du:dtStr(new Date(Math.min(msA,Date.now()))),au:null,par:moi(),maj:Date.now()}]);S.foyer.maj=Date.now();sauver('Poêle à l’arrêt');render();toast('⏸ Noté : ces jours ne compteront pas');return}
+  if(a==='relance'){var aeR=arretEnCours();if(aeR){aeR.au=nowDT();aeR.maj=Date.now();S.foyer.maj=Date.now();sauver('Poêle relancé')}render();toast('🔥 Poêle relancé');return}
+  if(a==='rappelOk'){lsPut('suivi-rappel-ok',b.getAttribute('data-h'));render();return}
+  if(a==='arretSup'){var idS=b.getAttribute('data-id');(S.foyer.arrets||[]).forEach(function(x){if(x.id===idS){x.sup=true;x.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Arrêt supprimé');render();return}
   if(a==='feuillePartage'){ouvrirFeuillePartage();return}
   if(a==='feuilleInv'||a==='feuilleAchat'){ouvrirFeuille(a==='feuilleAchat'?'achat':'inv');return}
   if(a==='stockDel'){var sid=b.getAttribute('data-id');(S.foyer.stock||[]).forEach(function(m){if(m.id===sid){m.suppr=true;m.maj=Date.now()}});S.foyer.maj=Date.now();sauver('Stock : suppression');render();return}
@@ -2053,6 +2089,7 @@ app.addEventListener('submit',function(ev){
   if(f.id==='fCharge'){var t=f.t&&f.t.value?f.t.value:nowDT();
     if(parseDT(t)>Date.now()+15*6e4){toast('Cette heure est dans le futur : vérifiez la date');return}
     var rateAvant=null;try{rateAvant=analyse().rate}catch(x){}
+    var aeC=arretEnCours();if(aeC){aeC.au=parseDT(t)>parseDT(aeC.du)?t:nowDT();if(parseDT(aeC.au)-parseDT(aeC.du)<15*6e4)aeC.sup=true;aeC.maj=Date.now();S.foyer.maj=Date.now()}
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
     var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;ui.paletteAnim=Math.ceil(n);jouerPellets();statistique('chargement');var nbc=nbChargements(),pret2=false;try{pret2=rateAvant==null&&analyse().rate!=null}catch(x){}
     confirmer('🔥',sacsTxt(n)+' noté'+(n>=2?'s':''),nbc===1?'👏 Bravo ! Plus qu’une étape.':'Merci !',function(){aller('accueil');if(nbc===1)toast('👏 Bravo ! Premier chargement noté, plus qu’une étape.');if(pret2)setTimeout(feterAppliPrete,2600);

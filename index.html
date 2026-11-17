@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.45 du 17 novembre 2026 -->
+<!-- Suivi pellets, version 5.48 du 17 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -726,6 +726,34 @@ header.top2 .meta{flex:1 0 100%;margin-top:6px}
 .poele2 .poele3{width:100%!important;height:100%!important;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
 .t.sacs.s2 .n{padding-right:54px}
 @media (max-width:340px){.poele2{width:48px;height:82px}.t.sacs.s2 .n{padding-right:44px}}
+/* v5.46 : la ligne de version ne passe plus sous la barre du bas */
+body:has(.onglets-bas) .ver{margin-bottom:calc(84px + env(safe-area-inset-bottom))}
+body:has(.onglets-bas) .ob-espace{height:8px}
+/* v5.47 : téléphones en « zoom d'affichage » ou texte agrandi */
+.t.stk .l{white-space:normal}
+.acts .act b{overflow-wrap:normal;word-break:normal;hyphens:manual}
+@media (max-width:359px){
+ .acts{grid-template-columns:1fr}
+ .acts .act{min-height:62px}
+ .acts .act b{font-size:1rem}
+ .big2.avec-stock .t.sacs.s2,.big2.avec-stock .t.stk{grid-column:1/-1;min-height:140px}
+ .t.sacs.s2 .n{padding-right:70px}
+ .poele2{width:62px!important;height:106px!important;right:14px}
+ .t.stk .l{padding-right:44px}
+ .palette-card{flex-direction:column;align-items:stretch}
+ .palette{width:100%;max-width:240px;align-self:center}
+ .prev-card .pv-tete h2{white-space:normal}
+ .top2 h1{font-size:clamp(1.25rem,7vw,1.6rem)}
+}
+@media (max-width:300px){
+ .big2{grid-template-columns:1fr}
+ .big2 .t.ext,.big2 .t.int{min-height:0}
+ .prev-card .pv-d{font-size:.72rem}
+ .prev-card .pv-s{font-size:.72rem}
+}
+@media (max-width:359px){.palette{max-width:170px}}
+/* v5.48 : marge sous la ligne de version sans :has (anciens iPhone) */
+#version.ver{margin-bottom:calc(96px + env(safe-area-inset-bottom))!important;position:relative;z-index:0}
 
 </style>
 </head>
@@ -747,7 +775,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.45', VERSION_DATE='17 novembre 2026';
+var VERSION='5.48', VERSION_DATE='17 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[

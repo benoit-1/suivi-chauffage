@@ -172,6 +172,9 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.48 | 17 novembre 2026 | La ligne « version » reste au-dessus de la barre du bas sur tous les iPhone, y compris les plus anciens. |
+| 5.47 | 17 novembre 2026 | iPhone en « zoom d'affichage » ou avec texte agrandi : les boutons, « Sacs consommés », le stock et « Ma palette » passent l'un sous l'autre au lieu d'être coupés. |
+| 5.46 | 17 novembre 2026 | La ligne « version » en bas de page ne passe plus sous la barre Accueil / Historique / Statistiques. |
 | 5.45 | 17 novembre 2026 | La tuile « Sacs consommés » montre un poêle à pellets (réservoir, écran avec la température de la maison, porte vitrée avec le creuset et les flammes, tiroir à cendres). |
 | 5.44 | 17 novembre 2026 | Accueil adapté aux petits écrans : températures, « Sacs consommés », stock et prévision ne débordent plus des cases. |
 | 5.43 | 16 novembre 2026 | Nouveau design de l'accueil : logo flamme, « Mis à jour à … », Dehors et Maison avec icônes, poêle dessiné dans « Sacs consommés », tuile « Votre stock » avec barre et jours restants, « Prévision cette semaine » en barres, boutons côte à côte, barre Accueil / Historique / Statistiques en bas. Le reste (remplissage, palette, hiver dernier, QR) se trouve sous les boutons. |

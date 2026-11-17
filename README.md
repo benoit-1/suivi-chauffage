@@ -172,6 +172,8 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.45 | 17 novembre 2026 | La tuile « Sacs consommés » montre un poêle à pellets (réservoir, écran avec la température de la maison, porte vitrée avec le creuset et les flammes, tiroir à cendres). |
+| 5.44 | 17 novembre 2026 | Accueil adapté aux petits écrans : températures, « Sacs consommés », stock et prévision ne débordent plus des cases. |
 | 5.43 | 16 novembre 2026 | Nouveau design de l'accueil : logo flamme, « Mis à jour à … », Dehors et Maison avec icônes, poêle dessiné dans « Sacs consommés », tuile « Votre stock » avec barre et jours restants, « Prévision cette semaine » en barres, boutons côte à côte, barre Accueil / Historique / Statistiques en bas. Le reste (remplissage, palette, hiver dernier, QR) se trouve sous les boutons. |
 | 5.42 | 16 novembre 2026 | Corrections : le prénom de la personne est bien enregistré avec un achat de sacs ; un prix de 0 € est gardé (sacs offerts) ; dates de version harmonisées. |
 | 5.41 | 13 novembre 2026 | Écran des flammes : l'application s'ouvre seule au bout de 2 secondes ; un toucher pendant ces 2 secondes fait tomber les pellets avec le bruit (environ 2,6 s), puis l'application s'ouvre. |

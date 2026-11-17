@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.43 du 16 novembre 2026 -->
+<!-- Suivi pellets, version 5.45 du 17 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -698,6 +698,34 @@ header.top2 .meta{flex:1 0 100%;margin-top:6px}
 .pv-badge{font-size:.76rem;padding:4px 9px}
 .poele2{width:70px;height:95px;right:-2px;bottom:2px}
 .t.sacs.s2 .n{text-shadow:0 1px 6px rgba(0,0,0,.6)}
+/* v5.44 : petits écrans (iPhone SE, mini, texte agrandi) */
+.top2 h1{font-size:clamp(1.45rem,7.4vw,1.9rem);white-space:nowrap}
+.top2 .logo-app{width:clamp(38px,12vw,52px);height:clamp(38px,12vw,52px)}
+.top2 .meta,.top2 .meta .sub,.top2 .meta .sync{font-size:clamp(.66rem,3.3vw,.76rem)}
+.big2 .t.ext .v,.big2 .t.int .v{font-size:clamp(1.45rem,7.6vw,2.25rem)}
+.big2 .t.ext .v small,.big2 .t.int .v small{font-size:.45em}
+.t.sacs.s2 .l{white-space:normal;font-size:clamp(.85rem,4.2vw,.98rem)}
+.t.sacs.s2 .v{font-size:clamp(2.4rem,13vw,3.6rem)}
+.t.sacs.s2 .n{font-size:clamp(.75rem,3.6vw,.88rem);padding-right:20px}
+.t.stk .l{font-size:clamp(.85rem,4.2vw,1rem);white-space:nowrap}
+.t.stk .v{font-size:clamp(1.8rem,9.5vw,2.6rem);white-space:nowrap}
+.t.stk .v small{font-size:.5em}
+.t.stk .n{font-size:clamp(.72rem,3.6vw,.86rem)}
+.prev-card .pv-tete{flex-wrap:wrap;row-gap:8px}
+@media (max-width:400px){
+ .big2 .t.ext,.big2 .t.int{grid-template-columns:26px minmax(0,1fr)!important;column-gap:6px;padding:12px 10px}
+ .big2 .t-ic{width:26px!important;height:36px!important}
+ .stk-sac{width:30px}.t.stk .l{padding-right:30px}
+ .acts .act b{font-size:clamp(.82rem,4.2vw,1rem)}
+ .acts .act .ic{width:26px;height:26px}
+}
+@media (max-width:340px){.poele2{width:56px;height:76px}}
+.big2 .t.ext .v,.big2 .t.int .v{font-size:clamp(1.45rem,8.4vw,2.25rem)}
+/* v5.45 : poêle à pellets dessiné */
+.poele2{width:58px;height:99px;right:4px;bottom:6px}
+.poele2 .poele3{width:100%!important;height:100%!important;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.4))}
+.t.sacs.s2 .n{padding-right:54px}
+@media (max-width:340px){.poele2{width:48px;height:82px}.t.sacs.s2 .n{padding-right:44px}}
 
 </style>
 </head>
@@ -719,7 +747,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.43', VERSION_DATE='16 novembre 2026';
+var VERSION='5.45', VERSION_DATE='17 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1160,15 +1188,8 @@ function svgLogo(){return '<svg class="logo-app" viewBox="0 0 64 64" aria-hidden
   '<path d="M32 22c2 6 7 9 7 16 0 5-3 8-7 8s-7-3-7-8c0-4 2-6 4-8 0 3 1 4 2 5 0-5 0-9 1-13Z" fill="url(#lgC)"/>'+
   '<g transform="rotate(-18 32 52)"><rect x="8" y="46" width="46" height="10" rx="5" fill="#a0612a"/><circle cx="51" cy="51" r="5" fill="#e3b178" stroke="#a0612a" stroke-width="1.5"/></g>'+
   '<g transform="rotate(18 32 52)"><rect x="10" y="46" width="46" height="10" rx="5" fill="#8a5022"/><circle cx="13" cy="51" r="5" fill="#e3b178" stroke="#8a5022" stroke-width="1.5"/></g></svg>'}
-function dessinPoele(fl){var g='';for(var i=0;i<26;i++){var x=4+((i*37)%112),y=150+((i*13)%9),r=(i*53)%180;g+='<rect x="'+x+'" y="'+y+'" width="9" height="3.6" rx="1.8" transform="rotate('+r+' '+(x+4.5)+' '+(y+1.8)+')" fill="'+(i%3?'#d9a35b':'#c08840')+'"/>'}
-  return '<span class="poele2" aria-hidden="true"><svg class="p2-corps" viewBox="0 0 120 162"><defs><linearGradient id="p2g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3b414c"/><stop offset=".5" stop-color="#555c69"/><stop offset="1" stop-color="#2e333b"/></linearGradient></defs>'+
-  '<rect x="80" y="0" width="13" height="24" fill="#4a505b"/><rect x="77" y="0" width="19" height="4" rx="1.5" fill="#5d6470"/>'+
-  '<rect x="16" y="24" width="88" height="120" rx="7" fill="url(#p2g)"/><rect x="11" y="20" width="98" height="8" rx="3" fill="#626976"/>'+
-  '<path d="M36 34h48M36 39h48M36 44h48" stroke="#22262d" stroke-width="2" stroke-linecap="round"/>'+
-  '<rect x="27" y="53" width="66" height="58" rx="6" fill="#120c0a" stroke="#6b7280" stroke-width="3"/>'+
-  '<rect x="28" y="120" width="64" height="16" rx="3" fill="#353a43"/><rect x="52" y="126" width="16" height="3" rx="1.5" fill="#6b7280"/>'+
-  '<rect x="20" y="143" width="10" height="5" fill="#22262d"/><rect x="90" y="143" width="10" height="5" fill="#22262d"/>'+g+'</svg>'+
-  '<span class="p2-fen" style="--fl:'+fl.toFixed(2)+'">'+svgPoele()+'</span></span>'}
+function dessinPoele(fl,ti){var temp=ti!=null?nf(ti,0)+'°':'';
+  return '<span class="poele2" aria-hidden="true" style="--fl:'+fl.toFixed(2)+'">'+'<svg class="poele poele3" viewBox="0 0 100 170" aria-hidden="true"><defs><linearGradient id="q3b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2c3038"/><stop offset=".55" stop-color="#4b515c"/><stop offset="1" stop-color="#262a31"/></linearGradient><linearGradient id="q3c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8d2f1c"/><stop offset=".5" stop-color="#b8432a"/><stop offset="1" stop-color="#7a2817"/></linearGradient><linearGradient id="q3v" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset=".4" stop-color="#fff" stop-opacity="0"/></linearGradient><linearGradient id="q3r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b616c"/><stop offset="1" stop-color="#2b2f36"/></linearGradient><radialGradient id="q3e" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd27a"/><stop offset=".5" stop-color="#ff7a1a"/><stop offset="1" stop-color="#c2310a"/></radialGradient><linearGradient id="q3o" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff9a1f"/><stop offset=".6" stop-color="#ff5a12"/><stop offset="1" stop-color="#e8320c"/></linearGradient><linearGradient id="q3j" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fffbe6"/><stop offset=".5" stop-color="#ffe07a"/><stop offset="1" stop-color="#ffb02e"/></linearGradient><radialGradient id="q3h" cx=".5" cy=".7" r=".5"><stop offset="0" stop-color="#ff8a2a" stop-opacity=".5"/><stop offset="1" stop-color="#ff8a2a" stop-opacity="0"/></radialGradient></defs><path d="M70 30h18v-24" fill="none" stroke="#5a606b" stroke-width="7" stroke-linejoin="round"/><rect x="14" y="14" width="64" height="146" rx="9" fill="url(#q3b)"/><rect x="14" y="40" width="8" height="112" rx="3" fill="url(#q3c)"/><rect x="70" y="40" width="8" height="112" rx="3" fill="url(#q3c)"/><rect x="12" y="10" width="68" height="12" rx="5" fill="#1d2027"/><path d="M20 16h34" stroke="#3b4049" stroke-width="1.6" stroke-linecap="round"/><rect x="24" y="27" width="44" height="10" rx="2.5" fill="#101215"/><text x="46" y="34.6" font-family="Arial" font-size="7" font-weight="700" fill="#7dd3fc" text-anchor="middle">'+temp+'</text><circle class="led" cx="64" cy="32" r="1.6" fill="#ff8a2a"/><rect x="24" y="44" width="44" height="74" rx="6" fill="#0d0a09" stroke="#1a1d22" stroke-width="3"/><svg x="25" y="62" width="42" height="56" viewBox="0 0 64 64" preserveAspectRatio="xMidYMax meet" overflow="hidden"><ellipse class="lueur" cx="32" cy="38" rx="30" ry="22" fill="url(#q3h)"/><g class="flammes"><path class="f f2" d="M14 46C14 34.3 17.9 27.8 20.9 20C21.5 29.1 26 35.6 26 46Z" fill="url(#q3o)"/><path class="f f3" d="M38 46C38 33.4 41.9 26.4 44.9 18C45.5 27.8 50 34.8 50 46Z" fill="url(#q3o)"/><path class="f f4" d="M18.5 46C18.5 29.8 23.4 20.8 27.1 10C27.9 22.6 33.5 31.6 33.5 46Z" fill="url(#q3o)"/><path class="f f2" d="M30.5 46C30.5 28.9 35.4 19.4 39.1 8C39.9 21.3 45.5 30.8 45.5 46Z" fill="url(#q3o)"/><path class="f " d="M23 46C23 26.2 28.9 15.2 33.4 2C34.2 17.4 41 28.4 41 46Z" fill="url(#q3o)"/><path class="f f3" d="M22 46C22 36.1 24.6 30.6 26.6 24C27.0 31.7 30 37.2 30 46Z" fill="url(#q3j)"/><path class="f f4" d="M34 46C34 35.2 36.6 29.2 38.6 22C39.0 30.4 42 36.4 42 46Z" fill="url(#q3j)"/><path class="f f2" d="M26.8 46C26.8 32.5 30.2 25.0 32.8 16C33.3 26.5 37.2 34.0 37.2 46Z" fill="url(#q3j)"/></g><ellipse class="braise" cx="32" cy="46.5" rx="21" ry="4.2" fill="url(#q3e)"/><rect x="8.4" y="43.6" width="11" height="4.8" rx="2.4" fill="#c9561a" stroke="#7a2a08" stroke-width=".8" transform="rotate(30 13.9 46.0)"/><rect x="13.0" y="43.7" width="11" height="4.8" rx="2.4" fill="#c9561a" stroke="#7a2a08" stroke-width=".8" transform="rotate(-10 18.5 46.1)"/><rect x="17.8" y="44.2" width="11" height="4.8" rx="2.4" fill="#c9561a" stroke="#7a2a08" stroke-width=".8" transform="rotate(-25 23.3 46.6)"/><rect x="21.6" y="42.3" width="11" height="4.8" rx="2.4" fill="#c9561a" stroke="#7a2a08" stroke-width=".8" transform="rotate(-25 27.1 44.7)"/><rect x="27.4" y="43.9" width="11" height="4.8" rx="2.4" fill="#e8641a" stroke="#7a2a08" stroke-width=".8" transform="rotate(70 32.9 46.3)"/><rect x="31.2" y="44.3" width="11" height="4.8" rx="2.4" fill="#ff8c2a" stroke="#7a2a08" stroke-width=".8" transform="rotate(-25 36.7 46.7)"/><rect x="34.6" y="44.5" width="11" height="4.8" rx="2.4" fill="#ff8c2a" stroke="#7a2a08" stroke-width=".8" transform="rotate(70 40.1 46.9)"/><rect x="40.6" y="43.0" width="11" height="4.8" rx="2.4" fill="#e8641a" stroke="#7a2a08" stroke-width=".8" transform="rotate(70 46.1 45.4)"/><rect x="44.5" y="43.8" width="11" height="4.8" rx="2.4" fill="#ff8c2a" stroke="#7a2a08" stroke-width=".8" transform="rotate(30 50.0 46.2)"/><path d="M9 46h46l-5 14H14Z" fill="url(#q3r)"/><path d="M8 45.5h48" stroke="#7a818d" stroke-width="2.4" stroke-linecap="round"/><circle cx="16.5" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="21.7" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="26.8" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="32.0" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="37.2" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="42.3" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="47.5" cy="51" r="1.25" fill="#ff8a2a"/><circle cx="18.0" cy="55.5" r="1.25" fill="#ff8a2a"/><circle cx="23.6" cy="55.5" r="1.25" fill="#ff8a2a"/><circle cx="29.2" cy="55.5" r="1.25" fill="#ff8a2a"/><circle cx="34.8" cy="55.5" r="1.25" fill="#ff8a2a"/><circle cx="40.4" cy="55.5" r="1.25" fill="#ff8a2a"/><circle cx="46.0" cy="55.5" r="1.25" fill="#ff8a2a"/></svg><rect x="24" y="44" width="44" height="74" rx="6" fill="url(#q3v)"/><rect x="64" y="72" width="3" height="18" rx="1.5" fill="#9aa1ad"/><rect x="24" y="126" width="44" height="22" rx="3" fill="#33373f"/><rect x="38" y="135" width="16" height="3" rx="1.5" fill="#6b7280"/><rect x="18" y="158" width="56" height="6" rx="2" fill="#1a1d22"/></svg>'+'</span>'}
 // v5.43 : nouveau design de l'accueil (icônes, tuile stock, barre d'onglets en bas)
 var IC={
  thermo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0Z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="17" r="2.2" fill="currentColor"/><path d="M12 9v7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M16.5 6h2M16.5 9h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>',
@@ -1177,8 +1198,7 @@ var IC={
  sac:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10l-1.2 2.2c2.4 2 3.7 5 3.7 8.3 0 3.6-3 5.5-7.5 5.5S4.5 18.6 4.5 15c0-3.3 1.3-6.3 3.7-8.3Z" fill="currentColor"/><path d="M14.8 11.2c-3.4.2-5.4 2-5.6 5.3 3.1-.1 5.1-1.9 5.6-5.3Z" fill="var(--ic-fond,#fff)"/></svg>',
  maisonO:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11 12 4.5 20 11v8.5h-5.5v-5h-5v5H4Z" fill="currentColor"/></svg>',
  histo:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M3.5 4.5v3.8h3.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 8v4.3l3 1.8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
- stats:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="8.5" width="4" height="11.5" rx="1" fill="currentColor"/><rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>'};
-function barreOnglets(actif){function b(k,go,cible,ic,txt){return '<button type="button" class="ob'+(actif===k?' on':'')+'" data-go="'+go+'"'+(cible?' data-cible="'+cible+'"':'')+' data-tab="'+k+'"'+(actif===k?' aria-current="page"':'')+'>'+ic+'<span>'+txt+'</span></button>'}
+ stats:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="8.5" width="4" height="11.5" rx="1" fill="currentColor"/><rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>'};function barreOnglets(actif){function b(k,go,cible,ic,txt){return '<button type="button" class="ob'+(actif===k?' on':'')+'" data-go="'+go+'"'+(cible?' data-cible="'+cible+'"':'')+' data-tab="'+k+'"'+(actif===k?' aria-current="page"':'')+'>'+ic+'<span>'+txt+'</span></button>'}
   return '<div class="ob-espace" aria-hidden="true"></div><nav class="onglets-bas" aria-label="Navigation">'+b('accueil','accueil','',IC.maisonO,'Accueil')+b('histo','details','journal',IC.histo,'Historique')+b('stats','details','',IC.stats,'Statistiques')+'</nav>'}
 function tuileStock(A){var I=infoStock(A);if(!I)return '';var ref=Math.max(I.r,(I.E.reste||0)+(I.E.conso||0),1),pc=Math.max(0,Math.min(100,Math.round(I.r/ref*100)));
   var j=I.fs&&I.fs.jours!=null?I.fs.jours:null,bas=I.r<=0?'Stock épuisé':(j==null?'':(j>90?'Plus de 3 mois de réserve':'Environ '+j+' jour'+(j>1?'s':'')+' restant'+(j>1?'s':'')));
@@ -1192,7 +1212,7 @@ function vueAccueil(){
   '<section class="big2'+(tuileStock(A)?' avec-stock':'')+'" aria-label="Températures">'+
   '<div class="t ext"><span class="t-ic">'+IC.thermo+'</span><span class="l">Dehors <span class="sky">'+cielIcone()+'</span></span><span class="v">'+(d.v!=null?'<span class="cnt" data-val="'+d.v+'" data-dec="1">'+nf(d.v,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+esc(d.note)+(cielTexte()?' · '+esc(cielTexte()):'')+'</span></div>'+
   '<div class="t int"><span class="t-ic">'+IC.maison+'</span><span class="l">Maison</span><span class="v">'+(mai!=null?'<span class="cnt" data-val="'+mai+'" data-dec="1">'+nf(mai,1)+'</span><small>°C</small>':'—')+'</span><span class="n">'+(dr?'moyenne de '+ni+' pièce'+(ni>1?'s':'')+' · '+quand(dr.t):'aucun relevé encore')+'</span></div>'+
-  '<div class="t sacs s2"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+dateLongue(A.first.t):'cette saison')+'</span></div></div>'+dessinPoele(fl.k)+'</div>'+tuileStock(A)+'</section>'+
+  '<div class="t sacs s2"><div><span class="l">Sacs consommés</span><div class="row-b"><span class="v cnt" id="compteur" data-val="'+A.total+'" data-dec="'+(A.total%1?1:0)+'">'+nf(A.total,A.total%1?1:0)+'</span><span class="n">'+(A.first?'depuis le '+dateLongue(A.first.t):'cette saison')+'</span></div></div>'+dessinPoele(fl.k,mai)+'</div>'+tuileStock(A)+'</section>'+
   vuePremiersPas(A)+vuePrevision(A)+
   '<section class="acts"><button class="act a1" data-go="temperatures"><span class="ic" aria-hidden="true">'+IC.thermo+'</span><span><b>Relever les températures</b><span class="s">pièce par pièce, 30 secondes</span></span></button>'+
   '<button class="act a2" data-go="chargement"><span class="ic" aria-hidden="true">'+IC.sac+'</span><span><b>Ajouter un chargement</b><span class="s">noter les sacs versés</span></span></button></section>'+ligneRemplissage(A)+lignePoele()+(tuileStock(A)?'':vueStock(A))+vuePalette(A)+vueAnDernier(A);

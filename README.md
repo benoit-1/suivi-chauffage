@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.50 | 18 novembre 2026 | Tuile « Votre stock » : la date de fin s’affiche (« Jusqu’au 25 décembre », environ 37 jours). |
 | 5.49 | 17 novembre 2026 | Rappel « Pas de chargement noté… que s’est-il passé ? » (oubli / poêle arrêté / tout va bien). Arrêts du poêle (panne, absence) exclus des calculs, listés dans Réglages, synchronisés ; le chargement suivant termine l’arrêt. |
 | 5.48 | 17 novembre 2026 | La ligne « version » reste au-dessus de la barre du bas sur tous les iPhone, y compris les plus anciens. |
 | 5.47 | 17 novembre 2026 | iPhone en « zoom d'affichage » ou avec texte agrandi : les boutons, « Sacs consommés », le stock et « Ma palette » passent l'un sous l'autre au lieu d'être coupés. |

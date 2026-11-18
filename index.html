@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.49 du 17 novembre 2026 -->
+<!-- Suivi pellets, version 5.50 du 18 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -770,6 +770,8 @@ body:has(.onglets-bas) .ob-espace{height:8px}
 .btn-arret{font:inherit;font-weight:700;width:100%;min-height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
 .arrets-l .lien{padding:6px}
 #toast{bottom:calc(92px + env(safe-area-inset-bottom));z-index:30}
+.t.stk .n .stk-j{font-weight:500;color:var(--muted)}
+.t.stk .n b.stk-d{color:var(--ink)}
 
 </style>
 </head>
@@ -791,7 +793,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.49', VERSION_DATE='17 novembre 2026';
+var VERSION='5.50', VERSION_DATE='18 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -1252,7 +1254,7 @@ var IC={
  stats:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="13" width="4" height="7" rx="1" fill="currentColor"/><rect x="10" y="8.5" width="4" height="11.5" rx="1" fill="currentColor"/><rect x="16" y="4" width="4" height="16" rx="1" fill="currentColor"/></svg>'};function barreOnglets(actif){function b(k,go,cible,ic,txt){return '<button type="button" class="ob'+(actif===k?' on':'')+'" data-go="'+go+'"'+(cible?' data-cible="'+cible+'"':'')+' data-tab="'+k+'"'+(actif===k?' aria-current="page"':'')+'>'+ic+'<span>'+txt+'</span></button>'}
   return '<div class="ob-espace" aria-hidden="true"></div><nav class="onglets-bas" aria-label="Navigation">'+b('accueil','accueil','',IC.maisonO,'Accueil')+b('histo','details','journal',IC.histo,'Historique')+b('stats','details','',IC.stats,'Statistiques')+'</nav>'}
 function tuileStock(A){var I=infoStock(A);if(!I)return '';var ref=Math.max(I.r,(I.E.reste||0)+(I.E.conso||0),1),pc=Math.max(0,Math.min(100,Math.round(I.r/ref*100)));
-  var j=I.fs&&I.fs.jours!=null?I.fs.jours:null,bas=I.r<=0?'Stock épuisé':(j==null?'':(j>90?'Plus de 3 mois de réserve':'Environ '+j+' jour'+(j>1?'s':'')+' restant'+(j>1?'s':'')));
+  var j=I.fs&&I.fs.jours!=null?I.fs.jours:null,dFin=I.fs&&I.fs.date?new Date(I.fs.date+'T12:00:00'):null,bas=I.r<=0?'Stock épuisé':(j==null?'':(j>90?'Plus de 3 mois de réserve':(j<=0?'Jusqu’à aujourd’hui':'Jusqu’au <b class="stk-d">'+(dFin?dateLongue(I.fs.date+'T12:00'):'')+'</b><br><span class="stk-j">environ '+j+' jour'+(j>1?'s':'')+'</span>')));
   return '<button type="button" class="t stk'+(I.alerte?' alerte':'')+'" data-a="feuilleStock"><span class="stk-sac" aria-hidden="true">'+svgSac()+'</span><span class="l">Votre stock</span><span class="v">'+nfs(Math.max(0,I.r))+'<small> sac'+(I.r>=2?'s':'')+'</small></span>'+
     '<span class="stk-barre" aria-hidden="true"><i style="width:'+pc+'%"></i></span><span class="n">'+bas+(I.alerte&&I.r>0?'<br><b>Pensez à recommander</b>':(bas&&j!=null&&j<=90?'<br><em>(estimation)</em>':''))+'</span></button>'}
 function vueAccueil(){

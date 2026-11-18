@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- Suivi pellets, version 5.51 du 18 novembre 2026 -->
+<!-- Suivi pellets, version 5.52 du 18 novembre 2026 -->
 <html lang="fr">
 <head>
 <meta charset="utf-8">
@@ -793,7 +793,7 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
    L'interface ne parle qu'à « Store » (données) et « Meteo » (météo).
    Données : un fichier JSON dans un dépôt GitHub privé. Météo : Open-Meteo.
    ================================================================== */
-var VERSION='5.51', VERSION_DATE='18 novembre 2026';
+var VERSION='5.52', VERSION_DATE='18 novembre 2026';
 var DEMO=false;
 var BANDS=[{lab:'Moins de 0 °C',lo:-99,hi:0},{lab:'0 à 5 °C',lo:0,hi:5},{lab:'5 à 10 °C',lo:5,hi:10},{lab:'10 à 15 °C',lo:10,hi:15},{lab:'15 °C et plus',lo:15,hi:99}];
 var EXT_SOURCES=[
@@ -2093,7 +2093,7 @@ app.addEventListener('submit',function(ev){
     var rateAvant=null;try{rateAvant=analyse().rate}catch(x){}
     var aeC=arretEnCours();if(aeC){aeC.au=parseDT(t)>parseDT(aeC.du)?t:nowDT();if(parseDT(aeC.au)-parseDT(aeC.du)<15*6e4)aeC.sup=true;aeC.maj=Date.now();S.foyer.maj=Date.now()}
     S.chargements.push({id:newId(),t:t,sacs:ui.charge,par:moi(),saison:F().saison,maj:Date.now()});sauver('Chargement : '+sacsTxt(ui.charge)+(moi()?' par '+moi():''));
-    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;ui.paletteAnim=Math.ceil(n);jouerPellets();statistique('chargement');var nbc=nbChargements(),pret2=false;try{pret2=rateAvant==null&&analyse().rate!=null}catch(x){}
+    var n=ui.charge;ui.charge=1;ui.autreHeure=false;ui.fete=true;ui.paletteAnim=Math.ceil(n);jouerPellets();statistique(numeroAppareil()?'chargement/'+numeroAppareil():'chargement');var nbc=nbChargements(),pret2=false;try{pret2=rateAvant==null&&analyse().rate!=null}catch(x){}
     confirmer('🔥',sacsTxt(n)+' noté'+(n>=2?'s':''),nbc===1?'👏 Bravo ! Plus qu’une étape.':'Merci !',function(){aller('accueil');if(nbc===1)toast('👏 Bravo ! Premier chargement noté, plus qu’une étape.');if(pret2)setTimeout(feterAppliPrete,2600);
       var c=document.getElementById('compteur');if(c){c.classList.add('pop')}});return}
   if(f.id==='fTemp'){var temps={},nb=0;Array.prototype.forEach.call(f.querySelectorAll('[data-piece]'),function(el){var v=num(el.value);if(v!=null&&v>-30&&v<45){temps[el.getAttribute('data-piece')]=Math.round(v*10)/10;nb++}});

@@ -172,6 +172,7 @@ Le numéro de version est affiché en bas de chaque écran de l'application. Apr
 
 | Version | Date | Changements |
 |---|---|---|
+| 5.52 | 18 novembre 2026 | Statistique : chaque chargement est compté avec le numéro de l’appareil (chargement/xxxx), pour savoir qui note vraiment ses sacs. |
 | 5.51 | 18 novembre 2026 | Nouvelle image d’aperçu pour Facebook (apercu-lien-3.png) avec le nouvel accueil. |
 | 5.50 | 18 novembre 2026 | Tuile « Votre stock » : la date de fin s’affiche (« Jusqu’au 25 décembre », environ 37 jours). |
 | 5.49 | 17 novembre 2026 | Rappel « Pas de chargement noté… que s’est-il passé ? » (oubli / poêle arrêté / tout va bien). Arrêts du poêle (panne, absence) exclus des calculs, listés dans Réglages, synchronisés ; le chargement suivant termine l’arrêt. |
